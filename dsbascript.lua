@@ -411,6 +411,12 @@ FightForPlayerButton.MouseButton1Click:Connect(function()
 	end
 end)
 
+local DexButton = createButton("Dex", SectionThirdFrame)
+
+DexButton.MouseButton1Click:Connect(function()
+	loadstring(game:HttpGet("https://github.com/AZYsGithub/DexPlusPlus/releases/latest/download/out.lua"))()
+end)
+
 local RS = game:GetService("ReplicatedStorage")
 if RS:FindFirstChild("events") then
 	local Events = RS.events
@@ -1809,6 +1815,150 @@ if RS:FindFirstChild("events") then
 		end
 	}
 	
+	local function ShowInfo(Value)
+		for i, plr in ipairs(Players:GetChildren()) do
+			local theirstates = plr.states
+			local CharStats = plr.CharStats
+			local Data = plr:FindFirstChild("Data")
+			local TargChar = plr.Character
+			local TargHum = TargChar:FindFirstChild("Humanoid")
+			if TargHum then
+				local Race = CharStats.Race.Value
+				local Level
+				if Data then
+					Level = Data.Level.Value
+				end
+				if Value == true then
+					for i, v in pairs(TargChar:GetChildren()) do
+						if v.Name == "InfoHighlight" then
+							v:Destroy()
+						end
+					end
+					local InfoHighlight = Instance.new("Highlight")
+					InfoHighlight.Name = "InfoHighlight"
+					if Race == "Human" then
+						InfoHighlight.FillColor = Color3.fromRGB(71, 200, 255)
+					elseif Race == "Demon" then
+						InfoHighlight.FillColor = Color3.fromRGB(149, 0, 0)
+					elseif Race == "Hybrid" then
+						InfoHighlight.FillColor = Color3.fromRGB(176, 39, 255)
+					end
+					InfoHighlight.Parent = TargChar
+					InfoHighlight.FillTransparency = 0.75
+					TargHum.HealthDisplayType = Enum.HumanoidHealthDisplayType.AlwaysOn
+					if Data then
+						TargHum.DisplayName = plr.Name .. " / ".. Race .. " / " .. tostring(Level)
+					else
+						TargHum.DisplayName = plr.Name .. " / ".. Race
+					end
+				else
+					local InfoHighlight = TargChar:FindFirstChild("InfoHighlight")
+					if InfoHighlight then
+						InfoHighlight:Destroy()
+					end
+					TargHum.HealthDisplayType = Enum.HumanoidHealthDisplayType.AlwaysOff
+					TargHum.DisplayName = plr.Name
+				end
+			end
+		end
+	end
+	
+	local InfoButton = createButton("GeneralInfo", SectionThirdFrame)
+	local GeneralInfoOn = false
+	InfoButton.MouseButton1Click:Connect(function()
+		if GeneralInfoOn == false then
+			GeneralInfoOn = true
+			InfoButton.Text = "GeneralInfo: On"
+			ShowInfo(true)
+		else
+			GeneralInfoOn = false
+			InfoButton.Text = "GeneralInfo: Off"
+			ShowInfo(false)
+		end
+	end)
+	
+	local flying = false
+	local ContinusFlying = false
+	local flySpeed = 300
+
+	local Flierbutton3 = createButton("Fly", SectionThirdFrame)
+
+	local function flyu()
+		if flying == true then return end
+
+		ContinusFlying = not ContinusFlying
+
+		if ContinusFlying then
+			Flierbutton3.Text = "Flying: Active"
+		else
+			Flierbutton3.Text = "Flying: Inactive"
+		end
+
+		if not Michar then return end
+		local hrp = Michar:FindFirstChild("HumanoidRootPart")
+		if not hrp then return end
+
+		if ContinusFlying then
+
+			task.spawn(function()
+
+				while ContinusFlying and hrp.Parent do
+
+					local bv = Instance.new("BodyVelocity")
+					bv.Name = "gggg"
+					bv.MaxForce = Vector3.new(100000,100000,100000)
+					bv.Velocity = Vector3.zero
+					bv.Parent = hrp
+
+					local bg = Instance.new("BodyGyro")
+					bg.Name = "gggg"
+					bg.MaxTorque = Vector3.new(100000,100000,100000)
+					bg.CFrame = hrp.CFrame
+					bg.Parent = hrp
+
+					local cam = workspace.CurrentCamera
+
+					local startTime = tick()
+
+					while ContinusFlying and tick() - startTime < 7 and hrp.Parent do
+
+						local move = Vector3.zero
+
+						if UIS:IsKeyDown(Enum.KeyCode.W) then
+							move += cam.CFrame.LookVector
+						end
+
+						if UIS:IsKeyDown(Enum.KeyCode.S) then
+							move -= cam.CFrame.LookVector
+						end
+
+						if UIS:IsKeyDown(Enum.KeyCode.A) then
+							move -= cam.CFrame.RightVector
+						end
+
+						if UIS:IsKeyDown(Enum.KeyCode.D) then
+							move += cam.CFrame.RightVector
+						end
+
+						bv.Velocity = move * 200
+						bg.CFrame = cam.CFrame
+
+						task.wait()
+					end
+
+					bv:Destroy()
+					bg:Destroy()
+
+				end
+
+			end)
+
+		end
+	end
+
+	Flierbutton3.MouseButton1Click:Connect(function()
+		flyu()
+	end)
 	-- Update tracked players display
 	local function updateTrackedDisplay()
 
@@ -2014,7 +2164,12 @@ if RS:FindFirstChild("events") then
 	end
 
 	hookLocalPlayer()
-	Players.LocalPlayer.CharacterAdded:Connect(hookLocalPlayer)
+	Players.LocalPlayer.CharacterAdded:Connect(function(chara)
+		hookLocalPlayer(chara)
+		if GeneralInfoOn == true then
+			ShowInfo(true)
+		end
+	end)
 	-- Populate player list
 	for _,plr in pairs(Players:GetPlayers()) do
 		createPlayerButton(plr)

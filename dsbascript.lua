@@ -1111,7 +1111,7 @@ if RS:FindFirstChild("events") then
 			local PlayerBackpack = Player.Backpack
 			local Distance = (HRP.Position - EnemyHRP.Position).Magnitude
 			local AbilitySkills = {}
-			if Distance <= 15 and Distance >= 1 then
+			if Distance <= 20 and Distance >= 1 then
 				for i, v in ipairs(PlayerBackpack:GetChildren()) do
 					if v:FindFirstChild("BreathingMove") or v:FindFirstChild("DemonArt") and not ourcds:FindFirstChild(v.Name) then
 						table.insert(AbilitySkills, v.Name)
@@ -1236,13 +1236,60 @@ if RS:FindFirstChild("events") then
 			D = 1,
 		},
 		["Moon Dragon Ringtail"] = {
-			D = 0,
+			--D = 0,
+			D = 0.2,
 		},
 		["Coil Choke"] = {
 			D = 0.5,
 		},
 		["Winding Serpent Slash"] = {
+			--D = 0.1,
+			D = 0.4,
+		},
+		["Unknowing Fire"] = {
+			--D = 0.1,
+			D = 0.4,
+		},
+		["Water Surface Slash"] = {
+			--D = 0.1,
+			D = 0.4,
+		},
+		["Rapid Conquest"] = {
+			--D = 0.1,
+			D = 0.4,
+		},
+		["Bite And InfectOG"] = {
+			D = 0.4,
+		},
+		["Rat's ClawOG"] = {
+			D = 0.5,
+		},
+		["Roar"] = {
+			D = 0.4,
+		},
+		["Explosive Slash"] = {
+			D = 0.4,
+		},
+		["String Performance"] = {
+			D = 0.4,
+		},
+		["Rip and Devour"] = {
 			D = 0.2,
+		},
+		["Pierce and Extract"] = {
+			D = 0.4,
+		},
+		["Whirling Peach"] = {
+			D = 0.4,
+		},
+		["Peonies of Futility"] = {
+			D = 0.4
+		},
+		["Flaming Thunder God"] = {
+			D = 0.4
+		},
+		["Love Pang"] = {
+			D = 0.4
 		},
 	}
 

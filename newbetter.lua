@@ -467,7 +467,7 @@ local RS = game:GetService("ReplicatedStorage")
 if RS:FindFirstChild("events") then
 	local Events = RS.events
 	local combatremote = Events.remote
-	local TrackingNPCSThing = false
+	local OnlyUseM1sBtt = false
 	local TrackedNpcs = {}
 	local AnimsTableSet = {
 
@@ -1168,9 +1168,12 @@ if RS:FindFirstChild("events") then
 			end
 		end)
 	end
-
+	local CDThing = false
 	local function RandomSpecials(Enemy)
 		task.spawn(function()
+			if CDThing == true then
+				return
+			end
 			combatremote:FireServer("manacharges")
 			local CHeckIFPlayer = Players:FindFirstChild(Enemy.Name)
 			local EnemyCharacter 
@@ -1197,7 +1200,7 @@ if RS:FindFirstChild("events") then
 			local PlayerBackpack = Player.Backpack
 			local Distance = (HRP.Position - EnemyHRP.Position).Magnitude
 			local AbilitySkills = {}
-			if Distance <= 20 and Distance >= 1 then
+			if Distance <= 25 and Distance >= 0 then
 				for i, v in ipairs(PlayerBackpack:GetChildren()) do
 					if v:FindFirstChild("BreathingMove") or v:FindFirstChild("DemonArt") and not ourcds:FindFirstChild(v.Name) then
 						table.insert(AbilitySkills, v.Name)
@@ -1214,13 +1217,21 @@ if RS:FindFirstChild("events") then
 					local randomSkill = AbilitySkills[random]
 					local TargTool = PlayerBackpack[randomSkill]
 					if TargTool then
+						CDThing = true
+						--Events.remote:FireServer(TargTool.Name)
 						TargTool.Parent = Character
 						TargTool:Activate()
-					end
-					TargTool.Parent = PlayerBackpack
-					local Katana = PlayerBackpack:FindFirstChild("Katana")
-					if Katana then
-						Katana.Parent = Character
+						--print("UsimgBreathMove")
+						task.delay(0, function()
+							TargTool.Parent = PlayerBackpack
+							local Katana = PlayerBackpack:FindFirstChild("Katana")
+							if Katana then
+								Katana.Parent = Character
+							end
+							task.delay(2, function()
+								CDThing = false
+							end)
+						end)
 					end
 				end
 			end
@@ -1357,18 +1368,20 @@ if RS:FindFirstChild("events") then
 
 	task.spawn(function()
 		while true do
-			task.wait(1)
+			task.wait()
 			if gui.Parent ~= nil and FightingForYou == true and EnemyToFocusOn ~= nil then
-				local CHeckIFPlayer = Players:FindFirstChild(EnemyToFocusOn.Name)
-				if CHeckIFPlayer then
-					local EnemyCharacter = EnemyToFocusOn.Character
-					if EnemyCharacter ~= nil then
-						RandomSpecials(EnemyToFocusOn)
-					end
-				else
-					local EnemyCharacter = EnemyToFocusOn
-					if EnemyCharacter ~= nil then
-						RandomSpecials(EnemyToFocusOn)
+				if OnlyUseM1sBtt == false then
+					local CHeckIFPlayer = Players:FindFirstChild(EnemyToFocusOn.Name)
+					if CHeckIFPlayer then
+						local EnemyCharacter = EnemyToFocusOn.Character
+						if EnemyCharacter ~= nil then
+							RandomSpecials(EnemyToFocusOn)
+						end
+					else
+						local EnemyCharacter = EnemyToFocusOn
+						if EnemyCharacter ~= nil then
+							RandomSpecials(EnemyToFocusOn)
+						end
 					end
 				end
 			end
@@ -2547,14 +2560,14 @@ if RS:FindFirstChild("events") then
 		end
 	end)
 	
-	local AutoFightNpcsButton = createButton("AutoFightNpcs", SectionThirdFrame)
-	AutoFightNpcsButton.MouseButton1Click:Connect(function()
-		if TrackingNPCSThing == false then
-			TrackingNPCSThing = true
-			AutoFightNpcsButton.Text = "AutoFightNpcs: On"
+	local OnlyM1sNpc = createButton("OnlyM1sNpc", SectionThirdFrame)
+	OnlyM1sNpc.MouseButton1Click:Connect(function()
+		if OnlyUseM1sBtt == false then
+			OnlyUseM1sBtt = true
+			OnlyM1sNpc.Text = "AutoFightNpcs: On"
 		else
-			TrackingNPCSThing = false
-			AutoFightNpcsButton.Text = "AutoFightNpcs: Off"
+			OnlyUseM1sBtt = false
+			OnlyM1sNpc.Text = "AutoFightNpcs: Off"
 		end
 	end)
 

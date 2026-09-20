@@ -3149,8 +3149,8 @@ if RS:FindFirstChild("events") then
 								EnemyToFocusOn = NearestTarget
 								watchPlayerAnimations(NearestTarget)
 							end
-						else
-							clearTrackedPlayers()
+						--else
+							--clearTrackedPlayers()
 						end
 					end
 				end

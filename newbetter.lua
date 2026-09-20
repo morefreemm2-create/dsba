@@ -2976,6 +2976,20 @@ if RS:FindFirstChild("events") then
 	local WasClimbing = false
 	local TopTriggered = false
 
+	local function IsCharacterPart(instance)
+		if not instance then
+			return false
+		end
+
+		local model = instance:FindFirstAncestorOfClass("Model")
+
+		if model and model:FindFirstChildOfClass("Humanoid") then
+			return true
+		end
+
+		return false
+	end
+
 	task.spawn(function()
 		while true do
 			task.wait(0.5)
@@ -2998,7 +3012,11 @@ if RS:FindFirstChild("events") then
 						RayParams
 					)
 
-					if WallResult and WallResult.Normal.Y < 0.5 then
+					-- Only treat it as a wall if it isn't part of a character
+					if WallResult
+						and WallResult.Normal.Y < 0.5
+						and not IsCharacterPart(WallResult.Instance)
+					then
 						WasClimbing = true
 						TopTriggered = false
 
@@ -3022,7 +3040,8 @@ if RS:FindFirstChild("events") then
 					if WasClimbing and not TopTriggered then
 
 						-- Check from above the player's head
-						local HeadOrigin = RootPart.Position + Vector3.new(0, 3, 0)
+						local HeadOrigin =
+							RootPart.Position + Vector3.new(0, 3, 0)
 
 						local HeadWall = workspace:Raycast(
 							HeadOrigin,
@@ -3042,15 +3061,24 @@ if RS:FindFirstChild("events") then
 							RayParams
 						)
 
-						-- Head has cleared the wall AND there's a surface to stand on
-						if not HeadWall and TopSurface then
+						-- Make sure the detected objects aren't character parts
+						local HeadIsCharacterPart =
+							HeadWall and IsCharacterPart(HeadWall.Instance)
+
+						local TopIsCharacterPart =
+							TopSurface and IsCharacterPart(TopSurface.Instance)
+
+						-- Head cleared the wall AND there's a real surface
+						if not HeadWall
+							and TopSurface
+							and not TopIsCharacterPart
+						then
 							TopTriggered = true
 							WasClimbing = false
 
 							DashAwayForward()
 						end
 					end
-
 				end
 			else
 				WasClimbing = false

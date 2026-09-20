@@ -454,6 +454,7 @@ clearCorner.Parent = clearButton
 
 local argumentBox = Instance.new("Frame")
 argumentBox.Size = UDim2.new(0, 210, 0, 55)
+argumentBox.Visible = false
 argumentBox.Position = UDim2.new(1, -225, 1, -53)
 argumentBox.BackgroundColor3 = COLORS.Panel
 argumentBox.BorderSizePixel = 0

@@ -458,11 +458,11 @@ argumentBox.Visible = false
 argumentBox.Position = UDim2.new(1, -225, 1, -53)
 argumentBox.BackgroundColor3 = COLORS.Panel
 argumentBox.BorderSizePixel = 0
-argumentBox.Parent = content
+--argumentBox.Parent = content
 
 local argumentCorner = Instance.new("UICorner")
 argumentCorner.CornerRadius = UDim.new(0, 7)
-argumentCorner.Parent = argumentBox
+--argumentCorner.Parent = argumentBox
 
 local TextBoxArguments = Instance.new("TextBox")
 TextBoxArguments.Size = UDim2.new(1, -10, 1, -10)
@@ -478,7 +478,7 @@ TextBoxArguments.TextXAlignment = Enum.TextXAlignment.Center
 TextBoxArguments.ClearTextOnFocus = false
 TextBoxArguments.BorderSizePixel = 0
 TextBoxArguments.Visible = false
-TextBoxArguments.Parent = argumentBox
+--TextBoxArguments.Parent = argumentBox
 
 local argumentCorner2 = Instance.new("UICorner")
 argumentCorner2.CornerRadius = UDim.new(0, 5)

@@ -3118,7 +3118,6 @@ if RS:FindFirstChild("events") then
 
 		while true do
 			task.wait(0.05)
-			clearTrackedPlayers()
 			if TargetAnyoneNearby == true then
 				local Character = player.Character
 				local Humanoid = Character and Character:FindFirstChildOfClass("Humanoid")

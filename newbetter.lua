@@ -477,6 +477,7 @@ TextBoxArguments.Font = Enum.Font.GothamMedium
 TextBoxArguments.TextXAlignment = Enum.TextXAlignment.Center
 TextBoxArguments.ClearTextOnFocus = false
 TextBoxArguments.BorderSizePixel = 0
+TextBoxArguments.Visible = false
 TextBoxArguments.Parent = argumentBox
 
 local argumentCorner2 = Instance.new("UICorner")

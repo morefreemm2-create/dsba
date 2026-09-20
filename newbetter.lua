@@ -3136,7 +3136,7 @@ if RS:FindFirstChild("events") then
 							end
 						end
 
-						if NearestTarget and NearestDistance <= 100 then
+						if NearestTarget and NearestDistance <= 1000 then
 							local CheckIFThisPlayer =
 								Players:GetPlayerFromCharacter(NearestTarget)
 

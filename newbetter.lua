@@ -12,114 +12,618 @@ player.CharacterAdded:Connect(function(char)
 end)
 local TweenService = game:GetService("TweenService")
 
+--//========================================================
+--// LOSTTOKYO PANEL - REDESIGNED UI
+--//========================================================
+
 local gui = Instance.new("ScreenGui")
+gui.Name = "LostTokyoPanel"
 gui.ResetOnSpawn = false
+gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 gui.Parent = playerGui
 
--- MAIN PANEL
+--// COLORS
+local COLORS = {
+	Background = Color3.fromRGB(10, 11, 14),
+	Panel = Color3.fromRGB(16, 18, 22),
+	Panel2 = Color3.fromRGB(20, 22, 27),
+	Panel3 = Color3.fromRGB(24, 27, 33),
+
+	Accent = Color3.fromRGB(0, 190, 220),
+	AccentDark = Color3.fromRGB(0, 115, 140),
+
+	Text = Color3.fromRGB(235, 238, 242),
+	SubText = Color3.fromRGB(145, 151, 162),
+	Muted = Color3.fromRGB(95, 101, 112),
+
+	Success = Color3.fromRGB(70, 210, 135),
+	Danger = Color3.fromRGB(220, 70, 80),
+}
+
+--//========================================================
+--// MAIN PANEL
+--//========================================================
+
 local frame = Instance.new("Frame")
-frame.Size = UDim2.new(0,700,0,420)
-frame.Position = UDim2.new(0.5,-350,0.5,-210)
-frame.BackgroundColor3 = Color3.fromRGB(15,15,15)
+frame.Name = "MainPanel"
+frame.Size = UDim2.new(0, 760, 0, 470)
+frame.Position = UDim2.new(0.5, -380, 0.5, -235)
+frame.BackgroundColor3 = COLORS.Background
 frame.BorderSizePixel = 0
 frame.Parent = gui
 
-local stroke = Instance.new("UIStroke")
-stroke.Color = Color3.fromRGB(40,40,40)
-stroke.Thickness = 2
-stroke.Parent = frame
+local frameCorner = Instance.new("UICorner")
+frameCorner.CornerRadius = UDim.new(0, 12)
+frameCorner.Parent = frame
 
---Sections
-local SectionOneButton = Instance.new("TextButton")
-SectionOneButton.Size = UDim2.new(0, 100,0, 35)
-SectionOneButton.Position = UDim2.new(1, -550,1, -417)
-SectionOneButton.Text = "DSBA Section:"
-SectionOneButton.TextScaled = true
-SectionOneButton.Name = "Section1B"
-SectionOneButton.BackgroundColor3 = Color3.fromRGB(35,35,35)
-SectionOneButton.Font = Enum.Font.GothamBold
-SectionOneButton.TextColor3 = Color3.fromRGB(200,200,200)
-SectionOneButton.Parent = frame
-SectionOneButton.ZIndex = 5
+local frameStroke = Instance.new("UIStroke")
+frameStroke.Color = Color3.fromRGB(42, 47, 56)
+frameStroke.Thickness = 1
+frameStroke.Parent = frame
 
-local SectionTwoButton = Instance.new("TextButton")
-SectionTwoButton.Size = UDim2.new(0, 100,0, 35)
-SectionTwoButton.Position = UDim2.new(1, -440,1, -417)
-SectionTwoButton.Text = "MM2 Section:"
-SectionTwoButton.TextScaled = true
-SectionTwoButton.Name = "Section2B"
-SectionTwoButton.BackgroundColor3 = Color3.fromRGB(35,35,35)
-SectionTwoButton.Font = Enum.Font.GothamBold
-SectionTwoButton.TextColor3 = Color3.fromRGB(200,200,200)
-SectionTwoButton.Parent = frame
-SectionTwoButton.ZIndex = 5
+--// Subtle gradient
+local frameGradient = Instance.new("UIGradient")
+frameGradient.Color = ColorSequence.new{
+	ColorSequenceKeypoint.new(0, Color3.fromRGB(11, 13, 17)),
+	ColorSequenceKeypoint.new(1, Color3.fromRGB(18, 20, 25))
+}
+frameGradient.Rotation = 90
+frameGradient.Parent = frame
 
-local SectionThreeButton = Instance.new("TextButton")
-SectionThreeButton.Size = UDim2.new(0, 100,0, 35)
-SectionThreeButton.Position = UDim2.new(1, -332,1, -417)
-SectionThreeButton.Text = "DSBA PVP:"
-SectionThreeButton.TextScaled = true
-SectionThreeButton.Name = "DSBAPVP"
-SectionThreeButton.BackgroundColor3 = Color3.fromRGB(35,35,35)
-SectionThreeButton.Font = Enum.Font.GothamBold
-SectionThreeButton.TextColor3 = Color3.fromRGB(200,200,200)
-SectionThreeButton.Parent = frame
-SectionThreeButton.ZIndex = 5
+--//========================================================
+--// TOP BAR
+--//========================================================
 
--- TOP BAR
 local topBar = Instance.new("Frame")
-topBar.Size = UDim2.new(1,0,0,40)
-topBar.BackgroundColor3 = Color3.fromRGB(25,25,25)
+topBar.Name = "TopBar"
+topBar.Size = UDim2.new(1, 0, 0, 58)
+topBar.BackgroundColor3 = COLORS.Panel
 topBar.BorderSizePixel = 0
 topBar.Parent = frame
 
+local topCorner = Instance.new("UICorner")
+topCorner.CornerRadius = UDim.new(0, 12)
+topCorner.Parent = topBar
+
+-- Cover bottom corners
+local topFix = Instance.new("Frame")
+topFix.Size = UDim2.new(1, 0, 0, 15)
+topFix.Position = UDim2.new(0, 0, 1, -15)
+topFix.BackgroundColor3 = COLORS.Panel
+topFix.BorderSizePixel = 0
+topFix.Parent = topBar
+
+-- Accent line
+local accentLine = Instance.new("Frame")
+accentLine.Size = UDim2.new(0, 4, 0, 28)
+accentLine.Position = UDim2.new(0, 18, 0.5, -14)
+accentLine.BackgroundColor3 = COLORS.Accent
+accentLine.BorderSizePixel = 0
+accentLine.Parent = topBar
+
+local accentCorner = Instance.new("UICorner")
+accentCorner.CornerRadius = UDim.new(1, 0)
+accentCorner.Parent = accentLine
+
 local title = Instance.new("TextLabel")
-title.Size = UDim2.new(0,200,1,0)
-title.Position = UDim2.new(0,10,0,0)
-title.Text = "LostTokyo Panel"
+title.Size = UDim2.new(0, 300, 0, 25)
+title.Position = UDim2.new(0, 32, 0, 8)
+title.Text = "LostTokyo"
 title.Font = Enum.Font.GothamBold
 title.TextSize = 18
-title.TextColor3 = Color3.fromRGB(220,220,220)
+title.TextColor3 = COLORS.Text
 title.BackgroundTransparency = 1
 title.TextXAlignment = Enum.TextXAlignment.Left
 title.Parent = topBar
 
+local subtitle = Instance.new("TextLabel")
+subtitle.Size = UDim2.new(0, 300, 0, 18)
+subtitle.Position = UDim2.new(0, 33, 0, 30)
+subtitle.Text = "UTILITY PANEL  •  v1.0"
+subtitle.Font = Enum.Font.GothamMedium
+subtitle.TextSize = 10
+subtitle.TextColor3 = COLORS.Muted
+subtitle.BackgroundTransparency = 1
+subtitle.TextXAlignment = Enum.TextXAlignment.Left
+subtitle.Parent = topBar
+
+--// Hide button
+local hideButton = Instance.new("TextButton")
+hideButton.Size = UDim2.new(0, 70, 0, 30)
+hideButton.Position = UDim2.new(1, -155, 0.5, -15)
+hideButton.Text = "HIDE"
+hideButton.Font = Enum.Font.GothamBold
+hideButton.TextSize = 11
+hideButton.TextColor3 = COLORS.SubText
+hideButton.BackgroundColor3 = COLORS.Panel3
+hideButton.BorderSizePixel = 0
+hideButton.Parent = topBar
+
+local hideCorner = Instance.new("UICorner")
+hideCorner.CornerRadius = UDim.new(0, 6)
+hideCorner.Parent = hideButton
+
+--// Destroy button
+local destroyButton = Instance.new("TextButton")
+destroyButton.Size = UDim2.new(0, 70, 0, 30)
+destroyButton.Position = UDim2.new(1, -78, 0.5, -15)
+destroyButton.Text = "CLOSE"
+destroyButton.Font = Enum.Font.GothamBold
+destroyButton.TextSize = 11
+destroyButton.TextColor3 = Color3.fromRGB(240, 130, 135)
+destroyButton.BackgroundColor3 = Color3.fromRGB(38, 20, 23)
+destroyButton.BorderSizePixel = 0
+destroyButton.Parent = topBar
+
+local destroyCorner = Instance.new("UICorner")
+destroyCorner.CornerRadius = UDim.new(0, 6)
+destroyCorner.Parent = destroyButton
+
+--//========================================================
+--// SIDEBAR
+--//========================================================
+
+local playerPanel = Instance.new("Frame")
+playerPanel.Name = "PlayerPanel"
+playerPanel.Size = UDim2.new(0, 210, 1, -58)
+playerPanel.Position = UDim2.new(0, 0, 0, 58)
+playerPanel.BackgroundColor3 = COLORS.Panel
+playerPanel.BorderSizePixel = 0
+playerPanel.Parent = frame
+
+-- Sidebar separator
+local separator = Instance.new("Frame")
+separator.Size = UDim2.new(0, 1, 1, -20)
+separator.Position = UDim2.new(1, -1, 0, 10)
+separator.BackgroundColor3 = Color3.fromRGB(38, 42, 49)
+separator.BorderSizePixel = 0
+separator.Parent = playerPanel
+
+local playerHeader = Instance.new("TextLabel")
+playerHeader.Size = UDim2.new(1, -25, 0, 25)
+playerHeader.Position = UDim2.new(0, 15, 0, 14)
+playerHeader.Text = "PLAYERS"
+playerHeader.Font = Enum.Font.GothamBold
+playerHeader.TextSize = 11
+playerHeader.TextColor3 = COLORS.SubText
+playerHeader.BackgroundTransparency = 1
+playerHeader.TextXAlignment = Enum.TextXAlignment.Left
+playerHeader.Parent = playerPanel
+
+local playerCount = Instance.new("TextLabel")
+playerCount.Size = UDim2.new(0, 35, 0, 20)
+playerCount.Position = UDim2.new(1, -50, 0, 15)
+playerCount.Text = "0"
+playerCount.Font = Enum.Font.GothamBold
+playerCount.TextSize = 10
+playerCount.TextColor3 = COLORS.Accent
+playerCount.BackgroundTransparency = 1
+playerCount.Parent = playerPanel
+
+local playerList = Instance.new("ScrollingFrame")
+playerList.Size = UDim2.new(1, -20, 1, -55)
+playerList.Position = UDim2.new(0, 10, 0, 45)
+playerList.BackgroundTransparency = 1
+playerList.BorderSizePixel = 0
+playerList.CanvasSize = UDim2.new(0, 0, 0, 1500)
+playerList.ScrollBarThickness = 3
+playerList.ScrollBarImageColor3 = COLORS.AccentDark
+playerList.Parent = playerPanel
+
+local layout = Instance.new("UIListLayout")
+layout.Padding = UDim.new(0, 5)
+layout.Parent = playerList
+
+--//========================================================
+--// CONTENT AREA
+--//========================================================
+
+local content = Instance.new("Frame")
+content.Name = "Content"
+content.Size = UDim2.new(1, -210, 1, -58)
+content.Position = UDim2.new(0, 210, 0, 58)
+content.BackgroundTransparency = 1
+content.Parent = frame
+
+--//========================================================
+--// SECTION TABS
+--//========================================================
+
+local tabBar = Instance.new("Frame")
+tabBar.Size = UDim2.new(1, -30, 0, 45)
+tabBar.Position = UDim2.new(0, 15, 0, 12)
+tabBar.BackgroundColor3 = COLORS.Panel
+tabBar.BorderSizePixel = 0
+tabBar.Parent = content
+
+local tabCorner = Instance.new("UICorner")
+tabCorner.CornerRadius = UDim.new(0, 8)
+tabCorner.Parent = tabBar
+
+local tabPadding = Instance.new("UIPadding")
+tabPadding.PaddingLeft = UDim.new(0, 6)
+tabPadding.PaddingRight = UDim.new(0, 6)
+tabPadding.PaddingTop = UDim.new(0, 6)
+tabPadding.PaddingBottom = UDim.new(0, 6)
+tabPadding.Parent = tabBar
+
+local tabLayout = Instance.new("UIListLayout")
+tabLayout.FillDirection = Enum.FillDirection.Horizontal
+tabLayout.Padding = UDim.new(0, 6)
+tabLayout.Parent = tabBar
+
+local function createTab(text)
+	local button = Instance.new("TextButton")
+	button.Size = UDim2.new(0, 145, 1, 0)
+	button.Text = text
+	button.Font = Enum.Font.GothamBold
+	button.TextSize = 11
+	button.TextColor3 = COLORS.SubText
+	button.BackgroundColor3 = COLORS.Panel2
+	button.BorderSizePixel = 0
+	button.AutoButtonColor = false
+	button.Parent = tabBar
+
+	local corner = Instance.new("UICorner")
+	corner.CornerRadius = UDim.new(0, 6)
+	corner.Parent = button
+
+	return button
+end
+
+local SectionOneButton = createTab("DSBA  /  MAIN")
+SectionOneButton.Name = "Section1B"
+
+local SectionTwoButton = createTab("MM2  /  MAIN")
+SectionTwoButton.Name = "Section2B"
+
+local SectionThreeButton = createTab("DSBA  /  PVP")
+SectionThreeButton.Name = "DSBAPVP"
+
+--//========================================================
+--// FRAMES
+--//========================================================
+
+local SectionOneFrame = Instance.new("Frame")
+SectionOneFrame.Name = "SectionOneFrame"
+SectionOneFrame.Size = UDim2.new(1, -30, 1, -125)
+SectionOneFrame.Position = UDim2.new(0, 15, 0, 70)
+SectionOneFrame.BackgroundTransparency = 1
+SectionOneFrame.Visible = false
+SectionOneFrame.Parent = content
+
+local SectionTwoFrame = Instance.new("Frame")
+SectionTwoFrame.Name = "SectionTwoFrame"
+SectionTwoFrame.Size = UDim2.new(1, -30, 1, -125)
+SectionTwoFrame.Position = UDim2.new(0, 15, 0, 70)
+SectionTwoFrame.BackgroundTransparency = 1
+SectionTwoFrame.Visible = false
+SectionTwoFrame.Parent = content
+
+local SectionThirdFrame = Instance.new("Frame")
+SectionThirdFrame.Name = "SectionThreeFrame"
+SectionThirdFrame.Size = UDim2.new(1, -30, 1, -125)
+SectionThirdFrame.Position = UDim2.new(0, 15, 0, 70)
+SectionThirdFrame.BackgroundTransparency = 1
+SectionThirdFrame.Visible = false
+SectionThirdFrame.Parent = content
+
+--// Button grids
+local function setupGrid(parent)
+	local grid = Instance.new("UIGridLayout")
+	grid.CellSize = UDim2.new(0, 145, 0, 42)
+	grid.CellPadding = UDim2.new(0, 8, 0, 8)
+	grid.SortOrder = Enum.SortOrder.LayoutOrder
+	grid.Parent = parent
+	return grid
+end
+
+local grid = setupGrid(SectionOneFrame)
+local grid2 = setupGrid(SectionTwoFrame)
+local grid3 = setupGrid(SectionThirdFrame)
+
+--//========================================================
+--// BUTTON CREATOR
+--//========================================================
+
+local function createButton(name, par)
+	local b = Instance.new("TextButton")
+
+	b.Name = name
+	b.Size = UDim2.new(0, 145, 0, 42)
+	b.Text = name
+	b.Font = Enum.Font.GothamBold
+	b.TextSize = 12
+	b.TextColor3 = COLORS.Text
+	b.BackgroundColor3 = COLORS.Panel2
+	b.BorderSizePixel = 0
+	b.AutoButtonColor = false
+	b.Parent = par
+
+	local corner = Instance.new("UICorner")
+	corner.CornerRadius = UDim.new(0, 7)
+	corner.Parent = b
+
+	local stroke = Instance.new("UIStroke")
+	stroke.Color = Color3.fromRGB(39, 43, 51)
+	stroke.Thickness = 1
+	stroke.Transparency = 0.25
+	stroke.Parent = b
+
+	b.MouseEnter:Connect(function()
+		b.BackgroundColor3 = Color3.fromRGB(29, 33, 40)
+		stroke.Color = COLORS.Accent
+		stroke.Transparency = 0.35
+	end)
+
+	b.MouseLeave:Connect(function()
+		b.BackgroundColor3 = COLORS.Panel2
+		stroke.Color = Color3.fromRGB(39, 43, 51)
+		stroke.Transparency = 0.25
+	end)
+
+	b.MouseButton1Click:Connect(function()
+		b.BackgroundColor3 = Color3.fromRGB(35, 42, 48)
+
+		task.delay(0.12, function()
+			if b and b.Parent then
+				b.BackgroundColor3 = COLORS.Panel2
+			end
+		end)
+	end)
+
+	return b
+end
+
+--//========================================================
+--// TRACKING DISPLAY
+--//========================================================
+
+local trackingBox = Instance.new("Frame")
+trackingBox.Size = UDim2.new(0, 300, 0, 70)
+trackingBox.Position = UDim2.new(1, -320, 1, -85)
+trackingBox.BackgroundColor3 = COLORS.Panel
+trackingBox.BorderSizePixel = 0
+trackingBox.Parent = content
+
+local trackingCorner = Instance.new("UICorner")
+trackingCorner.CornerRadius = UDim.new(0, 8)
+trackingCorner.Parent = trackingBox
+
+local trackingStroke = Instance.new("UIStroke")
+trackingStroke.Color = Color3.fromRGB(40, 45, 53)
+trackingStroke.Thickness = 1
+trackingStroke.Parent = trackingBox
+
+local trackingTitle = Instance.new("TextLabel")
+trackingTitle.Size = UDim2.new(1, -20, 0, 20)
+trackingTitle.Position = UDim2.new(0, 10, 0, 8)
+trackingTitle.Text = "CURRENT TARGET"
+trackingTitle.Font = Enum.Font.GothamBold
+trackingTitle.TextSize = 9
+trackingTitle.TextColor3 = COLORS.Muted
+trackingTitle.BackgroundTransparency = 1
+trackingTitle.TextXAlignment = Enum.TextXAlignment.Left
+trackingTitle.Parent = trackingBox
+
+local trackedLabel = Instance.new("TextLabel")
+trackedLabel.Size = UDim2.new(1, -20, 0, 30)
+trackedLabel.Position = UDim2.new(0, 10, 0, 28)
+trackedLabel.Text = "None"
+trackedLabel.Font = Enum.Font.GothamBold
+trackedLabel.TextSize = 14
+trackedLabel.TextColor3 = COLORS.Text
+trackedLabel.BackgroundTransparency = 1
+trackedLabel.TextXAlignment = Enum.TextXAlignment.Left
+trackedLabel.Parent = trackingBox
+
+-- Old external tracking label retained
+local trackedLabel2 = Instance.new("TextLabel")
+trackedLabel2.Visible = false
+trackedLabel2.Size = UDim2.new(0, 105, 0, 39)
+trackedLabel2.Position = UDim2.new(0, 87, 0, 10)
+trackedLabel2.TextScaled = true
+trackedLabel2.TextColor3 = Color3.new(1,1,1)
+trackedLabel2.BackgroundTransparency = 1
+trackedLabel2.Font = Enum.Font.GothamBold
+trackedLabel2.Text = "Tracking: None"
+trackedLabel2.Parent = gui
+
+--//========================================================
+--// CLEAR TRACKING
+--//========================================================
+
+local clearButton = Instance.new("TextButton")
+clearButton.Size = UDim2.new(0, 145, 0, 38)
+clearButton.Position = UDim2.new(0, 15, 1, -53)
+clearButton.Text = "CLEAR TARGET"
+clearButton.Font = Enum.Font.GothamBold
+clearButton.TextSize = 10
+clearButton.TextColor3 = COLORS.SubText
+clearButton.BackgroundColor3 = COLORS.Panel2
+clearButton.BorderSizePixel = 0
+clearButton.Parent = content
+
+local clearCorner = Instance.new("UICorner")
+clearCorner.CornerRadius = UDim.new(0, 7)
+clearCorner.Parent = clearButton
+
+--//========================================================
+--// ARGUMENT BOX
+--//========================================================
+
+local argumentBox = Instance.new("Frame")
+argumentBox.Size = UDim2.new(0, 210, 0, 55)
+argumentBox.Position = UDim2.new(1, -225, 1, -53)
+argumentBox.BackgroundColor3 = COLORS.Panel
+argumentBox.BorderSizePixel = 0
+argumentBox.Parent = content
+
+local argumentCorner = Instance.new("UICorner")
+argumentCorner.CornerRadius = UDim.new(0, 7)
+argumentCorner.Parent = argumentBox
+
 local TextBoxArguments = Instance.new("TextBox")
-TextBoxArguments.Size = UDim2.new(0, 160,0, 50)
-TextBoxArguments.Position = UDim2.new(0.757, 0,0.714, 0)
-TextBoxArguments.BackgroundColor3 = Color3.fromRGB(109, 109, 109)
-TextBoxArguments.TextScaled = true
-TextBoxArguments.TextColor3 = Color3.fromRGB(255,255,255)
+TextBoxArguments.Size = UDim2.new(1, -10, 1, -10)
+TextBoxArguments.Position = UDim2.new(0, 5, 0, 5)
+TextBoxArguments.BackgroundColor3 = COLORS.Panel3
+TextBoxArguments.TextColor3 = COLORS.Text
+TextBoxArguments.PlaceholderColor3 = COLORS.Muted
+TextBoxArguments.PlaceholderText = "Arguments to send..."
+TextBoxArguments.Text = ""
+TextBoxArguments.TextSize = 12
+TextBoxArguments.Font = Enum.Font.GothamMedium
 TextBoxArguments.TextXAlignment = Enum.TextXAlignment.Center
-TextBoxArguments.PlaceholderColor3 = Color3.fromRGB(255, 255, 255)
-TextBoxArguments.PlaceholderText = "Args to send"
-TextBoxArguments.Parent = frame
+TextBoxArguments.ClearTextOnFocus = false
+TextBoxArguments.BorderSizePixel = 0
+TextBoxArguments.Parent = argumentBox
+
+local argumentCorner2 = Instance.new("UICorner")
+argumentCorner2.CornerRadius = UDim.new(0, 5)
+argumentCorner2.Parent = TextBoxArguments
+
+--//========================================================
+--// REMOTE LIST
+--//========================================================
 
 local remoteList = Instance.new("ScrollingFrame")
-remoteList.Visible = true
-remoteList.Size = UDim2.new(0.243, -10,0.186, -10)
-remoteList.Position = UDim2.new(0, 530,0, 223)
-remoteList.BackgroundTransparency = 0.75
-remoteList.CanvasSize = UDim2.new(0,0,0,1500)
-remoteList.BackgroundColor3 = Color3.fromRGB(121, 163, 165)
+remoteList.Name = "RemoteList"
+remoteList.Visible = false
+remoteList.Size = UDim2.new(0, 280, 0, 170)
+remoteList.Position = UDim2.new(1, -295, 1, -240)
+remoteList.BackgroundColor3 = COLORS.Panel
+remoteList.BackgroundTransparency = 0
+remoteList.CanvasSize = UDim2.new(0, 0, 0, 1500)
 remoteList.BorderSizePixel = 0
+remoteList.ScrollBarThickness = 3
+remoteList.ScrollBarImageColor3 = COLORS.Accent
 remoteList.Parent = frame
+
+local remoteCorner = Instance.new("UICorner")
+remoteCorner.CornerRadius = UDim.new(0, 8)
+remoteCorner.Parent = remoteList
+
 local layoutrem = Instance.new("UIListLayout")
-layoutrem.Padding = UDim.new(0,5)
+layoutrem.Padding = UDim.new(0, 5)
 layoutrem.Parent = remoteList
 
 local function createremotes(rem)
-	local display = rem.Name
 	local button = Instance.new("TextButton")
-	button.Size = UDim2.new(1,-10,0,30)
-	button.Text = "Remote: "..rem.Name.."/ Parent: "..rem.Parent.Name
+
+	button.Size = UDim2.new(1, -10, 0, 32)
+	button.Text = "  " .. rem.Name
+	button.TextXAlignment = Enum.TextXAlignment.Left
+	button.Font = Enum.Font.GothamMedium
+	button.TextSize = 11
+	button.TextColor3 = COLORS.Text
+	button.BackgroundColor3 = COLORS.Panel2
+	button.BorderSizePixel = 0
 	button.Parent = remoteList
-	button.TextScaled = true
-	button.Name = rem.Name
+
+	local corner = Instance.new("UICorner")
+	corner.CornerRadius = UDim.new(0, 5)
+	corner.Parent = button
+
 	button.MouseButton1Click:Connect(function()
 		rem:FireServer(TextBoxArguments.Text)
 	end)
 end
+
+--//========================================================
+--// OUTSIDE PLAYER LIST
+--//========================================================
+
+local playerListOustide = Instance.new("ScrollingFrame")
+playerListOustide.Name = "PlayerListOutside"
+playerListOustide.Visible = false
+playerListOustide.Size = UDim2.new(0, 190, 0, 250)
+playerListOustide.Position = UDim2.new(0, 15, 0, 60)
+playerListOustide.BackgroundColor3 = COLORS.Panel
+playerListOustide.BackgroundTransparency = 0
+playerListOustide.CanvasSize = UDim2.new(0, 0, 0, 1500)
+playerListOustide.BorderSizePixel = 0
+playerListOustide.ScrollBarThickness = 3
+playerListOustide.ScrollBarImageColor3 = COLORS.Accent
+playerListOustide.Parent = gui
+
+local outsideCorner = Instance.new("UICorner")
+outsideCorner.CornerRadius = UDim.new(0, 8)
+outsideCorner.Parent = playerListOustide
+
+local layoutOutside = Instance.new("UIListLayout")
+layoutOutside.Padding = UDim.new(0, 5)
+layoutOutside.Parent = playerListOustide
+
+--//========================================================
+--// SHOW BUTTON
+--//========================================================
+
+local showButton = Instance.new("TextButton")
+showButton.Size = UDim2.new(0, 85, 0, 34)
+showButton.Position = UDim2.new(0, 15, 0, 15)
+showButton.Text = "OPEN"
+showButton.Visible = false
+showButton.Font = Enum.Font.GothamBold
+showButton.TextSize = 11
+showButton.TextColor3 = COLORS.Text
+showButton.BackgroundColor3 = COLORS.Panel
+showButton.BorderSizePixel = 0
+showButton.Parent = gui
+
+local showCorner = Instance.new("UICorner")
+showCorner.CornerRadius = UDim.new(0, 7)
+showCorner.Parent = showButton
+
+local showStroke = Instance.new("UIStroke")
+showStroke.Color = COLORS.Accent
+showStroke.Thickness = 1
+showStroke.Parent = showButton
+
+--//========================================================
+--// TAB STATE
+--//========================================================
+
+local function setTab(activeButton, activeFrame)
+	local buttons = {
+		SectionOneButton,
+		SectionTwoButton,
+		SectionThreeButton
+	}
+
+	local frames = {
+		SectionOneFrame,
+		SectionTwoFrame,
+		SectionThirdFrame
+	}
+
+	for _, button in ipairs(buttons) do
+		button.BackgroundColor3 = COLORS.Panel2
+		button.TextColor3 = COLORS.SubText
+	end
+
+	for _, sectionFrame in ipairs(frames) do
+		sectionFrame.Visible = false
+	end
+
+	activeButton.BackgroundColor3 = Color3.fromRGB(0, 65, 78)
+	activeButton.TextColor3 = COLORS.Accent
+	activeFrame.Visible = true
+end
+
+-- Default tab
+setTab(SectionOneButton, SectionOneFrame)
+
+--//========================================================
+--// VISUAL EFFECT
+--//========================================================
+
+local glow = Instance.new("UIStroke")
+glow.Name = "AccentGlow"
+glow.Color = COLORS.Accent
+glow.Thickness = 1
+glow.Transparency = 0.65
+glow.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+glow.Parent = frame
 
 local Rs = game:GetService("ReplicatedStorage")
 
@@ -128,149 +632,6 @@ for i, v in ipairs(Rs:GetDescendants()) do
 		createremotes(v)
 	end
 end
-
--- HIDE BUTTON
-local hideButton = Instance.new("TextButton")
-hideButton.Size = UDim2.new(0,80,0,25)
-hideButton.Position = UDim2.new(1,-170,0.5,-12)
-hideButton.Text = "Hide"
-hideButton.Font = Enum.Font.GothamBold
-hideButton.TextSize = 14
-hideButton.BackgroundColor3 = Color3.fromRGB(35,35,35)
-hideButton.TextColor3 = Color3.fromRGB(200,200,200)
-hideButton.BorderSizePixel = 0
-hideButton.Parent = topBar
-
-local NoEffect = {
-	--"LostTokyo",
-	--"losttokyo",
-	--"BenjiAltO",
-}
-
--- DESTROY BUTTON
-local destroyButton = Instance.new("TextButton")
-destroyButton.Size = UDim2.new(0,80,0,25)
-destroyButton.Position = UDim2.new(1,-85,0.5,-12)
-destroyButton.Text = "Destroy"
-destroyButton.Font = Enum.Font.GothamBold
-destroyButton.TextSize = 14
-destroyButton.BackgroundColor3 = Color3.fromRGB(45,25,25)
-destroyButton.TextColor3 = Color3.fromRGB(230,230,230)
-destroyButton.BorderSizePixel = 0
-destroyButton.Parent = topBar
-
--- PLAYER LIST PANEL
-local playerPanel = Instance.new("Frame")
-playerPanel.Size = UDim2.new(0,200,1,-40)
-playerPanel.Position = UDim2.new(0,0,0,40)
-playerPanel.BackgroundColor3 = Color3.fromRGB(20,20,20)
-playerPanel.BorderSizePixel = 0
-playerPanel.Parent = frame
-
-local playerList = Instance.new("ScrollingFrame")
-playerList.Size = UDim2.new(1,-10,1,-10)
-playerList.Position = UDim2.new(0,5,0,5)
-playerList.BackgroundTransparency = 1
-playerList.CanvasSize = UDim2.new(0,0,0,1500)
-playerList.BorderSizePixel = 0
-playerList.Parent = playerPanel
-
-local playerListOustide = Instance.new("ScrollingFrame")
-playerListOustide.Visible = false
-playerListOustide.Size = UDim2.new(0.126, -10,0.129, -10)
-playerListOustide.Position = UDim2.new(0, 10,0, 50)
-playerListOustide.BackgroundTransparency = 0.75
-playerListOustide.CanvasSize = UDim2.new(0,0,0,1500)
-playerListOustide.BackgroundColor3 = Color3.fromRGB(121, 163, 165)
-playerListOustide.BorderSizePixel = 0
-playerListOustide.Parent = gui
-
-local layout = Instance.new("UIListLayout")
-layout.Padding = UDim.new(0,5)
-layout.Parent = playerList
-
-local layoutOutside = Instance.new("UIListLayout")
-layoutOutside.Padding = UDim.new(0,5)
-layoutOutside.Parent = playerListOustide
-
--- BUTTON PANEL
-local SectionOneFrame = Instance.new("Frame")
-SectionOneFrame.Name = "SectionOneFrame"
-SectionOneFrame.Size = UDim2.new(1,-210,1,-50)
-SectionOneFrame.Position = UDim2.new(0,210,0,45)
-SectionOneFrame.BackgroundTransparency = 1
-SectionOneFrame.Parent = frame
-SectionOneFrame.Visible = false
-
-local SectionTwoFrame = Instance.new("Frame")
-SectionTwoFrame.Name = "SectionTwoFrame"
-SectionTwoFrame.Visible = false
-SectionTwoFrame.Size = UDim2.new(1,-210,1,-50)
-SectionTwoFrame.Position = UDim2.new(0,210,0,45)
-SectionTwoFrame.BackgroundTransparency = 1
-SectionTwoFrame.Parent = frame
-
-local SectionThirdFrame = Instance.new("Frame")
-SectionThirdFrame.Name = "SectionThreeFrame"
-SectionThirdFrame.Visible = false
-SectionThirdFrame.Size = UDim2.new(1,-210,1,-50)
-SectionThirdFrame.Position = UDim2.new(0,210,0,45)
-SectionThirdFrame.BackgroundTransparency = 1
-SectionThirdFrame.Parent = frame
-
-local grid = Instance.new("UIGridLayout")
-grid.CellSize = UDim2.new(0,150,0,45)
-grid.CellPadding = UDim2.new(0,10,0,10)
-grid.Parent = SectionOneFrame
-
-local grid2 = Instance.new("UIGridLayout")
-grid2.CellSize = UDim2.new(0,150,0,45)
-grid2.CellPadding = UDim2.new(0,10,0,10)
-grid2.Parent = SectionTwoFrame
-
-local grid3 = Instance.new("UIGridLayout")
-grid3.CellSize = UDim2.new(0,150,0,45)
-grid3.CellPadding = UDim2.new(0,10,0,10)
-grid3.Parent = SectionThirdFrame
-
-local showButton = Instance.new("TextButton")
-showButton.Size = UDim2.new(0,70,0,30)
-showButton.Position = UDim2.new(0,10,0,10)
-showButton.Text = "Show"
-showButton.Visible = false
-showButton.Parent = gui
-
-local clearButton = Instance.new("TextButton")
-clearButton.Size = UDim2.new(0,160,0,35)
-clearButton.Position = UDim2.new(1,-170,1,-45)
-clearButton.Text = "Clear Tracked Players"
-clearButton.Parent = frame
-
-local detectingtwo = false
-
--- UI label showing tracked players
-local trackedLabel = Instance.new("TextLabel")
---trackedLabel.Size = UDim2.new(0,200,0,60)
---trackedLabel.Position = UDim2.new(0,200,1,-70)
-trackedLabel.Size = UDim2.new(0,300,0,125)
-trackedLabel.Position = UDim2.new(0,200,0,300)
-trackedLabel.TextScaled = true
-trackedLabel.TextColor3 = Color3.new(1,1,1)
-trackedLabel.BackgroundTransparency = 1
-trackedLabel.Font = Enum.Font.GothamBold
-trackedLabel.Text = "Tracking: None"
-trackedLabel.Parent = frame
-
-local trackedLabel2 = Instance.new("TextLabel")
-trackedLabel2.Visible = false
-trackedLabel2.Size = UDim2.new(0, 105,0, 39)
-trackedLabel2.Position = UDim2.new(0, 87,0, 10)
-trackedLabel2.TextScaled = true
-trackedLabel2.TextColor3 = Color3.new(1,1,1)
-trackedLabel2.BackgroundTransparency = 1
-trackedLabel2.Font = Enum.Font.GothamBold
-trackedLabel2.Text = "Tracking: None"
-trackedLabel2.Parent = gui
 
 hideButton.MouseButton1Click:Connect(function()
 	frame.Visible = false
@@ -303,18 +664,6 @@ SectionThreeButton.MouseButton1Click:Connect(function()
 	SectionTwoFrame.Visible = false
 	SectionThirdFrame.Visible = true
 end)
-
-local function createButton(name, par)
-	local b = Instance.new("TextButton")
-	b.Text = name
-	b.Font = Enum.Font.GothamBold
-	b.TextSize = 14
-	b.TextColor3 = Color3.fromRGB(220,220,220)
-	b.BackgroundColor3 = Color3.fromRGB(35,35,35)
-	b.BorderSizePixel = 0
-	b.Parent = par
-	return b
-end
 
 local detectButton = createButton("Detect Animations", SectionOneFrame)
 local flybutton = createButton("Fly", SectionOneFrame)
@@ -425,6 +774,8 @@ local AutoPBButton = createButton("AutoPB", SectionThirdFrame)
 local ProtectGBSButton = createButton("ProtectGBS", SectionThirdFrame)
 local IsAutoPB = false
 local ProtectGBS2 = false
+local CanClimb = false
+local TargetAnyoneNearby = false
 
 AutoPBButton.MouseButton1Click:Connect(function()
 	if IsAutoPB == false then
@@ -999,7 +1350,7 @@ if RS:FindFirstChild("events") then
 	end
 
 	local curranimplaying
-	
+
 	local CanDoStuffExe = false
 
 	local function AutoM2()
@@ -1325,6 +1676,25 @@ if RS:FindFirstChild("events") then
 		end)
 	end
 
+	local function UseSTW()
+		if player.Backpack:FindFirstChild("See-Through World") then
+			local ourstates = player.states
+			local ourcds = player.cds
+			if not ourstates:FindFirstChild("SeeThrough") then
+				if not ourcds:FindFirstChild("See-Through World") then
+					local TargetTool = player.Backpack:FindFirstChild("See-Through World")
+					if TargetTool then
+						player.Character.Humanoid:UnequipTools()
+						TargetTool.Parent = player.Character
+						TargetTool:Activate()
+						task.wait(0.1)
+						TargetTool.Parent = player.Backpack
+					end
+				end
+			end
+		end
+	end
+
 	task.spawn(function()
 		while true do
 			task.wait()
@@ -1383,6 +1753,23 @@ if RS:FindFirstChild("events") then
 							RandomSpecials(EnemyToFocusOn)
 						end
 					end
+				end
+			end
+			if gui.Parent == nil then
+				break
+			end
+			--RS.events.ClientEvents:Fire("Sprint", true)
+			--task.wait()
+			--combatremote:FireServer("manacharges")
+		end
+	end)
+	
+	task.spawn(function()
+		while true do
+			task.wait(1)
+			if gui.Parent ~= nil and FightingForYou == true and EnemyToFocusOn ~= nil then
+				if OnlyUseM1sBtt == false then
+					UseSTW()
 				end
 			end
 			if gui.Parent == nil then
@@ -2328,12 +2715,14 @@ if RS:FindFirstChild("events") then
 				data.charConnection:Disconnect()
 				data.charConnection = nil
 			end
-			
+
 			if data.NpctargetAnimConnection then
 				data.NpctargetAnimConnection:Disconnect()
 				data.NpctargetAnimConnection = nil
 			end
 		end
+		TARGPLR = nil
+		EnemyToFocusOn = nil
 
 		table.clear(trackedPlayers)
 
@@ -2559,7 +2948,7 @@ if RS:FindFirstChild("events") then
 			end)
 		end
 	end)
-	
+
 	local OnlyM1sNpc = createButton("OnlyM1sNpc", SectionThirdFrame)
 	OnlyM1sNpc.MouseButton1Click:Connect(function()
 		if OnlyUseM1sBtt == false then
@@ -2568,6 +2957,202 @@ if RS:FindFirstChild("events") then
 		else
 			OnlyUseM1sBtt = false
 			OnlyM1sNpc.Text = "AutoFightNpcs: Off"
+		end
+	end)
+	
+	local CanClimbButton = createButton("CanClimb", SectionThirdFrame)
+		CanClimbButton.MouseButton1Click:Connect(function()
+			if CanClimb == false then
+				CanClimb = true
+				CanClimbButton.Text = "CanClimb: On"
+		else
+				CanClimb = false
+				CanClimbButton.Text = "CanClimb: Off"
+		end
+		end)
+
+	local WasClimbing = false
+	local TopTriggered = false
+
+	task.spawn(function()
+		while true do
+			task.wait(0.5)
+
+			if CanClimb then
+				local Character = player.Character
+				local Humanoid = Character and Character:FindFirstChildOfClass("Humanoid")
+				local RootPart = Character and Character:FindFirstChild("HumanoidRootPart")
+
+				if Humanoid and RootPart and gui.Parent ~= nil then
+
+					local RayParams = RaycastParams.new()
+					RayParams.FilterType = Enum.RaycastFilterType.Exclude
+					RayParams.FilterDescendantsInstances = {Character}
+
+					-- Wall directly in front of the player's body
+					local WallResult = workspace:Raycast(
+						RootPart.Position,
+						RootPart.CFrame.LookVector * 3,
+						RayParams
+					)
+
+					if WallResult and WallResult.Normal.Y < 0.5 then
+						WasClimbing = true
+						TopTriggered = false
+
+						-- Push upward
+						RootPart.AssemblyLinearVelocity = Vector3.new(
+							RootPart.AssemblyLinearVelocity.X,
+							86,
+							RootPart.AssemblyLinearVelocity.Z
+						)
+
+						Humanoid.Jump = true
+
+						local Animation = Humanoid.Animator:LoadAnimation(
+							player.PlayerGui.WallJumps.WallJumpTopAnim
+						)
+
+						Animation:Play()
+					end
+
+					-- Only check for the ledge if we're actually climbing
+					if WasClimbing and not TopTriggered then
+
+						-- Check from above the player's head
+						local HeadOrigin = RootPart.Position + Vector3.new(0, 3, 0)
+
+						local HeadWall = workspace:Raycast(
+							HeadOrigin,
+							RootPart.CFrame.LookVector * 3,
+							RayParams
+						)
+
+						-- Check for a surface in front of the player
+						local TopOrigin =
+							RootPart.Position
+							+ RootPart.CFrame.LookVector * 2
+							+ Vector3.new(0, 2, 0)
+
+						local TopSurface = workspace:Raycast(
+							TopOrigin,
+							Vector3.new(0, -5, 0),
+							RayParams
+						)
+
+						-- Head has cleared the wall AND there's a surface to stand on
+						if not HeadWall and TopSurface then
+							TopTriggered = true
+							WasClimbing = false
+
+							DashAwayForward()
+						end
+					end
+
+				end
+			else
+				WasClimbing = false
+				TopTriggered = false
+			end
+		end
+	end)
+	local TargetAnyoneNearbyButton = createButton("TargetAnyoneNearby", SectionThirdFrame)
+	TargetAnyoneNearbyButton.MouseButton1Click:Connect(function()
+		if TargetAnyoneNearby == false then
+			TargetAnyoneNearby = true
+			TargetAnyoneNearbyButton.Text = "TargetAnyoneNearby: On"
+		else
+			TargetAnyoneNearby = false
+			TargetAnyoneNearbyButton.Text = "TargetAnyoneNearby: Off"
+		end
+	end)
+	local blockedUsers = {
+		"benjialt",
+		"benjiboy",
+		"lostto"
+	}
+
+	local function isBlockedUser(playerName)
+		playerName = playerName:lower()
+
+		for _, blockedName in ipairs(blockedUsers) do
+			if playerName:find(blockedName, 1, true) then
+				return true
+			end
+		end
+
+		return false
+	end
+
+	task.spawn(function()
+		-- Don't run the targeting system if YOUR username is blocked
+		if isBlockedUser(player.Name) then
+			return
+		end
+
+		while true do
+			task.wait(0.05)
+
+			if TargetAnyoneNearby == true then
+				local Character = player.Character
+				local Humanoid = Character and Character:FindFirstChildOfClass("Humanoid")
+				local RootPart = Character and Character:FindFirstChild("HumanoidRootPart")
+
+				if Humanoid and RootPart and gui.Parent ~= nil and FightingForYou == true then
+					local ourstates = player:FindFirstChild("states")
+
+					if ourstates and ourstates:FindFirstChild("CT") then
+						local NearestTarget = nil
+						local NearestDistance = 100
+
+						for _, otherPlayer in pairs(Players:GetPlayers()) do
+							if otherPlayer ~= player then
+
+								-- Don't target blocked players
+								if isBlockedUser(otherPlayer.Name) then
+									continue
+								end
+
+								local otherCharacter = otherPlayer.Character
+								local otherHumanoid = otherCharacter
+									and otherCharacter:FindFirstChildOfClass("Humanoid")
+
+								local otherRootPart = otherCharacter
+									and otherCharacter:FindFirstChild("HumanoidRootPart")
+
+								local otherStates = otherPlayer:FindFirstChild("states")
+
+								if otherHumanoid and otherRootPart and otherStates then
+									local distance =
+										(RootPart.Position - otherRootPart.Position).Magnitude
+
+									if distance < NearestDistance then
+										NearestTarget = otherPlayer
+										NearestDistance = distance
+									end
+								end
+							end
+						end
+
+						if NearestTarget and NearestDistance <= 100 then
+							local CheckIFThisPlayer =
+								Players:GetPlayerFromCharacter(NearestTarget)
+
+							if not CheckIFThisPlayer then
+								TARGPLR = NearestTarget
+								EnemyToFocusOn = NearestTarget
+								watchNpcnimations(NearestTarget)
+							else
+								TARGPLR = NearestTarget.Character
+								EnemyToFocusOn = NearestTarget
+								watchPlayerAnimations(NearestTarget)
+							end
+						else
+							clearTrackedPlayers()
+						end
+					end
+				end
+			end
 		end
 	end)
 

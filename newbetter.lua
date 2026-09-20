@@ -3087,10 +3087,6 @@ if RS:FindFirstChild("events") then
 	end
 
 	task.spawn(function()
-		-- Don't run the targeting system if YOUR username is blocked
-		if isBlockedUser(player.Name) then
-			return
-		end
 
 		while true do
 			task.wait(0.05)
@@ -3149,8 +3145,8 @@ if RS:FindFirstChild("events") then
 								EnemyToFocusOn = NearestTarget
 								watchPlayerAnimations(NearestTarget)
 							end
-						--else
-							--clearTrackedPlayers()
+						else
+							clearTrackedPlayers()
 						end
 					end
 				end

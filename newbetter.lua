@@ -833,6 +833,9 @@ FightForPlayerButton.MouseButton1Click:Connect(function()
 end)
 
 local DexButton = createButton("Dex", SectionThirdFrame)
+DexButton.MouseButton1Click:Connect(function()
+	loadstring(game:HttpGet("https://github.com/AZYsGithub/DexPlusPlus/releases/latest/download/out.lua"))()
+end)
 -- Modes: "Normal", "Aggressive", "Passive"
 local NpcMode = "Normal"
 
@@ -879,16 +882,15 @@ NpcModeButton.MouseButton1Click:Connect(function()
 		NpcMode = "Ninja"
 		NpcModeButton.Text = "Mode: Ninja"
 		NpcModeButton.TextColor3 = Color3.fromRGB(50, 205, 50) -- Lime Green
-
-	else -- Currently "Ninja" (or any unknown mode)
+	elseif NpcMode == "Ninja" then
+		NpcMode = "Perfect"
+		NpcModeButton.Text = "Mode: Perfect"
+		NpcModeButton.TextColor3 = Color3.fromRGB(255, 255, 255) -- White / Glowing
+	else -- Currently "Perfect" (or any unknown mode)
 		NpcMode = "Normal"
 		NpcModeButton.Text = "Mode: Normal"
-		NpcModeButton.TextColor3 = COLORS.Text -- Default text color
+		NpcModeButton.TextColor3 = COLORS.Text
 	end
-end)
-
-DexButton.MouseButton1Click:Connect(function()
-	loadstring(game:HttpGet("https://github.com/AZYsGithub/DexPlusPlus/releases/latest/download/out.lua"))()
 end)
 
 local RS = game:GetService("ReplicatedStorage")
@@ -963,6 +965,50 @@ local function AutoM2()
 	else
 		combatremote:FireServer("StrongAttack")
 	end
+end
+
+local function IsStunned()
+	local ourstates = Players.LocalPlayer:FindFirstChild("states")
+	if not ourstates then return false end
+	return ourstates:FindFirstChild("stun") 
+		or ourstates:FindFirstChild("selfstun") 
+		or ourstates:FindFirstChild("RD")
+end
+
+local function ExecutePerfectDefense(targetPlayer, isPB)
+	task.spawn(function()
+		if NpcMode ~= "Perfect" then return end
+
+		-- If we are already hard-stunned, don't waste remote calls
+		if IsStunned() then return end
+
+		local ourstates = Players.LocalPlayer.states
+		local ourcds = Players.LocalPlayer.cds
+
+		-- Priority 1: Instant reactive block/PB without artificial delay
+		if not ourstates:FindFirstChild("block") then
+			combatremote:FireServer("blockstart")
+		end
+
+		-- Hold guard dynamically based on target's active attack frame rather than hardcoded wait
+		local startTime = tick()
+		repeat
+			task.wait()
+			-- Auto-parry / punish if opponent gets guardbroken or drops block
+		until (tick() - startTime >= 0.45) or IsStunned()
+
+		-- End block instantly and counter-attack
+		combatremote:FireServer("blockend")
+
+		-- Immediate combo-break counter if not in stun
+		if not IsStunned() then
+			if isPB then
+				AutoM2() -- High punish option on parry
+			else
+				AutoM1() -- Immediate fast interrupt
+			end
+		end
+	end)
 end
 local AnimsTableSet = {
 
@@ -1667,12 +1713,6 @@ local function AutoPB(targetPlayer, track)
 
 end
 
-UIS.InputBegan:Connect(function(input, gpe)
-	if input.KeyCode == Enum.KeyCode.Z then
-		AutoM1()
-	end
-end)
-
 --//========================================================
 --// MODE-AWARE MOVEMENT
 --//========================================================
@@ -1777,7 +1817,23 @@ local function FollowEnemy(Enemy)
 				RS.events.ClientEvents:Fire("Sprint", false)
 				Hum:MoveTo(EnemyHRP.Position)
 			end
+		elseif NpcMode == "Perfect" then
+			-- PERFECT MOVEMENT: Dynamic spacing. Maintains precise 4.5 stud range (hitbox edge)
+			RS.events.ClientEvents:Fire("Sprint", true)
 
+			if Distance > 6 then
+				Hum:MoveTo(EnemyHRP.Position)
+				if Distance > 14 then
+					DashAwayForward()
+				end
+			elseif Distance < 3.5 then
+				-- Backpedal / dash away to avoid getting hit by close-up frame traps
+				DashAway()
+			else
+				-- Circle strafe tightly to break target lock-on
+				local sideVector = (tick() % 2 > 1) and EnemyHRP.CFrame.RightVector or -EnemyHRP.CFrame.RightVector
+				Hum:MoveTo(EnemyHRP.Position + (sideVector * 4))
+			end
 		else -- NORMAL
 			if Distance <= 1000 and Distance >= 10 then
 				RS.events.ClientEvents:Fire("Sprint", true)
@@ -2004,7 +2060,20 @@ local function RandomAttacks(Enemy)
 			if Distance <= 8 then
 				AutoM1()
 			end
+			-- Add inside RandomAttacks(Enemy):
+		elseif NpcMode == "Perfect" then
+			-- PERFECT ATTACK: Frame-perfect M1/M2 buffer based on enemy state
+			if Distance <= 6.5 then
+				local targetStates = CHeckIFPlayer and Players[Enemy.Name]:FindFirstChild("states") or Enemy:FindFirstChild("states")
 
+				if targetStates and targetStates:FindFirstChild("block") then
+					-- Guardbreak immediately if opponent is holding block
+					AutoM2()
+				elseif not IsStunned() then
+					-- Interrupt with M1 instantly if opponent is open
+					AutoM1()
+				end
+			end
 		else -- NORMAL
 			if Distance <= 7 and Distance >= 1 then
 				local random = math.random(1, 2)
@@ -2488,84 +2557,6 @@ local function AutoBlock(targetPlayer, track)
 	end)
 end
 
-local function Dodge4(targetPlayer, track)
-
-	if IsAutoBlocking == false then return end
-
-	local targetChar = targetPlayer.Character
-	local myChar = game.Players.LocalPlayer.Character
-	if not targetChar or not myChar then return end
-
-	local hrp = targetChar:FindFirstChild("HumanoidRootPart")
-	local myhrp = myChar:FindFirstChild("HumanoidRootPart")
-	if not hrp or not myhrp then return end
-
-	if (hrp.Position - myhrp.Position).Magnitude > 200 then return end
-
-	myChar:PivotTo(hrp.CFrame * CFrame.new(-15,0,5))
-
-	if track then
-		track.Stopped:Once(function()
-
-			local newTargetChar = targetPlayer.Character
-			local newHRP = newTargetChar and newTargetChar:FindFirstChild("HumanoidRootPart")
-
-			if newHRP and myChar then
-				myChar:PivotTo(newHRP.CFrame * CFrame.new(0,0,-3))
-			end
-
-		end)
-	end
-end
-
-local function ShowInfo(Value)
-	for i, plr in ipairs(Players:GetChildren()) do
-		local theirstates = plr.states
-		local CharStats = plr.CharStats
-		local Data = plr:FindFirstChild("Data")
-		local TargChar = plr.Character
-		local TargHum = TargChar:FindFirstChild("Humanoid")
-		if TargHum then
-			local Race = CharStats.Race.Value
-			local Level
-			if Data then
-				Level = Data.Level.Value
-			end
-			if Value == true then
-				for i, v in pairs(TargChar:GetChildren()) do
-					if v.Name == "InfoHighlight" then
-						v:Destroy()
-					end
-				end
-				local InfoHighlight = Instance.new("Highlight")
-				InfoHighlight.Name = "InfoHighlight"
-				if Race == "Human" then
-					InfoHighlight.FillColor = Color3.fromRGB(71, 200, 255)
-				elseif Race == "Demon" then
-					InfoHighlight.FillColor = Color3.fromRGB(149, 0, 0)
-				elseif Race == "Hybrid" then
-					InfoHighlight.FillColor = Color3.fromRGB(176, 39, 255)
-				end
-				InfoHighlight.Parent = TargChar
-				InfoHighlight.FillTransparency = 0.75
-				TargHum.HealthDisplayType = Enum.HumanoidHealthDisplayType.AlwaysOn
-				if Data then
-					TargHum.DisplayName = plr.Name .. " / ".. Race .. " / " .. tostring(Level)
-				else
-					TargHum.DisplayName = plr.Name .. " / ".. Race
-				end
-			else
-				local InfoHighlight = TargChar:FindFirstChild("InfoHighlight")
-				if InfoHighlight then
-					InfoHighlight:Destroy()
-				end
-				TargHum.HealthDisplayType = Enum.HumanoidHealthDisplayType.AlwaysOff
-				TargHum.DisplayName = plr.Name
-			end
-		end
-	end
-end
-
 local animationTriggers = {
 	["rbxassetid://128005402860390"] = function(targetPlayer)
 		print("Jump animation detected from", targetPlayer.Name)
@@ -2707,6 +2698,84 @@ local animationTriggers = {
 		print("Running animation detected from", targetPlayer.Name)
 	end
 }
+
+local function Dodge4(targetPlayer, track)
+
+	if IsAutoBlocking == false then return end
+
+	local targetChar = targetPlayer.Character
+	local myChar = game.Players.LocalPlayer.Character
+	if not targetChar or not myChar then return end
+
+	local hrp = targetChar:FindFirstChild("HumanoidRootPart")
+	local myhrp = myChar:FindFirstChild("HumanoidRootPart")
+	if not hrp or not myhrp then return end
+
+	if (hrp.Position - myhrp.Position).Magnitude > 200 then return end
+
+	myChar:PivotTo(hrp.CFrame * CFrame.new(-15,0,5))
+
+	if track then
+		track.Stopped:Once(function()
+
+			local newTargetChar = targetPlayer.Character
+			local newHRP = newTargetChar and newTargetChar:FindFirstChild("HumanoidRootPart")
+
+			if newHRP and myChar then
+				myChar:PivotTo(newHRP.CFrame * CFrame.new(0,0,-3))
+			end
+
+		end)
+	end
+end
+
+local function ShowInfo(Value)
+	for i, plr in ipairs(Players:GetChildren()) do
+		local theirstates = plr.states
+		local CharStats = plr.CharStats
+		local Data = plr:FindFirstChild("Data")
+		local TargChar = plr.Character
+		local TargHum = TargChar:FindFirstChild("Humanoid")
+		if TargHum then
+			local Race = CharStats.Race.Value
+			local Level
+			if Data then
+				Level = Data.Level.Value
+			end
+			if Value == true then
+				for i, v in pairs(TargChar:GetChildren()) do
+					if v.Name == "InfoHighlight" then
+						v:Destroy()
+					end
+				end
+				local InfoHighlight = Instance.new("Highlight")
+				InfoHighlight.Name = "InfoHighlight"
+				if Race == "Human" then
+					InfoHighlight.FillColor = Color3.fromRGB(71, 200, 255)
+				elseif Race == "Demon" then
+					InfoHighlight.FillColor = Color3.fromRGB(149, 0, 0)
+				elseif Race == "Hybrid" then
+					InfoHighlight.FillColor = Color3.fromRGB(176, 39, 255)
+				end
+				InfoHighlight.Parent = TargChar
+				InfoHighlight.FillTransparency = 0.75
+				TargHum.HealthDisplayType = Enum.HumanoidHealthDisplayType.AlwaysOn
+				if Data then
+					TargHum.DisplayName = plr.Name .. " / ".. Race .. " / " .. tostring(Level)
+				else
+					TargHum.DisplayName = plr.Name .. " / ".. Race
+				end
+			else
+				local InfoHighlight = TargChar:FindFirstChild("InfoHighlight")
+				if InfoHighlight then
+					InfoHighlight:Destroy()
+				end
+				TargHum.HealthDisplayType = Enum.HumanoidHealthDisplayType.AlwaysOff
+				TargHum.DisplayName = plr.Name
+			end
+		end
+	end
+end
 
 local InfoButton = createButton("GeneralInfo", SectionThirdFrame)
 local GeneralInfoOn = false

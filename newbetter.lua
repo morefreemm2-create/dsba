@@ -17,6 +17,7 @@ local TweenService = game:GetService("TweenService")
 --//========================================================
 
 local gui = Instance.new("ScreenGui")
+gui.DisplayOrder = 5000000
 gui.Name = "LostTokyoPanel"
 gui.ResetOnSpawn = false
 gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
@@ -832,6 +833,31 @@ FightForPlayerButton.MouseButton1Click:Connect(function()
 end)
 
 local DexButton = createButton("Dex", SectionThirdFrame)
+-- Modes: "Normal", "Aggressive", "Passive"
+local NpcMode = "Normal"
+
+local NpcModeButton = createButton("NpcMode", SectionThirdFrame)
+NpcModeButton.Text = "Mode: Normal"
+
+NpcModeButton.MouseButton1Click:Connect(function()
+	if NpcMode == "Normal" then
+		NpcMode = "Aggressive"
+		NpcModeButton.Text = "Mode: Aggressive"
+		NpcModeButton.TextColor3 = Color3.fromRGB(240, 100, 100) -- Red accent for aggressive
+
+	elseif NpcMode == "Aggressive" then
+		NpcMode = "Passive"
+		NpcModeButton.Text = "Mode: Passive"
+		NpcModeButton.TextColor3 = Color3.fromRGB(100, 200, 250) -- Light blue for passive
+
+	else -- Currently "Passive"
+		NpcMode = "Normal"
+		NpcModeButton.Text = "Mode: Normal"
+		NpcModeButton.TextColor3 = COLORS.Text -- Default text color
+	end
+
+	-- You can check `NpcMode` elsewhere in your script to dictate NPC AI behavior
+end)
 
 DexButton.MouseButton1Click:Connect(function()
 	loadstring(game:HttpGet("https://github.com/AZYsGithub/DexPlusPlus/releases/latest/download/out.lua"))()
@@ -842,6 +868,74 @@ local Events = RS.events
 local combatremote = Events.remote
 local OnlyUseM1sBtt = false
 local TrackedNpcs = {}
+
+local function UseSTW()
+	if player.Backpack:FindFirstChild("See-Through World") then
+		local ourstates = player.states
+		local ourcds = player.cds
+		if not ourstates:FindFirstChild("SeeThrough") then
+			if not ourcds:FindFirstChild("See-Through World") then
+				local TargetTool = player.Backpack:FindFirstChild("See-Through World")
+				if TargetTool then
+					player.Character.Humanoid:UnequipTools()
+					TargetTool.Parent = player.Character
+					TargetTool:Activate()
+					task.wait(0.1)
+					TargetTool.Parent = player.Backpack
+				end
+			end
+		end
+	end
+end
+
+local function UseTotalConcentration()
+	if player.Backpack:FindFirstChild("Total Concentration Breathing") then
+		local ourstates = player.states
+		local ourcds = player.cds
+		if not ourstates:FindFirstChild("Total Concentration Breathing") then
+			local TargetTool = player.Backpack:FindFirstChild("Total Concentration Breathing")
+			if TargetTool then
+				player.Character.Humanoid:UnequipTools()
+				TargetTool.Parent = player.Character
+				TargetTool:Activate()
+				task.wait(0.1)
+				TargetTool.Parent = player.Backpack
+			end
+		end
+	end
+end
+
+local function UseRedCrim()
+	if player.Backpack:FindFirstChild("Crimson Red Nichirin Blade") then
+		local ourstates = player.states
+		local ourcds = player.cds
+		if not ourstates:FindFirstChild("RedBlade") then
+			local TargetTool = player.Backpack:FindFirstChild("Crimson Red Nichirin Blade")
+			if TargetTool then
+				player.Character.Humanoid:UnequipTools()
+				TargetTool.Parent = player.Character
+				TargetTool:Activate()
+				task.wait(0.1)
+				TargetTool.Parent = player.Backpack
+			end
+		end
+	end
+end
+
+local function AutoM1()
+	if Players.LocalPlayer.Character:FindFirstChild("Katana") then
+		Players.LocalPlayer.Character.Katana:Activate()
+	else
+		combatremote:FireServer("NormalAttack")
+	end
+end
+local function AutoM2()
+	if Players.LocalPlayer.Character:FindFirstChild("Katana") then
+		combatremote:FireServer("StrongAttack")
+	else
+		combatremote:FireServer("StrongAttack")
+	end
+end
 local AnimsTableSet = {
 
 	["m2swordlower"] = {
@@ -1210,6 +1304,71 @@ local AnimsTableSet = {
 
 }
 
+local StoredPbMoves = {
+	["Clean Storm Wind Tree"] = {
+		D = 1,
+	},
+	["Dust Whirlwind Cutter"] = {
+		D = 1,
+	},
+	["Moon Dragon Ringtail"] = {
+		--D = 0,
+		D = 0.2,
+	},
+	["Coil Choke"] = {
+		D = 0.5,
+	},
+	["Winding Serpent Slash"] = {
+		--D = 0.1,
+		D = 0.4,
+	},
+	["Unknowing Fire"] = {
+		--D = 0.1,
+		D = 0.4,
+	},
+	["Water Surface Slash"] = {
+		--D = 0.1,
+		D = 0.4,
+	},
+	["Rapid Conquest"] = {
+		--D = 0.1,
+		D = 0.4,
+	},
+	["Bite And InfectOG"] = {
+		D = 0.4,
+	},
+	["Rat's ClawOG"] = {
+		D = 0.5,
+	},
+	["Roar"] = {
+		D = 0.4,
+	},
+	["Explosive Slash"] = {
+		D = 0.4,
+	},
+	["String Performance"] = {
+		D = 0.4,
+	},
+	["Rip and Devour"] = {
+		D = 0.2,
+	},
+	["Pierce and Extract"] = {
+		D = 0.4,
+	},
+	["Whirling Peach"] = {
+		D = 0.4,
+	},
+	["Peonies of Futility"] = {
+		D = 0.4
+	},
+	["Flaming Thunder God"] = {
+		D = 0.4
+	},
+	["Love Pang"] = {
+		D = 0.4
+	},
+}
+
 local function DashAway()
 	local LocalPlayer = game.Players.LocalPlayer
 
@@ -1353,35 +1512,14 @@ local function RiskChecker(targetPlayer, track, amount)
 	return "no risk"
 end
 
-task.spawn(function()
-	--while gui.Parent ~= nil do
-	--RS.events.ClientEvents:Fire("Sprint", true)
-	--task.wait()
-	--combatremote:FireServer("manacharges")
-	--end
-end)
 local TARGPLR = nil
 local EnemyToFocusOn = nil
 local NpcEnemyToFocusOn = nil
-local function AutoM1()
-	if Players.LocalPlayer.Character:FindFirstChild("Katana") then
-		Players.LocalPlayer.Character.Katana:Activate()
-	else
-		combatremote:FireServer("NormalAttack")
-	end
-end
+
 
 local curranimplaying
 
 local CanDoStuffExe = false
-
-local function AutoM2()
-	if Players.LocalPlayer.Character:FindFirstChild("Katana") then
-		combatremote:FireServer("StrongAttack")
-	else
-		combatremote:FireServer("StrongAttack")
-	end
-end
 
 local function AutoPB(targetPlayer, track)
 	task.spawn(function()
@@ -1509,26 +1647,46 @@ end)
 
 local function FollowEnemy(Enemy)
 	task.spawn(function()
-		if FightingForYou == false then
-			return
-		end
+		if NpcMode == "Passive" and not EnemyToFocusOn then return end -- Disabled if not running
+
 		local CHeckIFPlayer = Players:FindFirstChild(Enemy.Name)
-		local EnemyCharacter 
-		if CHeckIFPlayer then
-			EnemyCharacter = Enemy.Character
-		else
-			EnemyCharacter = Enemy
-		end
+		local EnemyCharacter = CHeckIFPlayer and Enemy.Character or Enemy
+		if not EnemyCharacter then return end
+
 		local EnemyHRP = EnemyCharacter:FindFirstChild("HumanoidRootPart")
 		if not EnemyHRP then return end
-		local EnemyHum = EnemyCharacter.Humanoid
+
 		local Player = Players.LocalPlayer
 		local Character = Player.Character
-		local HRP = Character.HumanoidRootPart
-		local Hum = Character.Humanoid
+		if not Character then return end
+		local HRP = Character:FindFirstChild("HumanoidRootPart")
+		local Hum = Character:FindFirstChild("Humanoid")
+		if not HRP or not Hum then return end
+
 		local Distance = (HRP.Position - EnemyHRP.Position).Magnitude
-		if Distance <= 1000 and Distance >= 10 and HRP then
-			if Distance >= 10 then
+
+		if NpcMode == "Aggressive" then
+			-- AGGRESSIVE: Aggressively close distance, ignore safety gaps
+			if Distance > 3 then
+				RS.events.ClientEvents:Fire("Sprint", true)
+				Hum:MoveTo(EnemyHRP.Position)
+				if Distance > 10 then
+					DashAwayForward() -- Rapid forward dash gap-closer
+				end
+			end
+
+		elseif NpcMode == "Passive" then
+			-- PASSIVE: Maintain safe distance (12 - 25 studs)
+			if Distance < 10 then
+				DashAway() -- Back up if enemy gets too close
+			elseif Distance > 15 and Distance <= 1000 then
+				RS.events.ClientEvents:Fire("Sprint", false)
+				Hum:MoveTo(EnemyHRP.Position)
+			end
+
+		else -- NORMAL
+			-- Standard balanced tracking
+			if Distance <= 1000 and Distance >= 10 then
 				RS.events.ClientEvents:Fire("Sprint", true)
 				Hum:MoveTo(EnemyHRP.Position)
 				if Distance > 40 then
@@ -1541,75 +1699,75 @@ local function FollowEnemy(Enemy)
 		end
 	end)
 end
+
 local CDThing = false
 local function RandomSpecials(Enemy)
 	task.spawn(function()
-		if CDThing == true then
-			return
+		if NpcMode == "Passive" then 
+			-- PASSIVE: Avoid throwing abilities randomly
+			return 
 		end
+
+		if CDThing == true then return end
 		combatremote:FireServer("manacharges")
+
 		local CHeckIFPlayer = Players:FindFirstChild(Enemy.Name)
-		local EnemyCharacter 
-		if CHeckIFPlayer then
-			EnemyCharacter = Enemy.Character
-		else
-			EnemyCharacter = Enemy
-		end
+		local EnemyCharacter = CHeckIFPlayer and Enemy.Character or Enemy
+		if not EnemyCharacter then return end
 		local EnemyHRP = EnemyCharacter:FindFirstChild("HumanoidRootPart")
 		if not EnemyHRP then return end
-		local EnemyHum = EnemyCharacter.Humanoid
+
 		local Player = Players.LocalPlayer
-		local ourcds = player.cds
-		local ourstates = player.states
-		if ourstates:FindFirstChild("exeing") and not CHeckIFPlayer then
-			return
-		end
-		if CanDoStuffExe == true then
-			return
-		end
+		local ourcds = Player.cds
+		local ourstates = Player.states
+		if ourstates:FindFirstChild("exeing") and not CHeckIFPlayer then return end
+		if CanDoStuffExe == true then return end
+
 		local Character = Player.Character
 		local HRP = Character.HumanoidRootPart
-		local Hum = Character.Humanoid
 		local PlayerBackpack = Player.Backpack
 		local Distance = (HRP.Position - EnemyHRP.Position).Magnitude
-		local AbilitySkills = {}
-		if Distance <= 25 and Distance >= 0 then
-			for i, v in ipairs(PlayerBackpack:GetChildren()) do
-				if v:FindFirstChild("BreathingMove") or v:FindFirstChild("DemonArt") and not ourcds:FindFirstChild(v.Name) then
+
+		-- AGGRESSIVE allows skill usage from farther away (35 studs vs 25 studs)
+		local maxRange = (NpcMode == "Aggressive") and 35 or 25
+
+		if Distance <= maxRange and Distance >= 0 then
+			local AbilitySkills = {}
+			for _, v in ipairs(PlayerBackpack:GetChildren()) do
+				if (v:FindFirstChild("BreathingMove") or v:FindFirstChild("DemonArt")) and not ourcds:FindFirstChild(v.Name) then
 					table.insert(AbilitySkills, v.Name)
 				end
 			end
-			for i, v in ipairs(Character:GetChildren()) do
+
+			for _, v in ipairs(Character:GetChildren()) do
 				if v:IsA("Tool") then
 					v.Parent = PlayerBackpack
 				end
 			end
-			--select random skill
+
 			if #AbilitySkills > 0 then
-				local random = math.random(1, #AbilitySkills)
-				local randomSkill = AbilitySkills[random]
-				local TargTool = PlayerBackpack[randomSkill]
+				local randomSkill = AbilitySkills[math.random(1, #AbilitySkills)]
+				local TargTool = PlayerBackpack:FindFirstChild(randomSkill)
 				if TargTool then
 					CDThing = true
-					--Events.remote:FireServer(TargTool.Name)
 					TargTool.Parent = Character
 					TargTool:Activate()
-					--print("UsimgBreathMove")
+
+					local cdTime = (NpcMode == "Aggressive") and 0.8 or 2 -- Faster skill rotation on Aggressive
+
 					task.delay(0, function()
 						TargTool.Parent = PlayerBackpack
 						local Katana = PlayerBackpack:FindFirstChild("Katana")
 						if Katana then
 							Katana.Parent = Character
 						end
-						task.delay(2, function()
+						task.delay(cdTime, function()
 							CDThing = false
 						end)
 					end)
 				end
 			end
 		end
-		table.clear(AbilitySkills)
-		AbilitySkills = nil
 	end)
 end
 
@@ -1655,107 +1813,62 @@ end
 
 local function RandomAttacks(Enemy)
 	task.spawn(function()
-		local CHeckIFPlayer = Players:FindFirstChild(Enemy.Name)
-		local EnemyCharacter 
-		if CHeckIFPlayer then
-			EnemyCharacter = Enemy.Character
-		else
-			EnemyCharacter = Enemy
+		if NpcMode == "Passive" then 
+			-- PASSIVE: Do NOT attack proactively. Only punish via AutoBlock/AutoPB.
+			return 
 		end
+
+		local CHeckIFPlayer = Players:FindFirstChild(Enemy.Name)
+		local EnemyCharacter = CHeckIFPlayer and Enemy.Character or Enemy
+		if not EnemyCharacter then return end
 		local EnemyHRP = EnemyCharacter:FindFirstChild("HumanoidRootPart")
 		if not EnemyHRP then return end
-		local EnemyHum = EnemyCharacter.Humanoid
+
 		local Player = Players.LocalPlayer
 		local ourstates = Player.states
-		if ourstates:FindFirstChild("exeing") and not CHeckIFPlayer then
-			return
-		end
-		if CanDoStuffExe == true then
-			return
-		end
-		local ourcds = player.cds
+		if ourstates:FindFirstChild("exeing") and not CHeckIFPlayer then return end
+		if CanDoStuffExe == true then return end
+
+		local ourcds = Player.cds
 		local Character = Player.Character
 		local HRP = Character.HumanoidRootPart
-		local Hum = Character.Humanoid
 		local Distance = (HRP.Position - EnemyHRP.Position).Magnitude
-		if Distance <= 7 and Distance >= 1 then
-			local random = math.random(1,2)
-			if random == 1 then
-				local ourstates = Player.states
-				if ourstates:FindFirstChild("exeing") and not CHeckIFPlayer then
-					return
-				end
+
+		if NpcMode == "Aggressive" then
+			-- AGGRESSIVE: Extended attack range (10 studs), heavily prioritizes M2 (StrongAttack)
+			if Distance <= 10 and Distance >= 1 then
 				local StrongAttack = ourcds:FindFirstChild("StrongAttack")
-				if StrongAttack then
-					AutoM1()
+				if not StrongAttack then
+					AutoM2() -- Force Guard Break as much as possible
 				else
-					AutoM2()
+					AutoM1()
 				end
-			else
-				AutoM1()
+			end
+
+		else -- NORMAL
+			if Distance <= 7 and Distance >= 1 then
+				local random = math.random(1, 2)
+				if random == 1 then
+					local StrongAttack = ourcds:FindFirstChild("StrongAttack")
+					if StrongAttack then
+						AutoM1()
+					else
+						AutoM2()
+					end
+				else
+					AutoM1()
+				end
 			end
 		end
 	end)
-end
-
-local function UseSTW()
-	if player.Backpack:FindFirstChild("See-Through World") then
-		local ourstates = player.states
-		local ourcds = player.cds
-		if not ourstates:FindFirstChild("SeeThrough") then
-			if not ourcds:FindFirstChild("See-Through World") then
-				local TargetTool = player.Backpack:FindFirstChild("See-Through World")
-				if TargetTool then
-					player.Character.Humanoid:UnequipTools()
-					TargetTool.Parent = player.Character
-					TargetTool:Activate()
-					task.wait(0.1)
-					TargetTool.Parent = player.Backpack
-				end
-			end
-		end
-	end
-end
-
-local function UseTotalConcentration()
-	if player.Backpack:FindFirstChild("Total Concentration Breathing") then
-		local ourstates = player.states
-		local ourcds = player.cds
-		if not ourstates:FindFirstChild("Total Concentration Breathing") then
-			local TargetTool = player.Backpack:FindFirstChild("Total Concentration Breathing")
-			if TargetTool then
-				player.Character.Humanoid:UnequipTools()
-				TargetTool.Parent = player.Character
-				TargetTool:Activate()
-				task.wait(0.1)
-				TargetTool.Parent = player.Backpack
-			end
-		end
-	end
-end
-
-local function UseRedCrim()
-	if player.Backpack:FindFirstChild("Crimson Red Nichirin Blade") then
-		local ourstates = player.states
-		local ourcds = player.cds
-		if not ourstates:FindFirstChild("RedBlade") then
-			local TargetTool = player.Backpack:FindFirstChild("Crimson Red Nichirin Blade")
-			if TargetTool then
-				player.Character.Humanoid:UnequipTools()
-				TargetTool.Parent = player.Character
-				TargetTool:Activate()
-				task.wait(0.1)
-				TargetTool.Parent = player.Backpack
-			end
-		end
-	end
 end
 
 
 task.spawn(function()
 	while true do
 		task.wait()
-		if gui.Parent ~= nil and FightingForYou == true and EnemyToFocusOn ~= nil then
+		-- Replace 'FightingForYou == true' with 'NpcMode ~= "Off"'
+		if gui.Parent ~= nil and NpcMode ~= "Off" and EnemyToFocusOn ~= nil then
 			local CHeckIFPlayer = Players:FindFirstChild(EnemyToFocusOn.Name)
 			if CHeckIFPlayer then
 				local EnemyCharacter = EnemyToFocusOn.Character
@@ -1787,16 +1900,14 @@ task.spawn(function()
 		if gui.Parent == nil then
 			break
 		end
-		--RS.events.ClientEvents:Fire("Sprint", true)
-		--task.wait()
-		--combatremote:FireServer("manacharges")
 	end
 end)
 
 task.spawn(function()
 	while true do
 		task.wait()
-		if gui.Parent ~= nil and FightingForYou == true and EnemyToFocusOn ~= nil then
+		-- Disable specials completely during Passive mode or when M1-only is toggled
+		if gui.Parent ~= nil and NpcMode ~= "Off" and NpcMode ~= "Passive" and EnemyToFocusOn ~= nil then
 			if OnlyUseM1sBtt == false then
 				local CHeckIFPlayer = Players:FindFirstChild(EnemyToFocusOn.Name)
 				if CHeckIFPlayer then
@@ -1815,9 +1926,6 @@ task.spawn(function()
 		if gui.Parent == nil then
 			break
 		end
-		--RS.events.ClientEvents:Fire("Sprint", true)
-		--task.wait()
-		--combatremote:FireServer("manacharges")
 	end
 end)
 
@@ -1841,71 +1949,6 @@ task.spawn(function()
 		--combatremote:FireServer("manacharges")
 	end
 end)
-
-local StoredPbMoves = {
-	["Clean Storm Wind Tree"] = {
-		D = 1,
-	},
-	["Dust Whirlwind Cutter"] = {
-		D = 1,
-	},
-	["Moon Dragon Ringtail"] = {
-		--D = 0,
-		D = 0.2,
-	},
-	["Coil Choke"] = {
-		D = 0.5,
-	},
-	["Winding Serpent Slash"] = {
-		--D = 0.1,
-		D = 0.4,
-	},
-	["Unknowing Fire"] = {
-		--D = 0.1,
-		D = 0.4,
-	},
-	["Water Surface Slash"] = {
-		--D = 0.1,
-		D = 0.4,
-	},
-	["Rapid Conquest"] = {
-		--D = 0.1,
-		D = 0.4,
-	},
-	["Bite And InfectOG"] = {
-		D = 0.4,
-	},
-	["Rat's ClawOG"] = {
-		D = 0.5,
-	},
-	["Roar"] = {
-		D = 0.4,
-	},
-	["Explosive Slash"] = {
-		D = 0.4,
-	},
-	["String Performance"] = {
-		D = 0.4,
-	},
-	["Rip and Devour"] = {
-		D = 0.2,
-	},
-	["Pierce and Extract"] = {
-		D = 0.4,
-	},
-	["Whirling Peach"] = {
-		D = 0.4,
-	},
-	["Peonies of Futility"] = {
-		D = 0.4
-	},
-	["Flaming Thunder God"] = {
-		D = 0.4
-	},
-	["Love Pang"] = {
-		D = 0.4
-	},
-}
 
 
 local function ProtectGBS(targetPlayer, track)
@@ -2315,6 +2358,54 @@ local function Dodge4(targetPlayer, track)
 	end
 end
 
+local function ShowInfo(Value)
+	for i, plr in ipairs(Players:GetChildren()) do
+		local theirstates = plr.states
+		local CharStats = plr.CharStats
+		local Data = plr:FindFirstChild("Data")
+		local TargChar = plr.Character
+		local TargHum = TargChar:FindFirstChild("Humanoid")
+		if TargHum then
+			local Race = CharStats.Race.Value
+			local Level
+			if Data then
+				Level = Data.Level.Value
+			end
+			if Value == true then
+				for i, v in pairs(TargChar:GetChildren()) do
+					if v.Name == "InfoHighlight" then
+						v:Destroy()
+					end
+				end
+				local InfoHighlight = Instance.new("Highlight")
+				InfoHighlight.Name = "InfoHighlight"
+				if Race == "Human" then
+					InfoHighlight.FillColor = Color3.fromRGB(71, 200, 255)
+				elseif Race == "Demon" then
+					InfoHighlight.FillColor = Color3.fromRGB(149, 0, 0)
+				elseif Race == "Hybrid" then
+					InfoHighlight.FillColor = Color3.fromRGB(176, 39, 255)
+				end
+				InfoHighlight.Parent = TargChar
+				InfoHighlight.FillTransparency = 0.75
+				TargHum.HealthDisplayType = Enum.HumanoidHealthDisplayType.AlwaysOn
+				if Data then
+					TargHum.DisplayName = plr.Name .. " / ".. Race .. " / " .. tostring(Level)
+				else
+					TargHum.DisplayName = plr.Name .. " / ".. Race
+				end
+			else
+				local InfoHighlight = TargChar:FindFirstChild("InfoHighlight")
+				if InfoHighlight then
+					InfoHighlight:Destroy()
+				end
+				TargHum.HealthDisplayType = Enum.HumanoidHealthDisplayType.AlwaysOff
+				TargHum.DisplayName = plr.Name
+			end
+		end
+	end
+end
+
 local animationTriggers = {
 	["rbxassetid://128005402860390"] = function(targetPlayer)
 		print("Jump animation detected from", targetPlayer.Name)
@@ -2456,54 +2547,6 @@ local animationTriggers = {
 		print("Running animation detected from", targetPlayer.Name)
 	end
 }
-
-local function ShowInfo(Value)
-	for i, plr in ipairs(Players:GetChildren()) do
-		local theirstates = plr.states
-		local CharStats = plr.CharStats
-		local Data = plr:FindFirstChild("Data")
-		local TargChar = plr.Character
-		local TargHum = TargChar:FindFirstChild("Humanoid")
-		if TargHum then
-			local Race = CharStats.Race.Value
-			local Level
-			if Data then
-				Level = Data.Level.Value
-			end
-			if Value == true then
-				for i, v in pairs(TargChar:GetChildren()) do
-					if v.Name == "InfoHighlight" then
-						v:Destroy()
-					end
-				end
-				local InfoHighlight = Instance.new("Highlight")
-				InfoHighlight.Name = "InfoHighlight"
-				if Race == "Human" then
-					InfoHighlight.FillColor = Color3.fromRGB(71, 200, 255)
-				elseif Race == "Demon" then
-					InfoHighlight.FillColor = Color3.fromRGB(149, 0, 0)
-				elseif Race == "Hybrid" then
-					InfoHighlight.FillColor = Color3.fromRGB(176, 39, 255)
-				end
-				InfoHighlight.Parent = TargChar
-				InfoHighlight.FillTransparency = 0.75
-				TargHum.HealthDisplayType = Enum.HumanoidHealthDisplayType.AlwaysOn
-				if Data then
-					TargHum.DisplayName = plr.Name .. " / ".. Race .. " / " .. tostring(Level)
-				else
-					TargHum.DisplayName = plr.Name .. " / ".. Race
-				end
-			else
-				local InfoHighlight = TargChar:FindFirstChild("InfoHighlight")
-				if InfoHighlight then
-					InfoHighlight:Destroy()
-				end
-				TargHum.HealthDisplayType = Enum.HumanoidHealthDisplayType.AlwaysOff
-				TargHum.DisplayName = plr.Name
-			end
-		end
-	end
-end
 
 local InfoButton = createButton("GeneralInfo", SectionThirdFrame)
 local GeneralInfoOn = false

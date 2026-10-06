@@ -976,35 +976,32 @@ local function IsStunned()
 end
 
 local function ExecutePerfectDefense(targetPlayer, isPB)
+	if NpcMode ~= "Perfect" then return end
+
+	local ourstates = Players.LocalPlayer:FindFirstChild("states")
+	if not ourstates or IsStunned() then return end
+
 	task.spawn(function()
-		if NpcMode ~= "Perfect" then return end
-		if IsStunned() then return end
+		-- 1. Predictive Guard (Bait enemy attack)
+		combatremote:FireServer("blockstart")
 
-		local ourstates = Players.LocalPlayer.states
-		local ourcds = Players.LocalPlayer.cds
-
-		-- Instant block
-		if not ourstates:FindFirstChild("block") then
-			combatremote:FireServer("blockstart")
-		end
-
-		-- Hold guard only for the active strike window
+		-- Hold block strictly for the enemy's active hit-frame (120ms - 180ms)
 		local startTime = tick()
 		repeat
 			task.wait()
-		until (tick() - startTime >= 0.25) or IsStunned()
+		until (tick() - startTime >= 0.15) or IsStunned()
 
-		-- Drop block immediately so we can act
+		-- 2. Immediate Guard Drop & Counter
 		combatremote:FireServer("blockend")
 
 		if not IsStunned() then
 			if isPB then
-				-- Target is PB'd! Fire M2 immediately to break/punish, followed by M1
+				-- Punish Heavy on Parry
 				AutoM2()
-				task.wait(0.1)
+				task.wait(0.05)
 				AutoM1()
 			else
-				-- Frame interrupt M1
+				-- Immediate frame-trap M1 interrupt during enemy recovery frame
 				AutoM1()
 			end
 		end
@@ -1819,31 +1816,29 @@ local function FollowEnemy(Enemy)
 				Hum:MoveTo(EnemyHRP.Position)
 			end
 		elseif NpcMode == "Perfect" then
-			-- Check if enemy is PB'd / stunned / down
 			local targetStates = CHeckIFPlayer and Players[Enemy.Name]:FindFirstChild("states") or Enemy:FindFirstChild("states")
 			local isEnemyDisabled = targetStates and (
 				targetStates:FindFirstChild("PerfectBlock") 
 					or targetStates:FindFirstChild("stun") 
-					or targetStates:FindFirstChild("selfstun")
 					or targetStates:FindFirstChild("RD")
 			)
 
 			RS.events.ClientEvents:Fire("Sprint", true)
 
 			if isEnemyDisabled then
-				-- DO NOT DASH AWAY! Drive straight into the target for an unpunishable combo
+				-- Enemy is caught/punished: Stick directly on top of them
 				Hum:MoveTo(EnemyHRP.Position)
 			else
-				-- High-pressure aggressive spacing (2 - 5 studs)
-				if Distance > 5 then
+				-- High-pressure "In-Your-Face" spacing (1.5 - 4 studs)
+				if Distance > 4 then
 					Hum:MoveTo(EnemyHRP.Position)
-					if Distance > 12 then
+					if Distance > 10 then
 						DashAwayForward()
 					end
 				else
-					-- Tightly orbit target while staying inside attack range
-					local sideVector = (tick() % 1.5 > 0.75) and EnemyHRP.CFrame.RightVector or -EnemyHRP.CFrame.RightVector
-					Hum:MoveTo(EnemyHRP.Position + (sideVector * 2))
+					-- Rapid unpredictable side-stepping to mess up manual enemy aiming
+					local sideDir = (tick() % 0.8 > 0.4) and EnemyHRP.CFrame.RightVector or -EnemyHRP.CFrame.RightVector
+					Hum:MoveTo(EnemyHRP.Position + (sideDir * 3))
 				end
 			end
 		else -- NORMAL
@@ -2074,10 +2069,9 @@ local function RandomAttacks(Enemy)
 			end
 			-- Add inside RandomAttacks(Enemy):
 		elseif NpcMode == "Perfect" then
-			if Distance <= 8 then
+			if Distance <= 7 then
 				local targetStates = CHeckIFPlayer and Players[Enemy.Name]:FindFirstChild("states") or Enemy:FindFirstChild("states")
-
-				-- If enemy is PB'd or stunned, relentlessly unleash attacks
+				local isEnemyBlocking = targetStates and targetStates:FindFirstChild("block")
 				local isEnemyDisabled = targetStates and (
 					targetStates:FindFirstChild("PerfectBlock") 
 						or targetStates:FindFirstChild("stun") 
@@ -2085,16 +2079,14 @@ local function RandomAttacks(Enemy)
 				)
 
 				if isEnemyDisabled then
+					-- Maximum damage combo burst
 					AutoM1()
-					local StrongAttack = ourcds:FindFirstChild("StrongAttack")
-					if not StrongAttack then
-						AutoM2()
-					end
-				elseif targetStates and targetStates:FindFirstChild("block") then
-					-- Guard-break if enemy is holding block
+					AutoM2()
+				elseif isEnemyBlocking then
+					-- Force guard-break with M2 or heavy skill
 					AutoM2()
 				else
-					-- Frame trap: Fast aggressive M1 pressure
+					-- Constant M1 pressure to catch startup frames
 					AutoM1()
 				end
 			end
@@ -2116,6 +2108,33 @@ local function RandomAttacks(Enemy)
 	end)
 end
 
+-- Auto Combo-Breaker / Dynamic Escape
+task.spawn(function()
+	while task.wait(0.02) do
+		if NpcMode == "Perfect" then
+			local ourstates = Players.LocalPlayer:FindFirstChild("states")
+			if ourstates then
+				local isStunned = ourstates:FindFirstChild("stun") 
+					or ourstates:FindFirstChild("selfstun") 
+					or ourstates:FindFirstChild("RD")
+
+				if isStunned then
+					-- Release block so remotes don't lock
+					combatremote:FireServer("blockend")
+
+					-- Instant iframe / escape dash (fires side/back dash instantly)
+					DashAway()
+
+					-- Trigger any equipped escape/iframe skill if off cooldown
+					local escapeSkill = Players.LocalPlayer.cds:FindFirstChild("Skill1") -- Replace with your game's iframe skill
+					if not escapeSkill then
+						RS.events.ClientEvents:Fire("Skill", 1) -- Example remote skill trigger
+					end
+				end
+			end
+		end
+	end
+end)
 
 task.spawn(function()
 	while true do

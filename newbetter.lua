@@ -778,6 +778,7 @@ local IsAutoPB = false
 local ProtectGBS2 = false
 local CanClimb = false
 local TargetAnyoneNearby = false
+local AutoCrimTotal = false
 
 AutoPBButton.MouseButton1Click:Connect(function()
 	if IsAutoPB == false then
@@ -817,1336 +818,653 @@ DexButton.MouseButton1Click:Connect(function()
 end)
 
 local RS = game:GetService("ReplicatedStorage")
-if RS:FindFirstChild("events") then
-	local Events = RS.events
-	local combatremote = Events.remote
-	local OnlyUseM1sBtt = false
-	local TrackedNpcs = {}
-	local AnimsTableSet = {
+local Events = RS.events
+local combatremote = Events.remote
+local OnlyUseM1sBtt = false
+local TrackedNpcs = {}
+local AnimsTableSet = {
 
-		["m2swordlower"] = {
-			id = "rbxassetid://13989097696",
-			dur = 0.45,
-			M2 = true,
-		},
+	["m2swordlower"] = {
+		id = "rbxassetid://13989097696",
+		dur = 0.45,
+		M2 = true,
+	},
 
-		["m2swordhigh"] = {
-			id = "rbxassetid://13989069332",
-			dur = 0.45,
-			M2 = true,
-		},
+	["m2swordhigh"] = {
+		id = "rbxassetid://13989069332",
+		dur = 0.45,
+		M2 = true,
+	},
 
-		["m2beastswordhigh"] = {
-			id = "rbxassetid://13989267219",
-			dur = 0.45,
-			M2 = true,
-		},
+	["m2beastswordhigh"] = {
+		id = "rbxassetid://13989267219",
+		dur = 0.45,
+		M2 = true,
+	},
 
-		["m2beastswordlow"] = {
-			id = "rbxassetid://13989277783",
-			dur = 0.45,
-			M2 = true,
-		},
+	["m2beastswordlow"] = {
+		id = "rbxassetid://13989277783",
+		dur = 0.45,
+		M2 = true,
+	},
 
-		["m2slap"] = {
-			id = "rbxassetid://13989286742",
-			dur = 0.45,
-			M2 = true,
-		},
+	["m2slap"] = {
+		id = "rbxassetid://13989286742",
+		dur = 0.45,
+		M2 = true,
+	},
 
-		["m2high"] = {
-			id = "rbxassetid://13989307542",
-			dur = 0.45,
-			M2 = true,
-		},
+	["m2high"] = {
+		id = "rbxassetid://13989307542",
+		dur = 0.45,
+		M2 = true,
+	},
 
-		["moondragonringtail"] = {
-			id = "rbxassetid://13989120297",
-			dur = 0.8,
-		},
-		["bodyspike"] = {
-			id = "rbxassetid://13988514756",
-			dur = 0.5,
-		},
-		["spikeslash"] = {
-			id = "rbxassetid://13988542072",
-			dur = 0.58,
-			bb = 1,
-		},
-		["beastswordm1s"] = {
-			dur = 0.15,
-			bb = 1,
-			id1 = "rbxassetid://13989233126",
-			id2 = "rbxassetid://13989241225",
-			id3 = "rbxassetid://13989245673",
-			id4 = "rbxassetid://13989263378",
-			id5 = "rbxassetid://13989236874",
-		},
-		["normswordm1s"] = {
-			dur = 0.15,
-			bb = 1,
-			id1 = "rbxassetid://13989049115",
-			id2 = "rbxassetid://13989052970",
-			id3 = "rbxassetid://13989056506",
-			id4 = "rbxassetid://13989059881",
-			id5 = "rbxassetid://13989062804",
-		},
-		["normfistm1s"] = {
-			dur = 0.15,
-			bb = 1,
-			id1 = "rbxassetid://13988178570",
-			id2 = "rbxassetid://13988184267",
-			id3 = "rbxassetid://13988288330",
-			id4 = "rbxassetid://13988293512",
-			id5 = "rbxassetid://13988298623",
-			id6 = "rbxassetid://13988303070",
-		},
-		["watersurfaceslash"] = {
-			id = "rbxassetid://13988063065",
-			dur = 0.11,
-		},
-		["WaterfallJar"] = {
-			id = "rbxassetid://13988068068",
-			dur = 0.5,
-			bb = 1,
-		},
-		["Waterdashlong"] = {
-			id = "rbxassetid://13988052725",
-			dur = 0.9,
-			bb = 1,
-		},
-		["UNdolation"] = {
-			id = "rbxassetid://13988329201",
-			dur = 0.3,
-			bb = 1,
-		},
-		["FlameTiger"] = {
-			id = "rbxassetid://13988421264",
-			dur = 0.6,
-			bb = 2,
-		},
-		["Rengoku"] = {
-			id = "rbxassetid://13988433903",
-			dur = 0.7,
-			bb = 1,
-		},
-		["UnknowingFire"] = {
-			id = "rbxassetid://13988324543",
-			dur = 0.3,
-		},
-		["ConstantResounding"] = {
-			id = "rbxassetid://13989501276",
-			dur = 0.5,
-			bb = 2,
-		},
-		["Roar"] = {
-			id = "rbxassetid://13989553001",
-			dur = 0.4,
-		},
-		["Roar2"] = {
-			id = "rbxassetid://13988553001",
-			dur = 0.4,
-		},
-		["LovePang"] = {
-			id = "rbxassetid://13989021037",
-			dur = 0.2,
-		},
-		["CatLeggedWinds"] = {
-			id = "rbxassetid://13989030437",
-			dur = 0.3,
-			bb = 4,
-			d = 1,
-		},
-		["CatLoveShower"] = {
-			id = "rbxassetid://13989025505",
-			dur = 0.3,
-			bb = 5,
-		},
-		["ShiversOfFirstLove"] = {
-			id = "rbxassetid://13988574089",
-			dur = 0.3,
-			bb = 1,
-		},
-		["MoonbowHalfMoonTheHighOne"] = {
-			id = "rbxassetid://13989030437",
-			dur = 0.3,
-			bb = 4,
-			d = 2,
-		},
-		["MoonHeavenJunk"] = {
-			id = "rbxassetid://13989127627",
-			dur = 1,
-			bb = 3,
-			d = 0.8,
-			multi = true,
-		},
-		["LunarShine"] = {
-			id = "rbxassetid://13989124131",
-			dur = 0.4,
-			bb = 6,
-		},
-		["RockSkin"] = {
-			id = "rbxassetid://13989116431",
-			dur = 0.15,
-			bb = 3,
-			d = 0.8,
-			multi = true,
-		},
-		["UpperSmash"] = {
-			id = "rbxassetid://13987473679",
-			dur = 0.3,
-			bb = 5,
-		},
-		["CleanStorm"] = {
-			id = "rbxassetid://13988538432",
-			dur = 0.11,
-		},
-		["SunThrow"] = {
-			id = "rbxassetid://13988481801",
-			dur = 0.6,
-			bb = 1,
-			d = 0.7
-		},
-		["SunDash"] = {
-			id = "rbxassetid://13988470113",
-			dur = 0.2,
-		},
-		["Peonies"] = {
-			id = "rbxassetid://13988189351",
-			dur = 0.11,
-		},
-		["WhrilingPeach"] = {
-			id = "rbxassetid://13989045422",
-			dur = 0.5,
-		},
-		["HonoreableShadowPlum"] = {
-			id = "rbxassetid://13989039330",
-			dur = 0.3,
-			bb = 3,
-			d = 0.65,
-			multi = true,
-		},
-		["WidningSerpentSlash"] = {
-			id = "rbxassetid://13989107776",
-			dur = 0.11,
-		},
-		["VenomFangs"] = {
-			id = "rbxassetid://13989112602",
-			dur = 0.11,
-			bb = 10,
-		},
-		["MadCleave"] = {
-			id = "rbxassetid://13988227789",
-			dur = 0.11,
-			bb = 1,
-		},
-		["CircularFangs"] = {
-			id = "rbxassetid://13988232291",
-			dur = 0.11,
-			bb = 3,
-			d = 1,
-			multi = true,
-		},
-		["PierceExtract"] = {
-			id = "rbxassetid://13988223461",
-			dur = 0.2,
-		},
-		["RipDevour"] = {
-			id = "rbxassetid://13988218049",
-			dur = 0.4,
-		},
-		["ZigZag"] = {
-			id = "rbxassetid://13988194148",
-			dur = 0.6,
-			bb = 1,
-		},
-		["Frolic"] = {
-			id = "rbxassetid://14268572848",
-			dur = 0.8,
-			bb = 1,
-		},
-		["MereFluttering"] = {
-			id = "rbxassetid://13988160813",
-			dur = 1,
-			bb = 1,
-		},
-		["Haze"] = {
-			id = "rbxassetid://13989387103",
-			dur = 0.11,
-			bb = 1,
-		},
-		["RagingSunSpin"] = {
-			id = "rbxassetid://13988475178",
-			dur = 0.11,
-		},
-		["SolarHeatHaze"] = {
-			id = "rbxassetid://13988485977",
-			dur = 0.4,
-			bb = 1,
-		},
-		["LightningBall"] = {
-			id = "rbxassetid://13988073088",
-			dur = 0.11,
-			bb = 1,
-		},
-		["ThunderClap"] = {
-			id = "rbxassetid://13989131565",
-			dur = 0.11,
-		},
-		["FleshSeeds"] = {
-			id = "rbxassetid://13989608756",
-			dur = 0.11,
-		},
-		["DemonBlade"] = {
-			id = "rbxassetid://13987429910",
-			dur = 0.8,
-		},
-		["LeapKick"] = {
-			id = "rbxassetid://13988119350",
-			dur = 0.85,
-		},
-		["DemonPunch"] = {
-			id = "rbxassetid://13988198516",
-			dur = 0.1,
-			bb = 1,
-			d = 0.1
-		},
-		["VoidStyle"] = {
-			id = "rbxassetid://13989135322",
-			dur = 0.1,
-			bb = 1,
-		},
-		["DestructionStyle"] = {
-			id = "rbxassetid://13989139079",
-			dur = 0.5,
-		},
-		["BlueSilverAfterGlow"] = {
-			id = "rbxassetid://13989147454",
-			dur = 0.2,
-			bb = 3,
-			d = 0.8,
-			multi = true,
-		},
-		["HantenguSpears"] = {
-			id = "rbxassetid://13989346936",
-			dur = 0.1,
-			bb = 3,
-			d = 0.5,
-			multi = true,
-		},
-		["StrongKickNez"] = {
-			id = "rbxassetid://13988454333",
-			dur = 0.1,
-			bb = 1,
-		},
-		["WaterPot"] = {
-			id = "rbxassetid://13989161281",
-			dur = 0.1,
-			bb = 1,
-		},
-		["TenThousand"] = {
-			id = "rbxassetid://13989192230",
-			dur = 0.1,
-			bb = 3,
-			d = 0.5,
-			multi = true,
-		},
-		["ThousandNeedle"] = {
-			id = "rbxassetid://13987223038",
-			dur = 0.1,
-			bb = 3,
-			d = 1.2,
-			multi = true,
-		},
-		["CuttingThread"] = {
-			id = "rbxassetid://13989397913",
-			dur = 0.1,
-			bb = 1,
-		},
-		["RampantArc"] = {
-			id = "rbxassetid://13987204906",
-			dur = 0.1,
-		},
-		["FlingingArrow"] = {
-			id = "rbxassetid://13989197964",
-			dur = 0,
-			bb = 1,
-		},
-		["FreezingClouds"] = {
-			id = "rbxassetid://13989161281",
-			dur = 0.1,
-		},
-		["BarrenHanging"] = {
-			id = "rbxassetid://13989156491",
-			dur = 0.1,
-			bb = 3,
-			d = 0.4,
-			multi = true,
-		},
-		["blocks"] = {
-			swordblock = "rbxassetid://13988308375",
-			fistblock = "rbxassetid://13987820892",
-		},
+	["moondragonringtail"] = {
+		id = "rbxassetid://13989120297",
+		dur = 0.8,
+	},
+	["bodyspike"] = {
+		id = "rbxassetid://13988514756",
+		dur = 0.5,
+	},
+	["spikeslash"] = {
+		id = "rbxassetid://13988542072",
+		dur = 0.58,
+		bb = 1,
+	},
+	["beastswordm1s"] = {
+		dur = 0.15,
+		bb = 1,
+		id1 = "rbxassetid://13989233126",
+		id2 = "rbxassetid://13989241225",
+		id3 = "rbxassetid://13989245673",
+		id4 = "rbxassetid://13989263378",
+		id5 = "rbxassetid://13989236874",
+	},
+	["normswordm1s"] = {
+		dur = 0.15,
+		bb = 1,
+		id1 = "rbxassetid://13989049115",
+		id2 = "rbxassetid://13989052970",
+		id3 = "rbxassetid://13989056506",
+		id4 = "rbxassetid://13989059881",
+		id5 = "rbxassetid://13989062804",
+	},
+	["normfistm1s"] = {
+		dur = 0.15,
+		bb = 1,
+		id1 = "rbxassetid://13988178570",
+		id2 = "rbxassetid://13988184267",
+		id3 = "rbxassetid://13988288330",
+		id4 = "rbxassetid://13988293512",
+		id5 = "rbxassetid://13988298623",
+		id6 = "rbxassetid://13988303070",
+	},
+	["watersurfaceslash"] = {
+		id = "rbxassetid://13988063065",
+		dur = 0.11,
+	},
+	["WaterfallJar"] = {
+		id = "rbxassetid://13988068068",
+		dur = 0.5,
+		bb = 1,
+	},
+	["Waterdashlong"] = {
+		id = "rbxassetid://13988052725",
+		dur = 0.9,
+		bb = 1,
+	},
+	["UNdolation"] = {
+		id = "rbxassetid://13988329201",
+		dur = 0.3,
+		bb = 1,
+	},
+	["FlameTiger"] = {
+		id = "rbxassetid://13988421264",
+		dur = 0.6,
+		bb = 2,
+	},
+	["Rengoku"] = {
+		id = "rbxassetid://13988433903",
+		dur = 0.7,
+		bb = 1,
+	},
+	["UnknowingFire"] = {
+		id = "rbxassetid://13988324543",
+		dur = 0.3,
+	},
+	["ConstantResounding"] = {
+		id = "rbxassetid://13989501276",
+		dur = 0.5,
+		bb = 2,
+	},
+	["Roar"] = {
+		id = "rbxassetid://13989553001",
+		dur = 0.4,
+	},
+	["Roar2"] = {
+		id = "rbxassetid://13988553001",
+		dur = 0.4,
+	},
+	["LovePang"] = {
+		id = "rbxassetid://13989021037",
+		dur = 0.2,
+	},
+	["CatLeggedWinds"] = {
+		id = "rbxassetid://13989030437",
+		dur = 0.3,
+		bb = 4,
+		d = 1,
+	},
+	["CatLoveShower"] = {
+		id = "rbxassetid://13989025505",
+		dur = 0.3,
+		bb = 5,
+	},
+	["ShiversOfFirstLove"] = {
+		id = "rbxassetid://13988574089",
+		dur = 0.3,
+		bb = 1,
+	},
+	["MoonbowHalfMoonTheHighOne"] = {
+		id = "rbxassetid://13989030437",
+		dur = 0.3,
+		bb = 4,
+		d = 2,
+	},
+	["MoonHeavenJunk"] = {
+		id = "rbxassetid://13989127627",
+		dur = 1,
+		bb = 3,
+		d = 0.8,
+		multi = true,
+	},
+	["LunarShine"] = {
+		id = "rbxassetid://13989124131",
+		dur = 0.4,
+		bb = 6,
+	},
+	["RockSkin"] = {
+		id = "rbxassetid://13989116431",
+		dur = 0.15,
+		bb = 3,
+		d = 0.8,
+		multi = true,
+	},
+	["UpperSmash"] = {
+		id = "rbxassetid://13987473679",
+		dur = 0.3,
+		bb = 5,
+	},
+	["CleanStorm"] = {
+		id = "rbxassetid://13988538432",
+		dur = 0.11,
+	},
+	["SunThrow"] = {
+		id = "rbxassetid://13988481801",
+		dur = 0.6,
+		bb = 1,
+		d = 0.7
+	},
+	["SunDash"] = {
+		id = "rbxassetid://13988470113",
+		dur = 0.2,
+	},
+	["Peonies"] = {
+		id = "rbxassetid://13988189351",
+		dur = 0.11,
+	},
+	["WhrilingPeach"] = {
+		id = "rbxassetid://13989045422",
+		dur = 0.5,
+	},
+	["HonoreableShadowPlum"] = {
+		id = "rbxassetid://13989039330",
+		dur = 0.3,
+		bb = 3,
+		d = 0.65,
+		multi = true,
+	},
+	["WidningSerpentSlash"] = {
+		id = "rbxassetid://13989107776",
+		dur = 0.11,
+	},
+	["VenomFangs"] = {
+		id = "rbxassetid://13989112602",
+		dur = 0.11,
+		bb = 10,
+	},
+	["MadCleave"] = {
+		id = "rbxassetid://13988227789",
+		dur = 0.11,
+		bb = 1,
+	},
+	["CircularFangs"] = {
+		id = "rbxassetid://13988232291",
+		dur = 0.11,
+		bb = 3,
+		d = 1,
+		multi = true,
+	},
+	["PierceExtract"] = {
+		id = "rbxassetid://13988223461",
+		dur = 0.2,
+	},
+	["RipDevour"] = {
+		id = "rbxassetid://13988218049",
+		dur = 0.4,
+	},
+	["ZigZag"] = {
+		id = "rbxassetid://13988194148",
+		dur = 0.6,
+		bb = 1,
+	},
+	["Frolic"] = {
+		id = "rbxassetid://14268572848",
+		dur = 0.8,
+		bb = 1,
+	},
+	["MereFluttering"] = {
+		id = "rbxassetid://13988160813",
+		dur = 1,
+		bb = 1,
+	},
+	["Haze"] = {
+		id = "rbxassetid://13989387103",
+		dur = 0.11,
+		bb = 1,
+	},
+	["RagingSunSpin"] = {
+		id = "rbxassetid://13988475178",
+		dur = 0.11,
+	},
+	["SolarHeatHaze"] = {
+		id = "rbxassetid://13988485977",
+		dur = 0.4,
+		bb = 1,
+	},
+	["LightningBall"] = {
+		id = "rbxassetid://13988073088",
+		dur = 0.11,
+		bb = 1,
+	},
+	["ThunderClap"] = {
+		id = "rbxassetid://13989131565",
+		dur = 0.11,
+	},
+	["FleshSeeds"] = {
+		id = "rbxassetid://13989608756",
+		dur = 0.11,
+	},
+	["DemonBlade"] = {
+		id = "rbxassetid://13987429910",
+		dur = 0.8,
+	},
+	["LeapKick"] = {
+		id = "rbxassetid://13988119350",
+		dur = 0.85,
+	},
+	["DemonPunch"] = {
+		id = "rbxassetid://13988198516",
+		dur = 0.1,
+		bb = 1,
+		d = 0.1
+	},
+	["VoidStyle"] = {
+		id = "rbxassetid://13989135322",
+		dur = 0.1,
+		bb = 1,
+	},
+	["DestructionStyle"] = {
+		id = "rbxassetid://13989139079",
+		dur = 0.5,
+	},
+	["BlueSilverAfterGlow"] = {
+		id = "rbxassetid://13989147454",
+		dur = 0.2,
+		bb = 3,
+		d = 0.8,
+		multi = true,
+	},
+	["HantenguSpears"] = {
+		id = "rbxassetid://13989346936",
+		dur = 0.1,
+		bb = 3,
+		d = 0.5,
+		multi = true,
+	},
+	["StrongKickNez"] = {
+		id = "rbxassetid://13988454333",
+		dur = 0.1,
+		bb = 1,
+	},
+	["WaterPot"] = {
+		id = "rbxassetid://13989161281",
+		dur = 0.1,
+		bb = 1,
+	},
+	["TenThousand"] = {
+		id = "rbxassetid://13989192230",
+		dur = 0.1,
+		bb = 3,
+		d = 0.5,
+		multi = true,
+	},
+	["ThousandNeedle"] = {
+		id = "rbxassetid://13987223038",
+		dur = 0.1,
+		bb = 3,
+		d = 1.2,
+		multi = true,
+	},
+	["CuttingThread"] = {
+		id = "rbxassetid://13989397913",
+		dur = 0.1,
+		bb = 1,
+	},
+	["RampantArc"] = {
+		id = "rbxassetid://13987204906",
+		dur = 0.1,
+	},
+	["FlingingArrow"] = {
+		id = "rbxassetid://13989197964",
+		dur = 0,
+		bb = 1,
+	},
+	["FreezingClouds"] = {
+		id = "rbxassetid://13989161281",
+		dur = 0.1,
+	},
+	["BarrenHanging"] = {
+		id = "rbxassetid://13989156491",
+		dur = 0.1,
+		bb = 3,
+		d = 0.4,
+		multi = true,
+	},
+	["blocks"] = {
+		swordblock = "rbxassetid://13988308375",
+		fistblock = "rbxassetid://13987820892",
+	},
 
+}
+
+local function DashAway()
+	local LocalPlayer = game.Players.LocalPlayer
+
+	if not (LocalPlayer.Injury.BrokenLegs.Value <= 1) or (LocalPlayer.states:FindFirstChild("DashCD") or (LocalPlayer.states:FindFirstChild("stun") or (LocalPlayer.states:FindFirstChild("selfstun") or (LocalPlayer.states:FindFirstChild("RD") or (LocalPlayer.Character:FindFirstChild("ForceField") or (LocalPlayer.states:FindFirstChild("Killable") or (LocalPlayer.states:FindFirstChild("Bexeing") or LocalPlayer.states:FindFirstChild("exeing")))))))) then
+		return false
+	end
+	local DashCD = Instance.new("Folder")
+
+	DashCD.Name = "DashCD"
+	DashCD.Parent = Players.LocalPlayer.states
+	game.Debris:AddItem(DashCD, 1)
+	local Character = Players.LocalPlayer.Character
+	local HumanoidRootPart = Character.HumanoidRootPart
+
+	-- Random dash direction: Left, Right, or Back
+	local directions = {
+		-HumanoidRootPart.CFrame.RightVector, -- Left
+		HumanoidRootPart.CFrame.RightVector,  -- Right
+		-HumanoidRootPart.CFrame.LookVector,  -- Back
 	}
 
-	local function DashAway()
-		local LocalPlayer = game.Players.LocalPlayer
+	local dashDirection = directions[math.random(1, #directions)]
 
-		if not (LocalPlayer.Injury.BrokenLegs.Value <= 1) or (LocalPlayer.states:FindFirstChild("DashCD") or (LocalPlayer.states:FindFirstChild("stun") or (LocalPlayer.states:FindFirstChild("selfstun") or (LocalPlayer.states:FindFirstChild("RD") or (LocalPlayer.Character:FindFirstChild("ForceField") or (LocalPlayer.states:FindFirstChild("Killable") or (LocalPlayer.states:FindFirstChild("Bexeing") or LocalPlayer.states:FindFirstChild("exeing")))))))) then
-			return false
+	Character.Humanoid.AutoRotate = true
+
+	if (game.Players.LocalPlayer.Character.Humanoid.MaxHealth - 100) / 2 <= 10 then
+		local v4 = game.ReplicatedStorage.DashWithNoDelay:InvokeServer("Dash", "flip")
+		local v5 = tick()
+
+		repeat
+			wait(0.0001)
+		until tick() - v5 >= 0.1 or (v4 == "finished" or v4 == "failed")
+
+		if v4 == "failed" then
+			return
 		end
-		local DashCD = Instance.new("Folder")
 
-		DashCD.Name = "DashCD"
-		DashCD.Parent = Players.LocalPlayer.states
-		game.Debris:AddItem(DashCD, 1)
-		local Character = Players.LocalPlayer.Character
-		local HumanoidRootPart = Character.HumanoidRootPart
-
-		-- Random dash direction: Left, Right, or Back
-		local directions = {
-			-HumanoidRootPart.CFrame.RightVector, -- Left
-			HumanoidRootPart.CFrame.RightVector,  -- Right
-			-HumanoidRootPart.CFrame.LookVector,  -- Back
-		}
-
-		local dashDirection = directions[math.random(1, #directions)]
-
-		Character.Humanoid.AutoRotate = true
-
-		if (game.Players.LocalPlayer.Character.Humanoid.MaxHealth - 100) / 2 <= 10 then
-			local v4 = game.ReplicatedStorage.DashWithNoDelay:InvokeServer("Dash", "flip")
-			local v5 = tick()
-
-			repeat
-				wait(0.0001)
-			until tick() - v5 >= 0.1 or (v4 == "finished" or v4 == "failed")
-
-			if v4 == "failed" then
-				return
-			end
-
-			if tick() - v5 >= 0.1 then
-				return
-			end
-
-			local Character3 = game.Players.LocalPlayer.Character
-			local HumanoidRootPart2 = Character3.HumanoidRootPart
-			local s = Instance.new("BodyVelocity")
-
-			s.Name = "s"
-			s.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
-			game.Debris:AddItem(s, 0.3)
-			s.Velocity = dashDirection * 80
-			s.Parent = Character3.HumanoidRootPart
-		else
-			game.ReplicatedStorage.DashWithNoDelay:InvokeServer("Dash")
-
-			local Character3 = game.Players.LocalPlayer.Character
-			local HumanoidRootPart2 = Character3.HumanoidRootPart
-			local s = Instance.new("BodyVelocity")
-
-			s.Name = "s"
-			s.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
-			game.Debris:AddItem(s, 0.12)
-			s.Velocity = dashDirection * 140
-			s.Parent = Character3.HumanoidRootPart
+		if tick() - v5 >= 0.1 then
+			return
 		end
+
+		local Character3 = game.Players.LocalPlayer.Character
+		local HumanoidRootPart2 = Character3.HumanoidRootPart
+		local s = Instance.new("BodyVelocity")
+
+		s.Name = "s"
+		s.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
+		game.Debris:AddItem(s, 0.3)
+		s.Velocity = dashDirection * 80
+		s.Parent = Character3.HumanoidRootPart
+	else
+		game.ReplicatedStorage.DashWithNoDelay:InvokeServer("Dash")
+
+		local Character3 = game.Players.LocalPlayer.Character
+		local HumanoidRootPart2 = Character3.HumanoidRootPart
+		local s = Instance.new("BodyVelocity")
+
+		s.Name = "s"
+		s.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
+		game.Debris:AddItem(s, 0.12)
+		s.Velocity = dashDirection * 140
+		s.Parent = Character3.HumanoidRootPart
 	end
+end
 
-	local function DashAwayForward()
-		local LocalPlayer = game.Players.LocalPlayer
+local function DashAwayForward()
+	local LocalPlayer = game.Players.LocalPlayer
 
-		if not (LocalPlayer.Injury.BrokenLegs.Value <= 1) or (LocalPlayer.states:FindFirstChild("DashCD") or (LocalPlayer.states:FindFirstChild("stun") or (LocalPlayer.states:FindFirstChild("selfstun") or (LocalPlayer.states:FindFirstChild("RD") or (LocalPlayer.Character:FindFirstChild("ForceField") or (LocalPlayer.states:FindFirstChild("Killable") or (LocalPlayer.states:FindFirstChild("Bexeing") or LocalPlayer.states:FindFirstChild("exeing")))))))) then
-			return false
-		end
-		local DashCD = Instance.new("Folder")
-
-		DashCD.Name = "DashCD"
-		DashCD.Parent = Players.LocalPlayer.states
-		game.Debris:AddItem(DashCD, 1)
-		local Character = Players.LocalPlayer.Character
-		local HumanoidRootPart = Character.HumanoidRootPart
-
-		-- Random dash direction: Left, Right, or Back
-		local directions = {
-			HumanoidRootPart.CFrame.LookVector,  -- Back
-		}
-
-		local dashDirection = directions[math.random(1, #directions)]
-
-		Character.Humanoid.AutoRotate = true
-
-		if (game.Players.LocalPlayer.Character.Humanoid.MaxHealth - 100) / 2 <= 10 then
-			local v4 = game.ReplicatedStorage.DashWithNoDelay:InvokeServer("Dash", "flip")
-			local v5 = tick()
-
-			repeat
-				wait(0.0001)
-			until tick() - v5 >= 0.1 or (v4 == "finished" or v4 == "failed")
-
-			if v4 == "failed" then
-				return
-			end
-
-			if tick() - v5 >= 0.1 then
-				return
-			end
-
-			local Character3 = game.Players.LocalPlayer.Character
-			local HumanoidRootPart2 = Character3.HumanoidRootPart
-			local s = Instance.new("BodyVelocity")
-
-			s.Name = "s"
-			s.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
-			game.Debris:AddItem(s, 0.3)
-			s.Velocity = dashDirection * 80
-			s.Parent = Character3.HumanoidRootPart
-		else
-			game.ReplicatedStorage.DashWithNoDelay:InvokeServer("Dash")
-
-			local Character3 = game.Players.LocalPlayer.Character
-			local HumanoidRootPart2 = Character3.HumanoidRootPart
-			local s = Instance.new("BodyVelocity")
-
-			s.Name = "s"
-			s.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
-			game.Debris:AddItem(s, 0.12)
-			s.Velocity = dashDirection * 140
-			s.Parent = Character3.HumanoidRootPart
-		end
+	if not (LocalPlayer.Injury.BrokenLegs.Value <= 1) or (LocalPlayer.states:FindFirstChild("DashCD") or (LocalPlayer.states:FindFirstChild("stun") or (LocalPlayer.states:FindFirstChild("selfstun") or (LocalPlayer.states:FindFirstChild("RD") or (LocalPlayer.Character:FindFirstChild("ForceField") or (LocalPlayer.states:FindFirstChild("Killable") or (LocalPlayer.states:FindFirstChild("Bexeing") or LocalPlayer.states:FindFirstChild("exeing")))))))) then
+		return false
 	end
+	local DashCD = Instance.new("Folder")
+
+	DashCD.Name = "DashCD"
+	DashCD.Parent = Players.LocalPlayer.states
+	game.Debris:AddItem(DashCD, 1)
+	local Character = Players.LocalPlayer.Character
+	local HumanoidRootPart = Character.HumanoidRootPart
+
+	-- Random dash direction: Left, Right, or Back
+	local directions = {
+		HumanoidRootPart.CFrame.LookVector,  -- Back
+	}
+
+	local dashDirection = directions[math.random(1, #directions)]
+
+	Character.Humanoid.AutoRotate = true
+
+	if (game.Players.LocalPlayer.Character.Humanoid.MaxHealth - 100) / 2 <= 10 then
+		local v4 = game.ReplicatedStorage.DashWithNoDelay:InvokeServer("Dash", "flip")
+		local v5 = tick()
+
+		repeat
+			wait(0.0001)
+		until tick() - v5 >= 0.1 or (v4 == "finished" or v4 == "failed")
+
+		if v4 == "failed" then
+			return
+		end
+
+		if tick() - v5 >= 0.1 then
+			return
+		end
+
+		local Character3 = game.Players.LocalPlayer.Character
+		local HumanoidRootPart2 = Character3.HumanoidRootPart
+		local s = Instance.new("BodyVelocity")
+
+		s.Name = "s"
+		s.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
+		game.Debris:AddItem(s, 0.3)
+		s.Velocity = dashDirection * 80
+		s.Parent = Character3.HumanoidRootPart
+	else
+		game.ReplicatedStorage.DashWithNoDelay:InvokeServer("Dash")
+
+		local Character3 = game.Players.LocalPlayer.Character
+		local HumanoidRootPart2 = Character3.HumanoidRootPart
+		local s = Instance.new("BodyVelocity")
+
+		s.Name = "s"
+		s.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
+		game.Debris:AddItem(s, 0.12)
+		s.Velocity = dashDirection * 140
+		s.Parent = Character3.HumanoidRootPart
+	end
+end
 
 
-	local function RiskChecker(targetPlayer, track, amount)
+local function RiskChecker(targetPlayer, track, amount)
+	local ourstates = Players[Players.LocalPlayer.Name].states
+	--local block = ourstates:FindFirstChild("block")
+	--if block then
+	--if block.Value <= amount then
+	--return "RiskyBlock"
+	--end
+	--end
+	if 3 <= amount then
+		return "RiskyBlock"
+	end
+	return "no risk"
+end
+
+task.spawn(function()
+	--while gui.Parent ~= nil do
+	--RS.events.ClientEvents:Fire("Sprint", true)
+	--task.wait()
+	--combatremote:FireServer("manacharges")
+	--end
+end)
+local TARGPLR = nil
+local EnemyToFocusOn = nil
+local NpcEnemyToFocusOn = nil
+local function AutoM1()
+	if Players.LocalPlayer.Character:FindFirstChild("Katana") then
+		Players.LocalPlayer.Character.Katana:Activate()
+	else
+		combatremote:FireServer("NormalAttack")
+	end
+end
+
+local curranimplaying
+
+local CanDoStuffExe = false
+
+local function AutoM2()
+	if Players.LocalPlayer.Character:FindFirstChild("Katana") then
+		combatremote:FireServer("StrongAttack")
+	else
+		combatremote:FireServer("StrongAttack")
+	end
+end
+
+local function AutoPB(targetPlayer, track)
+	task.spawn(function()
+		local CHeckIFPlayer = Players:FindFirstChild(targetPlayer.Name)
+		local theirstates
+		local theircds
+		local Character
+		if CHeckIFPlayer then
+			theirstates = Players[targetPlayer.Name].states
+			theircds = Players[targetPlayer.Name].cds
+			Character = targetPlayer.Character
+		else
+			theirstates = nil
+			theircds = nil
+			Character = targetPlayer
+		end
 		local ourstates = Players[Players.LocalPlayer.Name].states
-		--local block = ourstates:FindFirstChild("block")
-		--if block then
-		--if block.Value <= amount then
-		--return "RiskyBlock"
-		--end
-		--end
-		if 3 <= amount then
-			return "RiskyBlock"
-		end
-		return "no risk"
-	end
-
-	task.spawn(function()
-		--while gui.Parent ~= nil do
-		--RS.events.ClientEvents:Fire("Sprint", true)
-		--task.wait()
-		--combatremote:FireServer("manacharges")
-		--end
-	end)
-	local TARGPLR = nil
-	local EnemyToFocusOn = nil
-	local NpcEnemyToFocusOn = nil
-	local function AutoM1()
-		if Players.LocalPlayer.Character:FindFirstChild("Katana") then
-			Players.LocalPlayer.Character.Katana:Activate()
-		else
-			combatremote:FireServer("NormalAttack")
-		end
-	end
-
-	local curranimplaying
-
-	local CanDoStuffExe = false
-
-	local function AutoM2()
-		if Players.LocalPlayer.Character:FindFirstChild("Katana") then
-			combatremote:FireServer("StrongAttack")
-		else
-			combatremote:FireServer("StrongAttack")
-		end
-	end
-
-	local function AutoPB(targetPlayer, track)
-		task.spawn(function()
-			local CHeckIFPlayer = Players:FindFirstChild(targetPlayer.Name)
-			local theirstates
-			local theircds
-			local Character
-			if CHeckIFPlayer then
-				theirstates = Players[targetPlayer.Name].states
-				theircds = Players[targetPlayer.Name].cds
-				Character = targetPlayer.Character
-			else
-				theirstates = nil
-				theircds = nil
-				Character = targetPlayer
+		--local theircds = Players[targetPlayer.Name].cds
+		local ourcds = Players[Players.LocalPlayer.Name].cds
+		if IsAutoPB == false then return end
+		local anim = track.Animation
+		if not anim then return end
+		if ourstates:FindFirstChild("block") then
+			combatremote:FireServer("blockend")
+			local res = DashAway()
+			if res == false then
+				AutoM1()
 			end
-			local ourstates = Players[Players.LocalPlayer.Name].states
-			--local theircds = Players[targetPlayer.Name].cds
-			local ourcds = Players[Players.LocalPlayer.Name].cds
-			if IsAutoPB == false then return end
-			local anim = track.Animation
-			if not anim then return end
-			if ourstates:FindFirstChild("block") then
-				combatremote:FireServer("blockend")
+			return
+		end
+		local OURCD = ourcds:FindFirstChild("blockstart")
+		if OURCD and not ourstates:FindFirstChild("block") then
+			local random = math.random(1,2)
+			if random == 1 then
 				local res = DashAway()
 				if res == false then
 					AutoM1()
 				end
-				return
-			end
-			local OURCD = ourcds:FindFirstChild("blockstart")
-			if OURCD and not ourstates:FindFirstChild("block") then
-				local random = math.random(1,2)
-				if random == 1 then
-					local res = DashAway()
-					if res == false then
-						AutoM1()
-					end
-				else
-					AutoM1()
-				end
-				return
-			end
-			local id = anim.AnimationId
-			if id == AnimsTableSet.m2swordhigh.id then
-				task.delay(AnimsTableSet.m2swordhigh.dur - 0.1, function()
-					if not theirstates or not theirstates:FindFirstChild("block") then
-						combatremote:FireServer("blockstart")
-						task.wait(0.5)
-						combatremote:FireServer("blockend")
-					end
-				end)
-			elseif id == AnimsTableSet.m2swordlower.id then
-				task.delay(AnimsTableSet.m2swordlower.dur - 0.1, function()
-					if not theirstates or not theirstates:FindFirstChild("block") then
-						combatremote:FireServer("blockstart")
-						task.wait(0.5)
-						combatremote:FireServer("blockend")
-					end
-				end)
-			elseif id == AnimsTableSet.m2high.id then
-				task.delay(AnimsTableSet.m2high.dur - 0.1, function()
-					if not theirstates or not theirstates:FindFirstChild("block") then
-						combatremote:FireServer("blockstart")
-						task.wait(0.5)
-						combatremote:FireServer("blockend")
-					end
-				end)
-			elseif id == AnimsTableSet.m2slap.id then
-				task.delay(AnimsTableSet.m2slap.dur - 0.1, function()
-					if not theirstates or not theirstates:FindFirstChild("block") then
-						combatremote:FireServer("blockstart")
-						task.wait(0.5)
-						combatremote:FireServer("blockend")
-					end
-				end)
-			elseif id == AnimsTableSet.moondragonringtail.id then
-				task.delay(AnimsTableSet.moondragonringtail.dur - 0.1, function()
-					if not theirstates or not theirstates:FindFirstChild("block") then
-						combatremote:FireServer("blockstart")
-						task.wait(0.5)
-						combatremote:FireServer("blockend")
-					end
-				end)
-			elseif id == AnimsTableSet.bodyspike.id then
-				task.delay(AnimsTableSet.bodyspike.dur - 0.1, function()
-					if not theirstates or not theirstates:FindFirstChild("block") then
-						combatremote:FireServer("blockstart")
-						task.wait(0.5)
-						combatremote:FireServer("blockend")
-					end
-				end)
 			else
-				for key, value in pairs(AnimsTableSet) do
-					if key and value.id and value.id == id then
-						task.delay(value.dur - 0.1, function()
-							if ourcds:FindFirstChild("blockstart") and not ourstates:FindFirstChild("block") then
-								AutoM1()
-							elseif ourcds:FindFirstChild("NormalAttack") and ourcds:FindFirstChild("blockstart") then
-								DashAway()
-							else
-								combatremote:FireServer("blockstart")
-								task.wait(0.3)
-								combatremote:FireServer("blockend")
-								if theirstates and theirstates:FindFirstChild("block") then
-									AutoM2()
-								else
-									AutoM1()
-								end
-							end
-						end)
-						break
-					end
-				end
+				AutoM1()
 			end
-		end)
-
-	end
-
-	UIS.InputBegan:Connect(function(input, gpe)
-		if input.KeyCode == Enum.KeyCode.Z then
-			AutoM1()
+			return
 		end
-	end)
-
-	local function FollowEnemy(Enemy)
-		task.spawn(function()
-			if FightingForYou == false then
-				return
-			end
-			local CHeckIFPlayer = Players:FindFirstChild(Enemy.Name)
-			local EnemyCharacter 
-			if CHeckIFPlayer then
-				EnemyCharacter = Enemy.Character
-			else
-				EnemyCharacter = Enemy
-			end
-			local EnemyHRP = EnemyCharacter:FindFirstChild("HumanoidRootPart")
-			if not EnemyHRP then return end
-			local EnemyHum = EnemyCharacter.Humanoid
-			local Player = Players.LocalPlayer
-			local Character = Player.Character
-			local HRP = Character.HumanoidRootPart
-			local Hum = Character.Humanoid
-			local Distance = (HRP.Position - EnemyHRP.Position).Magnitude
-			if Distance <= 1000 and Distance >= 10 and HRP then
-				if Distance >= 10 then
-					RS.events.ClientEvents:Fire("Sprint", true)
-					Hum:MoveTo(EnemyHRP.Position)
-					if Distance > 40 then
-						DashAwayForward()
-					end
-				else
-					RS.events.ClientEvents:Fire("Sprint", false)
-					Hum:MoveTo(EnemyHRP.Position)
-				end
-			end
-		end)
-	end
-	local CDThing = false
-	local function RandomSpecials(Enemy)
-		task.spawn(function()
-			if CDThing == true then
-				return
-			end
-			combatremote:FireServer("manacharges")
-			local CHeckIFPlayer = Players:FindFirstChild(Enemy.Name)
-			local EnemyCharacter 
-			if CHeckIFPlayer then
-				EnemyCharacter = Enemy.Character
-			else
-				EnemyCharacter = Enemy
-			end
-			local EnemyHRP = EnemyCharacter:FindFirstChild("HumanoidRootPart")
-			if not EnemyHRP then return end
-			local EnemyHum = EnemyCharacter.Humanoid
-			local Player = Players.LocalPlayer
-			local ourcds = player.cds
-			local ourstates = player.states
-			if ourstates:FindFirstChild("exeing") and not CHeckIFPlayer then
-				return
-			end
-			if CanDoStuffExe == true then
-				return
-			end
-			local Character = Player.Character
-			local HRP = Character.HumanoidRootPart
-			local Hum = Character.Humanoid
-			local PlayerBackpack = Player.Backpack
-			local Distance = (HRP.Position - EnemyHRP.Position).Magnitude
-			local AbilitySkills = {}
-			if Distance <= 25 and Distance >= 0 then
-				for i, v in ipairs(PlayerBackpack:GetChildren()) do
-					if v:FindFirstChild("BreathingMove") or v:FindFirstChild("DemonArt") and not ourcds:FindFirstChild(v.Name) then
-						table.insert(AbilitySkills, v.Name)
-					end
-				end
-				for i, v in ipairs(Character:GetChildren()) do
-					if v:IsA("Tool") then
-						v.Parent = PlayerBackpack
-					end
-				end
-				--select random skill
-				if #AbilitySkills > 0 then
-					local random = math.random(1, #AbilitySkills)
-					local randomSkill = AbilitySkills[random]
-					local TargTool = PlayerBackpack[randomSkill]
-					if TargTool then
-						CDThing = true
-						--Events.remote:FireServer(TargTool.Name)
-						TargTool.Parent = Character
-						TargTool:Activate()
-						--print("UsimgBreathMove")
-						task.delay(0, function()
-							TargTool.Parent = PlayerBackpack
-							local Katana = PlayerBackpack:FindFirstChild("Katana")
-							if Katana then
-								Katana.Parent = Character
-							end
-							task.delay(2, function()
-								CDThing = false
-							end)
-						end)
-					end
-				end
-			end
-			table.clear(AbilitySkills)
-			AbilitySkills = nil
-		end)
-	end
-
-	local function AutoGrip(Enemy)
-		task.spawn(function()
-			local CHeckIFPlayer = Players:FindFirstChild(Enemy.Name)
-			local EnemyCharacter
-			local Character
-			if CHeckIFPlayer then
-				EnemyCharacter = Enemy.Character
-			else
-				EnemyCharacter = Enemy
-			end
-			local EnemyHRP = EnemyCharacter:FindFirstChild("HumanoidRootPart")
-			if not EnemyHRP then return end
-			local EnemyHum = EnemyCharacter.Humanoid
-			local theirstates
-			local theircds
-			if CHeckIFPlayer then
-				theirstates = Players[Enemy.Name].states
-				theircds = Players[Enemy.Name].cds
-			else
-				theirstates = nil
-				theircds = nil
-			end
-			local Player = Players.LocalPlayer
-			local ourcds = player.cds
-			local Character = Player.Character
-			local HRP = Character.HumanoidRootPart
-			local Hum = Character.Humanoid
-			local Distance = (HRP.Position - EnemyHRP.Position).Magnitude
-			if theirstates then
-				if Distance <= 3 and theirstates:FindFirstChild("Killable")  then
-					combatremote:FireServer("Execute")
-				end
-			else
-				if Distance <= 14 then
-					combatremote:FireServer("Execute")
-				end
-			end
-		end)
-	end
-
-	local function RandomAttacks(Enemy)
-		task.spawn(function()
-			local CHeckIFPlayer = Players:FindFirstChild(Enemy.Name)
-			local EnemyCharacter 
-			if CHeckIFPlayer then
-				EnemyCharacter = Enemy.Character
-			else
-				EnemyCharacter = Enemy
-			end
-			local EnemyHRP = EnemyCharacter:FindFirstChild("HumanoidRootPart")
-			if not EnemyHRP then return end
-			local EnemyHum = EnemyCharacter.Humanoid
-			local Player = Players.LocalPlayer
-			local ourstates = Player.states
-			if ourstates:FindFirstChild("exeing") and not CHeckIFPlayer then
-				return
-			end
-			if CanDoStuffExe == true then
-				return
-			end
-			local ourcds = player.cds
-			local Character = Player.Character
-			local HRP = Character.HumanoidRootPart
-			local Hum = Character.Humanoid
-			local Distance = (HRP.Position - EnemyHRP.Position).Magnitude
-			if Distance <= 7 and Distance >= 1 then
-				local random = math.random(1,2)
-				if random == 1 then
-					local ourstates = Player.states
-					if ourstates:FindFirstChild("exeing") and not CHeckIFPlayer then
-						return
-					end
-					local StrongAttack = ourcds:FindFirstChild("StrongAttack")
-					if StrongAttack then
-						AutoM1()
-					else
-						AutoM2()
-					end
-				else
-					AutoM1()
-				end
-			end
-		end)
-	end
-
-	local function UseSTW()
-		if player.Backpack:FindFirstChild("See-Through World") then
-			local ourstates = player.states
-			local ourcds = player.cds
-			if not ourstates:FindFirstChild("SeeThrough") then
-				if not ourcds:FindFirstChild("See-Through World") then
-					local TargetTool = player.Backpack:FindFirstChild("See-Through World")
-					if TargetTool then
-						player.Character.Humanoid:UnequipTools()
-						TargetTool.Parent = player.Character
-						TargetTool:Activate()
-						task.wait(0.1)
-						TargetTool.Parent = player.Backpack
-					end
-				end
-			end
-		end
-	end
-
-	task.spawn(function()
-		while true do
-			task.wait()
-			if gui.Parent ~= nil and FightingForYou == true and EnemyToFocusOn ~= nil then
-				local CHeckIFPlayer = Players:FindFirstChild(EnemyToFocusOn.Name)
-				if CHeckIFPlayer then
-					local EnemyCharacter = EnemyToFocusOn.Character
-					if EnemyCharacter ~= nil then
-						FollowEnemy(EnemyToFocusOn)
-						RandomAttacks(EnemyToFocusOn)
-						AutoGrip(EnemyToFocusOn)
-					end
-				else
-					local EnemyCharacter = EnemyToFocusOn
-					if EnemyCharacter ~= nil then
-						FollowEnemy(EnemyToFocusOn)
-						local ourstates = player.states
-						if not CanDoStuffExe then
-							AutoGrip(EnemyToFocusOn)
-						end
-						if ourstates:FindFirstChild("exeing") then
-							CanDoStuffExe = true
-							task.delay(5, function()
-								if not ourstates:FindFirstChild("exeing") then
-									CanDoStuffExe = false
-								end
-							end)
-						end
-						RandomAttacks(EnemyToFocusOn)
-					end
-				end
-			end
-			if gui.Parent == nil then
-				break
-			end
-			--RS.events.ClientEvents:Fire("Sprint", true)
-			--task.wait()
-			--combatremote:FireServer("manacharges")
-		end
-	end)
-
-	task.spawn(function()
-		while true do
-			task.wait()
-			if gui.Parent ~= nil and FightingForYou == true and EnemyToFocusOn ~= nil then
-				if OnlyUseM1sBtt == false then
-					local CHeckIFPlayer = Players:FindFirstChild(EnemyToFocusOn.Name)
-					if CHeckIFPlayer then
-						local EnemyCharacter = EnemyToFocusOn.Character
-						if EnemyCharacter ~= nil then
-							RandomSpecials(EnemyToFocusOn)
-						end
-					else
-						local EnemyCharacter = EnemyToFocusOn
-						if EnemyCharacter ~= nil then
-							RandomSpecials(EnemyToFocusOn)
-						end
-					end
-				end
-			end
-			if gui.Parent == nil then
-				break
-			end
-			--RS.events.ClientEvents:Fire("Sprint", true)
-			--task.wait()
-			--combatremote:FireServer("manacharges")
-		end
-	end)
-	
-	task.spawn(function()
-		while true do
-			task.wait(1)
-			if gui.Parent ~= nil and FightingForYou == true and EnemyToFocusOn ~= nil then
-				if OnlyUseM1sBtt == false then
-					UseSTW()
-				end
-			end
-			if gui.Parent == nil then
-				break
-			end
-			--RS.events.ClientEvents:Fire("Sprint", true)
-			--task.wait()
-			--combatremote:FireServer("manacharges")
-		end
-	end)
-
-	local StoredPbMoves = {
-		["Clean Storm Wind Tree"] = {
-			D = 1,
-		},
-		["Dust Whirlwind Cutter"] = {
-			D = 1,
-		},
-		["Moon Dragon Ringtail"] = {
-			--D = 0,
-			D = 0.2,
-		},
-		["Coil Choke"] = {
-			D = 0.5,
-		},
-		["Winding Serpent Slash"] = {
-			--D = 0.1,
-			D = 0.4,
-		},
-		["Unknowing Fire"] = {
-			--D = 0.1,
-			D = 0.4,
-		},
-		["Water Surface Slash"] = {
-			--D = 0.1,
-			D = 0.4,
-		},
-		["Rapid Conquest"] = {
-			--D = 0.1,
-			D = 0.4,
-		},
-		["Bite And InfectOG"] = {
-			D = 0.4,
-		},
-		["Rat's ClawOG"] = {
-			D = 0.5,
-		},
-		["Roar"] = {
-			D = 0.4,
-		},
-		["Explosive Slash"] = {
-			D = 0.4,
-		},
-		["String Performance"] = {
-			D = 0.4,
-		},
-		["Rip and Devour"] = {
-			D = 0.2,
-		},
-		["Pierce and Extract"] = {
-			D = 0.4,
-		},
-		["Whirling Peach"] = {
-			D = 0.4,
-		},
-		["Peonies of Futility"] = {
-			D = 0.4
-		},
-		["Flaming Thunder God"] = {
-			D = 0.4
-		},
-		["Love Pang"] = {
-			D = 0.4
-		},
-	}
-
-
-	local function ProtectGBS(targetPlayer, track)
-		task.spawn(function()
-			local CHeckIFPlayer = Players:FindFirstChild(targetPlayer.Name)
-			local theirstates
-			local theircds
-			if CHeckIFPlayer then
-				theirstates = Players[targetPlayer.Name].states
-				theircds = Players[targetPlayer.Name].cds
-			else
-				theirstates = nil
-				theircds = nil
-			end
-			local ourstates = Players[Players.LocalPlayer.Name].states
-			--local theircds = Players[targetPlayer.Name].cds
-			local ourcds = Players[Players.LocalPlayer.Name].cds
-			if ProtectGBS2 == false then return end
-			local HeavyAlert = ourcds:FindFirstChild("HeavyAlert")
-			if HeavyAlert then
-				if theirstates then
-					theirstates.ChildAdded:Once(function(ch)
-						if ch.Name == "PerfectBlock" then
-							if theirstates:FindFirstChild("block") then
-								combatremote:FireServer("blockstart")
-								task.wait(1)
-								combatremote:FireServer("blockend")
-							end
-						end
-					end)
-				end
-			end
-			local StrongAttack = ourcds:FindFirstChild("StrongAttackggggg")
-			if StrongAttack then
-				if theirstates then
-					theirstates.ChildAdded:Once(function(ch)
-						if ch.Name == "PerfectBlock" then
-							if theirstates:FindFirstChild("block") then
-								combatremote:FireServer("blockstart")
-								task.wait(1)
-								combatremote:FireServer("blockend")
-							end
-						end
-					end)
-				end
-			end
-			for _, cd in ipairs(ourcds:GetChildren()) do
-				local moveData = StoredPbMoves[cd.Name]
-
-				if moveData then
-					if theirstates then
-						theirstates.ChildAdded:Once(function(ch)
-							if ch.Name == "PerfectBlock" then
-								if theirstates:FindFirstChild("block") then
-									combatremote:FireServer("blockstart")
-									task.wait(moveData.D)
-									combatremote:FireServer("blockend")
-								end
-							end
-						end)
-					end
-					break
-				end
-			end
-		end)
-	end
-
-	local function AutoBlock(targetPlayer, track)
-		task.spawn(function()
-			local CHeckIFPlayer = Players:FindFirstChild(targetPlayer.Name)
-			local theirstates
-			local theircds
-			if CHeckIFPlayer then
-				theirstates = Players[targetPlayer.Name].states
-				theircds = Players[targetPlayer.Name].cds
-			else
-				theirstates = nil
-				theircds = nil
-			end
-			local ourstates = Players[Players.LocalPlayer.Name].states
-			local ourcds = Players[Players.LocalPlayer.Name].cds
-			if IsAutoBlocking == false then return end
-			local Res = RiskChecker(targetPlayer, track, AnimsTableSet.normswordm1s.bb)
-			if Res == "RiskyBlock" and ourstates:FindFirstChild("block") then
-				combatremote:FireServer("blockend")
-				local res = DashAway()
-				if res == false then
-					AutoM1()
-				end
-				return
-			end
-			local OURCD = ourcds:FindFirstChild("blockstart")
-			if OURCD and not ourstates:FindFirstChild("block") then
-				local random = math.random(1,2)
-				if random == 1 then
-					local res = DashAway()
-					if res == false then
-						AutoM1()
-					end
-				else
-					AutoM1()
-				end
-				return
-			end
-			local Character
-			if CHeckIFPlayer then
-				Character = targetPlayer.Character
-			else
-				Character = targetPlayer
-			end
-			local anim = track.Animation
-			if not anim then return end
-			local id = anim.AnimationId
-			for key, value in pairs(AnimsTableSet.normswordm1s) do
-				if key ~= "dur" and value == id then
-					task.delay(AnimsTableSet.normswordm1s.dur - 0.1, function()
-						if not theirstates or not theirstates:FindFirstChild("block") then
-							local Res = RiskChecker(targetPlayer, track, AnimsTableSet.normswordm1s.bb)
-							if Res == "RiskyBlock" then
-								DashAway()
-							else
-								if ourcds:FindFirstChild("blockstart") and not ourstates:FindFirstChild("block") then
-									AutoM1()
-								elseif ourcds:FindFirstChild("NormalAttack") and ourcds:FindFirstChild("blockstart") then
-									DashAway()
-								else
-									local Conti = true
-									local c1
-									if theirstates then
-										c1 = theirstates.ChildAdded:Connect(function(ch)
-											if ch.Name == "PerfectBlock" then
-												Conti = false
-												--heavytext.Text = "YOU GOTTA MOVE!"
-												--heavytext.Visible = true
-												AutoM2()
-												--	DashAway()
-												task.wait(2)
-												--heavytext.Visible = false
-											end
-										end)
-									end
-									if Conti == true then
-										combatremote:FireServer("blockstart")
-										task.wait(0.3)
-										combatremote:FireServer("blockend")
-										if theirstates and theirstates:FindFirstChild("block") then
-											AutoM2()
-										else
-											task.wait(0.3)
-											if Conti == true then
-												--heavytext.Text = "m1ing rlly good"
-												AutoM1()
-											end
-										end
-									end
-									task.wait(1.5)
-									if c1 then
-										c1:Disconnect()
-									end
-								end
-							end
-						end
-					end)
-					break
-				end
-			end
-			for key, value in pairs(AnimsTableSet.beastswordm1s) do
-				if key ~= "dur" and value == id then
-					task.delay(AnimsTableSet.beastswordm1s.dur - 0.1, function()
-						if not theirstates or not theirstates:FindFirstChild("block") then
-							local Res = RiskChecker(targetPlayer, track, AnimsTableSet.beastswordm1s.bb)
-							if Res == "RiskyBlock" then
-								local random = math.random(1,2)
-								if random == 1 then
-									DashAway()
-								else
-									AutoM1()
-								end
-							else
-								if ourcds:FindFirstChild("blockstart") and not ourstates:FindFirstChild("block") then
-									AutoM1()
-								elseif ourcds:FindFirstChild("NormalAttack") and ourcds:FindFirstChild("blockstart") then
-									DashAway()
-								else
-									local Conti = true
-									local c1
-									if theirstates then
-										c1 = theirstates.ChildAdded:Connect(function(ch)
-											if ch.Name == "PerfectBlock" then
-												Conti = false
-												--heavytext.Text = "YOU GOTTA MOVE!"
-												--heavytext.Visible = true
-												AutoM2()
-												--	DashAway()
-												task.wait(2)
-												--heavytext.Visible = false
-											end
-										end)
-									end
-									if Conti == true then
-										combatremote:FireServer("blockstart")
-										task.wait(0.3)
-										combatremote:FireServer("blockend")
-										if theirstates and theirstates:FindFirstChild("block") then
-											AutoM2()
-										else
-											task.wait(0.3)
-											if Conti == true then
-												--heavytext.Text = "m1ing rlly good"
-												AutoM1()
-											end
-										end
-									end
-									task.wait(1.5)
-									if c1 then
-										c1:Disconnect()
-									end
-								end
-							end
-						end
-					end)
-					break
-				end
-			end
-			for key, value in pairs(AnimsTableSet.normfistm1s) do
-				if key ~= "dur" and value == id then
-					task.delay(AnimsTableSet.normfistm1s.dur - 0.1, function()
-						if not theirstates or not theirstates:FindFirstChild("block") then
-							local Res = RiskChecker(targetPlayer, track, AnimsTableSet.normfistm1s.bb)
-							if Res == "RiskyBlock" then
-								local random = math.random(1,2)
-								if random == 1 then
-									DashAway()
-								else
-									AutoM1()
-								end
-							else
-								if ourcds:FindFirstChild("blockstart") and not ourstates:FindFirstChild("block") then
-									AutoM1()
-								elseif ourcds:FindFirstChild("NormalAttack") and ourcds:FindFirstChild("blockstart") then
-									DashAway()
-								else
-									local Conti = true
-									local c1
-									if theirstates then
-										c1 = theirstates.ChildAdded:Connect(function(ch)
-											if ch.Name == "PerfectBlock" then
-												Conti = false
-												--heavytext.Text = "YOU GOTTA MOVE!"
-												--heavytext.Visible = true
-												AutoM2()
-												--	DashAway()
-												task.wait(2)
-												--heavytext.Visible = false
-											end
-										end)
-									end
-									if Conti == true then
-										combatremote:FireServer("blockstart")
-										task.wait(0.3)
-										combatremote:FireServer("blockend")
-										if theirstates and theirstates:FindFirstChild("block") then
-											AutoM2()
-										else
-											task.wait(0.3)
-											if Conti == true then
-												--heavytext.Text = "m1ing rlly good"
-												AutoM1()
-											end
-										end
-									end
-									task.wait(1.5)
-									if c1 then
-										c1:Disconnect()
-									end
-								end
-							end
-						end
-					end)
-					break
-				end
-			end
-			if id == AnimsTableSet.spikeslash.id then
+		local id = anim.AnimationId
+		if id == AnimsTableSet.m2swordhigh.id then
+			task.delay(AnimsTableSet.m2swordhigh.dur - 0.1, function()
 				if not theirstates or not theirstates:FindFirstChild("block") then
-					local Res = RiskChecker(targetPlayer, track, AnimsTableSet.spikeslash.bb)
-					if Res == "RiskyBlock" then
-						local random = math.random(1,2)
-						if random == 1 then
-							DashAway()
-						else
-							AutoM1()
-						end
-					else
+					combatremote:FireServer("blockstart")
+					task.wait(0.5)
+					combatremote:FireServer("blockend")
+				end
+			end)
+		elseif id == AnimsTableSet.m2swordlower.id then
+			task.delay(AnimsTableSet.m2swordlower.dur - 0.1, function()
+				if not theirstates or not theirstates:FindFirstChild("block") then
+					combatremote:FireServer("blockstart")
+					task.wait(0.5)
+					combatremote:FireServer("blockend")
+				end
+			end)
+		elseif id == AnimsTableSet.m2high.id then
+			task.delay(AnimsTableSet.m2high.dur - 0.1, function()
+				if not theirstates or not theirstates:FindFirstChild("block") then
+					combatremote:FireServer("blockstart")
+					task.wait(0.5)
+					combatremote:FireServer("blockend")
+				end
+			end)
+		elseif id == AnimsTableSet.m2slap.id then
+			task.delay(AnimsTableSet.m2slap.dur - 0.1, function()
+				if not theirstates or not theirstates:FindFirstChild("block") then
+					combatremote:FireServer("blockstart")
+					task.wait(0.5)
+					combatremote:FireServer("blockend")
+				end
+			end)
+		elseif id == AnimsTableSet.moondragonringtail.id then
+			task.delay(AnimsTableSet.moondragonringtail.dur - 0.1, function()
+				if not theirstates or not theirstates:FindFirstChild("block") then
+					combatremote:FireServer("blockstart")
+					task.wait(0.5)
+					combatremote:FireServer("blockend")
+				end
+			end)
+		elseif id == AnimsTableSet.bodyspike.id then
+			task.delay(AnimsTableSet.bodyspike.dur - 0.1, function()
+				if not theirstates or not theirstates:FindFirstChild("block") then
+					combatremote:FireServer("blockstart")
+					task.wait(0.5)
+					combatremote:FireServer("blockend")
+				end
+			end)
+		else
+			for key, value in pairs(AnimsTableSet) do
+				if key and value.id and value.id == id then
+					task.delay(value.dur - 0.1, function()
 						if ourcds:FindFirstChild("blockstart") and not ourstates:FindFirstChild("block") then
 							AutoM1()
 						elseif ourcds:FindFirstChild("NormalAttack") and ourcds:FindFirstChild("blockstart") then
 							DashAway()
 						else
 							combatremote:FireServer("blockstart")
-							task.wait(0.4)
+							task.wait(0.3)
 							combatremote:FireServer("blockend")
 							if theirstates and theirstates:FindFirstChild("block") then
 								AutoM2()
@@ -2154,481 +1472,1281 @@ if RS:FindFirstChild("events") then
 								AutoM1()
 							end
 						end
+					end)
+					break
+				end
+			end
+		end
+	end)
+
+end
+
+UIS.InputBegan:Connect(function(input, gpe)
+	if input.KeyCode == Enum.KeyCode.Z then
+		AutoM1()
+	end
+end)
+
+local function FollowEnemy(Enemy)
+	task.spawn(function()
+		if FightingForYou == false then
+			return
+		end
+		local CHeckIFPlayer = Players:FindFirstChild(Enemy.Name)
+		local EnemyCharacter 
+		if CHeckIFPlayer then
+			EnemyCharacter = Enemy.Character
+		else
+			EnemyCharacter = Enemy
+		end
+		local EnemyHRP = EnemyCharacter:FindFirstChild("HumanoidRootPart")
+		if not EnemyHRP then return end
+		local EnemyHum = EnemyCharacter.Humanoid
+		local Player = Players.LocalPlayer
+		local Character = Player.Character
+		local HRP = Character.HumanoidRootPart
+		local Hum = Character.Humanoid
+		local Distance = (HRP.Position - EnemyHRP.Position).Magnitude
+		if Distance <= 1000 and Distance >= 10 and HRP then
+			if Distance >= 10 then
+				RS.events.ClientEvents:Fire("Sprint", true)
+				Hum:MoveTo(EnemyHRP.Position)
+				if Distance > 40 then
+					DashAwayForward()
+				end
+			else
+				RS.events.ClientEvents:Fire("Sprint", false)
+				Hum:MoveTo(EnemyHRP.Position)
+			end
+		end
+	end)
+end
+local CDThing = false
+local function RandomSpecials(Enemy)
+	task.spawn(function()
+		if CDThing == true then
+			return
+		end
+		combatremote:FireServer("manacharges")
+		local CHeckIFPlayer = Players:FindFirstChild(Enemy.Name)
+		local EnemyCharacter 
+		if CHeckIFPlayer then
+			EnemyCharacter = Enemy.Character
+		else
+			EnemyCharacter = Enemy
+		end
+		local EnemyHRP = EnemyCharacter:FindFirstChild("HumanoidRootPart")
+		if not EnemyHRP then return end
+		local EnemyHum = EnemyCharacter.Humanoid
+		local Player = Players.LocalPlayer
+		local ourcds = player.cds
+		local ourstates = player.states
+		if ourstates:FindFirstChild("exeing") and not CHeckIFPlayer then
+			return
+		end
+		if CanDoStuffExe == true then
+			return
+		end
+		local Character = Player.Character
+		local HRP = Character.HumanoidRootPart
+		local Hum = Character.Humanoid
+		local PlayerBackpack = Player.Backpack
+		local Distance = (HRP.Position - EnemyHRP.Position).Magnitude
+		local AbilitySkills = {}
+		if Distance <= 25 and Distance >= 0 then
+			for i, v in ipairs(PlayerBackpack:GetChildren()) do
+				if v:FindFirstChild("BreathingMove") or v:FindFirstChild("DemonArt") and not ourcds:FindFirstChild(v.Name) then
+					table.insert(AbilitySkills, v.Name)
+				end
+			end
+			for i, v in ipairs(Character:GetChildren()) do
+				if v:IsA("Tool") then
+					v.Parent = PlayerBackpack
+				end
+			end
+			--select random skill
+			if #AbilitySkills > 0 then
+				local random = math.random(1, #AbilitySkills)
+				local randomSkill = AbilitySkills[random]
+				local TargTool = PlayerBackpack[randomSkill]
+				if TargTool then
+					CDThing = true
+					--Events.remote:FireServer(TargTool.Name)
+					TargTool.Parent = Character
+					TargTool:Activate()
+					--print("UsimgBreathMove")
+					task.delay(0, function()
+						TargTool.Parent = PlayerBackpack
+						local Katana = PlayerBackpack:FindFirstChild("Katana")
+						if Katana then
+							Katana.Parent = Character
+						end
+						task.delay(2, function()
+							CDThing = false
+						end)
+					end)
+				end
+			end
+		end
+		table.clear(AbilitySkills)
+		AbilitySkills = nil
+	end)
+end
+
+local function AutoGrip(Enemy)
+	task.spawn(function()
+		local CHeckIFPlayer = Players:FindFirstChild(Enemy.Name)
+		local EnemyCharacter
+		local Character
+		if CHeckIFPlayer then
+			EnemyCharacter = Enemy.Character
+		else
+			EnemyCharacter = Enemy
+		end
+		local EnemyHRP = EnemyCharacter:FindFirstChild("HumanoidRootPart")
+		if not EnemyHRP then return end
+		local EnemyHum = EnemyCharacter.Humanoid
+		local theirstates
+		local theircds
+		if CHeckIFPlayer then
+			theirstates = Players[Enemy.Name].states
+			theircds = Players[Enemy.Name].cds
+		else
+			theirstates = nil
+			theircds = nil
+		end
+		local Player = Players.LocalPlayer
+		local ourcds = player.cds
+		local Character = Player.Character
+		local HRP = Character.HumanoidRootPart
+		local Hum = Character.Humanoid
+		local Distance = (HRP.Position - EnemyHRP.Position).Magnitude
+		if theirstates then
+			if Distance <= 3 and theirstates:FindFirstChild("Killable")  then
+				combatremote:FireServer("Execute")
+			end
+		else
+			if Distance <= 14 then
+				combatremote:FireServer("Execute")
+			end
+		end
+	end)
+end
+
+local function RandomAttacks(Enemy)
+	task.spawn(function()
+		local CHeckIFPlayer = Players:FindFirstChild(Enemy.Name)
+		local EnemyCharacter 
+		if CHeckIFPlayer then
+			EnemyCharacter = Enemy.Character
+		else
+			EnemyCharacter = Enemy
+		end
+		local EnemyHRP = EnemyCharacter:FindFirstChild("HumanoidRootPart")
+		if not EnemyHRP then return end
+		local EnemyHum = EnemyCharacter.Humanoid
+		local Player = Players.LocalPlayer
+		local ourstates = Player.states
+		if ourstates:FindFirstChild("exeing") and not CHeckIFPlayer then
+			return
+		end
+		if CanDoStuffExe == true then
+			return
+		end
+		local ourcds = player.cds
+		local Character = Player.Character
+		local HRP = Character.HumanoidRootPart
+		local Hum = Character.Humanoid
+		local Distance = (HRP.Position - EnemyHRP.Position).Magnitude
+		if Distance <= 7 and Distance >= 1 then
+			local random = math.random(1,2)
+			if random == 1 then
+				local ourstates = Player.states
+				if ourstates:FindFirstChild("exeing") and not CHeckIFPlayer then
+					return
+				end
+				local StrongAttack = ourcds:FindFirstChild("StrongAttack")
+				if StrongAttack then
+					AutoM1()
+				else
+					AutoM2()
+				end
+			else
+				AutoM1()
+			end
+		end
+	end)
+end
+
+local function UseSTW()
+	if player.Backpack:FindFirstChild("See-Through World") then
+		local ourstates = player.states
+		local ourcds = player.cds
+		if not ourstates:FindFirstChild("SeeThrough") then
+			if not ourcds:FindFirstChild("See-Through World") then
+				local TargetTool = player.Backpack:FindFirstChild("See-Through World")
+				if TargetTool then
+					player.Character.Humanoid:UnequipTools()
+					TargetTool.Parent = player.Character
+					TargetTool:Activate()
+					task.wait(0.1)
+					TargetTool.Parent = player.Backpack
+				end
+			end
+		end
+	end
+end
+
+local function UseTotalConcentration()
+	if player.Backpack:FindFirstChild("Total Concentration Breathing") then
+		local ourstates = player.states
+		local ourcds = player.cds
+		if not ourstates:FindFirstChild("Total Concentration Breathing") then
+			local TargetTool = player.Backpack:FindFirstChild("Total Concentration Breathing")
+			if TargetTool then
+				player.Character.Humanoid:UnequipTools()
+				TargetTool.Parent = player.Character
+				TargetTool:Activate()
+				task.wait(0.1)
+				TargetTool.Parent = player.Backpack
+			end
+		end
+	end
+end
+
+local function UseRedCrim()
+	if player.Backpack:FindFirstChild("Crimson Red Nichirin Blade") then
+		local ourstates = player.states
+		local ourcds = player.cds
+		if not ourstates:FindFirstChild("RedBlade") then
+			local TargetTool = player.Backpack:FindFirstChild("Crimson Red Nichirin Blade")
+			if TargetTool then
+				player.Character.Humanoid:UnequipTools()
+				TargetTool.Parent = player.Character
+				TargetTool:Activate()
+				task.wait(0.1)
+				TargetTool.Parent = player.Backpack
+			end
+		end
+	end
+end
+
+
+task.spawn(function()
+	while true do
+		task.wait()
+		if gui.Parent ~= nil and FightingForYou == true and EnemyToFocusOn ~= nil then
+			local CHeckIFPlayer = Players:FindFirstChild(EnemyToFocusOn.Name)
+			if CHeckIFPlayer then
+				local EnemyCharacter = EnemyToFocusOn.Character
+				if EnemyCharacter ~= nil then
+					FollowEnemy(EnemyToFocusOn)
+					RandomAttacks(EnemyToFocusOn)
+					AutoGrip(EnemyToFocusOn)
+				end
+			else
+				local EnemyCharacter = EnemyToFocusOn
+				if EnemyCharacter ~= nil then
+					FollowEnemy(EnemyToFocusOn)
+					local ourstates = player.states
+					if not CanDoStuffExe then
+						AutoGrip(EnemyToFocusOn)
+					end
+					if ourstates:FindFirstChild("exeing") then
+						CanDoStuffExe = true
+						task.delay(5, function()
+							if not ourstates:FindFirstChild("exeing") then
+								CanDoStuffExe = false
+							end
+						end)
+					end
+					RandomAttacks(EnemyToFocusOn)
+				end
+			end
+		end
+		if gui.Parent == nil then
+			break
+		end
+		--RS.events.ClientEvents:Fire("Sprint", true)
+		--task.wait()
+		--combatremote:FireServer("manacharges")
+	end
+end)
+
+task.spawn(function()
+	while true do
+		task.wait()
+		if gui.Parent ~= nil and FightingForYou == true and EnemyToFocusOn ~= nil then
+			if OnlyUseM1sBtt == false then
+				local CHeckIFPlayer = Players:FindFirstChild(EnemyToFocusOn.Name)
+				if CHeckIFPlayer then
+					local EnemyCharacter = EnemyToFocusOn.Character
+					if EnemyCharacter ~= nil then
+						RandomSpecials(EnemyToFocusOn)
+					end
+				else
+					local EnemyCharacter = EnemyToFocusOn
+					if EnemyCharacter ~= nil then
+						RandomSpecials(EnemyToFocusOn)
 					end
 				end
-			elseif id == AnimsTableSet.m2swordlower.id then
-				task.delay(AnimsTableSet.m2swordlower.dur - 0.1, function()
-					if not theirstates or not theirstates:FindFirstChild("block") then
-						combatremote:FireServer("blockstart")
-						task.wait(0.1)
-						combatremote:FireServer("blockend")
-						task.wait(0.1)
-						combatremote:FireServer("NormalAttack")
+			end
+		end
+		if gui.Parent == nil then
+			break
+		end
+		--RS.events.ClientEvents:Fire("Sprint", true)
+		--task.wait()
+		--combatremote:FireServer("manacharges")
+	end
+end)
+
+task.spawn(function()
+	while true do
+		task.wait(1)
+		if gui.Parent ~= nil and FightingForYou == true and EnemyToFocusOn ~= nil then
+			if OnlyUseM1sBtt == false then
+				UseSTW()
+				if AutoCrimTotal == true then
+					UseTotalConcentration()
+					UseRedCrim()
+				end
+			end
+		end
+		if gui.Parent == nil then
+			break
+		end
+		--RS.events.ClientEvents:Fire("Sprint", true)
+		--task.wait()
+		--combatremote:FireServer("manacharges")
+	end
+end)
+
+local StoredPbMoves = {
+	["Clean Storm Wind Tree"] = {
+		D = 1,
+	},
+	["Dust Whirlwind Cutter"] = {
+		D = 1,
+	},
+	["Moon Dragon Ringtail"] = {
+		--D = 0,
+		D = 0.2,
+	},
+	["Coil Choke"] = {
+		D = 0.5,
+	},
+	["Winding Serpent Slash"] = {
+		--D = 0.1,
+		D = 0.4,
+	},
+	["Unknowing Fire"] = {
+		--D = 0.1,
+		D = 0.4,
+	},
+	["Water Surface Slash"] = {
+		--D = 0.1,
+		D = 0.4,
+	},
+	["Rapid Conquest"] = {
+		--D = 0.1,
+		D = 0.4,
+	},
+	["Bite And InfectOG"] = {
+		D = 0.4,
+	},
+	["Rat's ClawOG"] = {
+		D = 0.5,
+	},
+	["Roar"] = {
+		D = 0.4,
+	},
+	["Explosive Slash"] = {
+		D = 0.4,
+	},
+	["String Performance"] = {
+		D = 0.4,
+	},
+	["Rip and Devour"] = {
+		D = 0.2,
+	},
+	["Pierce and Extract"] = {
+		D = 0.4,
+	},
+	["Whirling Peach"] = {
+		D = 0.4,
+	},
+	["Peonies of Futility"] = {
+		D = 0.4
+	},
+	["Flaming Thunder God"] = {
+		D = 0.4
+	},
+	["Love Pang"] = {
+		D = 0.4
+	},
+}
+
+
+local function ProtectGBS(targetPlayer, track)
+	task.spawn(function()
+		local CHeckIFPlayer = Players:FindFirstChild(targetPlayer.Name)
+		local theirstates
+		local theircds
+		if CHeckIFPlayer then
+			theirstates = Players[targetPlayer.Name].states
+			theircds = Players[targetPlayer.Name].cds
+		else
+			theirstates = nil
+			theircds = nil
+		end
+		local ourstates = Players[Players.LocalPlayer.Name].states
+		--local theircds = Players[targetPlayer.Name].cds
+		local ourcds = Players[Players.LocalPlayer.Name].cds
+		if ProtectGBS2 == false then return end
+		local HeavyAlert = ourcds:FindFirstChild("HeavyAlert")
+		if HeavyAlert then
+			if theirstates then
+				theirstates.ChildAdded:Once(function(ch)
+					if ch.Name == "PerfectBlock" then
+						if theirstates:FindFirstChild("block") then
+							combatremote:FireServer("blockstart")
+							task.wait(1)
+							combatremote:FireServer("blockend")
+						end
 					end
 				end)
+			end
+		end
+		local StrongAttack = ourcds:FindFirstChild("StrongAttackggggg")
+		if StrongAttack then
+			if theirstates then
+				theirstates.ChildAdded:Once(function(ch)
+					if ch.Name == "PerfectBlock" then
+						if theirstates:FindFirstChild("block") then
+							combatremote:FireServer("blockstart")
+							task.wait(1)
+							combatremote:FireServer("blockend")
+						end
+					end
+				end)
+			end
+		end
+		for _, cd in ipairs(ourcds:GetChildren()) do
+			local moveData = StoredPbMoves[cd.Name]
+
+			if moveData then
+				if theirstates then
+					theirstates.ChildAdded:Once(function(ch)
+						if ch.Name == "PerfectBlock" then
+							if theirstates:FindFirstChild("block") then
+								combatremote:FireServer("blockstart")
+								task.wait(moveData.D)
+								combatremote:FireServer("blockend")
+							end
+						end
+					end)
+				end
+				break
+			end
+		end
+	end)
+end
+
+local function AutoBlock(targetPlayer, track)
+	task.spawn(function()
+		local CHeckIFPlayer = Players:FindFirstChild(targetPlayer.Name)
+		local theirstates
+		local theircds
+		if CHeckIFPlayer then
+			theirstates = Players[targetPlayer.Name].states
+			theircds = Players[targetPlayer.Name].cds
+		else
+			theirstates = nil
+			theircds = nil
+		end
+		local ourstates = Players[Players.LocalPlayer.Name].states
+		local ourcds = Players[Players.LocalPlayer.Name].cds
+		if IsAutoBlocking == false then return end
+		local Res = RiskChecker(targetPlayer, track, AnimsTableSet.normswordm1s.bb)
+		if Res == "RiskyBlock" and ourstates:FindFirstChild("block") then
+			combatremote:FireServer("blockend")
+			local res = DashAway()
+			if res == false then
+				AutoM1()
+			end
+			return
+		end
+		local OURCD = ourcds:FindFirstChild("blockstart")
+		if OURCD and not ourstates:FindFirstChild("block") then
+			local random = math.random(1,2)
+			if random == 1 then
+				local res = DashAway()
+				if res == false then
+					AutoM1()
+				end
 			else
-				for key, value in pairs(AnimsTableSet) do
-					if key and value.id and value.id == id then
-						task.delay(value.dur - 0.1, function()
-							if not theirstates or not theirstates:FindFirstChild("block") then
-								local Res = RiskChecker(targetPlayer, track, value.bb)
-								if Res == "RiskyBlock" and not value.multi then
-									local random = math.random(1,2)
-									if random == 1 then
-										local res = DashAway()
-										if res == false then
-											AutoM1()
+				AutoM1()
+			end
+			return
+		end
+		local Character
+		if CHeckIFPlayer then
+			Character = targetPlayer.Character
+		else
+			Character = targetPlayer
+		end
+		local anim = track.Animation
+		if not anim then return end
+		local id = anim.AnimationId
+		for key, value in pairs(AnimsTableSet.normswordm1s) do
+			if key ~= "dur" and value == id then
+				task.delay(AnimsTableSet.normswordm1s.dur - 0.1, function()
+					if not theirstates or not theirstates:FindFirstChild("block") then
+						local Res = RiskChecker(targetPlayer, track, AnimsTableSet.normswordm1s.bb)
+						if Res == "RiskyBlock" then
+							DashAway()
+						else
+							if ourcds:FindFirstChild("blockstart") and not ourstates:FindFirstChild("block") then
+								AutoM1()
+							elseif ourcds:FindFirstChild("NormalAttack") and ourcds:FindFirstChild("blockstart") then
+								DashAway()
+							else
+								local Conti = true
+								local c1
+								if theirstates then
+									c1 = theirstates.ChildAdded:Connect(function(ch)
+										if ch.Name == "PerfectBlock" then
+											Conti = false
+											--heavytext.Text = "YOU GOTTA MOVE!"
+											--heavytext.Visible = true
+											AutoM2()
+											--	DashAway()
+											task.wait(2)
+											--heavytext.Visible = false
 										end
-									else
-										AutoM1()
-									end
-								elseif Res == "RiskyBlock" and value.multi then
+									end)
+								end
+								if Conti == true then
 									combatremote:FireServer("blockstart")
-									if value.d then
-										task.wait(value.d / 1.5)
-									end
+									task.wait(0.3)
 									combatremote:FireServer("blockend")
 									if theirstates and theirstates:FindFirstChild("block") then
-										local res = DashAway()
-										if res == false then
-											AutoM1()
-										end
+										AutoM2()
 									else
-										AutoM1()
-									end
-									--DashAway()
-								else
-									if ourcds:FindFirstChild("blockstart") and not ourstates:FindFirstChild("block") then
-										AutoM1()
-									elseif ourcds:FindFirstChild("NormalAttack") and ourcds:FindFirstChild("blockstart") then
-										DashAway()
-									else
-										combatremote:FireServer("blockstart")
-										if value.d then
-											task.wait(value.d)
-										else
-											task.wait(0.4)
-										end
-										combatremote:FireServer("blockend")
-										if theirstates and theirstates:FindFirstChild("block") then
-											AutoM2()
-										else
+										task.wait(0.3)
+										if Conti == true then
+											--heavytext.Text = "m1ing rlly good"
 											AutoM1()
 										end
 									end
 								end
+								task.wait(1.5)
+								if c1 then
+									c1:Disconnect()
+								end
 							end
-						end)
-						break
-					end
-				end
-			end
-		end)
-	end
-
-	local function Dodge4(targetPlayer, track)
-
-		if IsAutoBlocking == false then return end
-
-		local targetChar = targetPlayer.Character
-		local myChar = game.Players.LocalPlayer.Character
-		if not targetChar or not myChar then return end
-
-		local hrp = targetChar:FindFirstChild("HumanoidRootPart")
-		local myhrp = myChar:FindFirstChild("HumanoidRootPart")
-		if not hrp or not myhrp then return end
-
-		if (hrp.Position - myhrp.Position).Magnitude > 200 then return end
-
-		myChar:PivotTo(hrp.CFrame * CFrame.new(-15,0,5))
-
-		if track then
-			track.Stopped:Once(function()
-
-				local newTargetChar = targetPlayer.Character
-				local newHRP = newTargetChar and newTargetChar:FindFirstChild("HumanoidRootPart")
-
-				if newHRP and myChar then
-					myChar:PivotTo(newHRP.CFrame * CFrame.new(0,0,-3))
-				end
-
-			end)
-		end
-	end
-
-	local animationTriggers = {
-		["rbxassetid://128005402860390"] = function(targetPlayer)
-			print("Jump animation detected from", targetPlayer.Name)
-
-			local char = targetPlayer.Character
-			if not char then return end
-
-			local highlight = Instance.new("Highlight")
-			highlight.FillColor = Color3.fromRGB(255, 0, 0)
-			highlight.Parent = char
-
-			task.wait(2)
-			highlight:Destroy()
-		end,
-
-		[AnimsTableSet.beastswordm1s.id1] = AutoBlock,
-		[AnimsTableSet.beastswordm1s.id2] = AutoBlock,
-		[AnimsTableSet.beastswordm1s.id3] = AutoBlock,
-		[AnimsTableSet.beastswordm1s.id4] = AutoBlock,
-		[AnimsTableSet.beastswordm1s.id5] = AutoBlock,
-		[AnimsTableSet.normswordm1s.id1] = AutoBlock,
-		[AnimsTableSet.normswordm1s.id2] = AutoBlock,
-		[AnimsTableSet.normswordm1s.id3] = AutoBlock,
-		[AnimsTableSet.normswordm1s.id4] = AutoBlock,
-		[AnimsTableSet.normswordm1s.id5] = AutoBlock,
-		[AnimsTableSet.normfistm1s.id1] = AutoBlock,
-		[AnimsTableSet.normfistm1s.id2] = AutoBlock,
-		[AnimsTableSet.normfistm1s.id3] = AutoBlock,
-		[AnimsTableSet.normfistm1s.id4] = AutoBlock,
-		[AnimsTableSet.normfistm1s.id5] = AutoBlock,
-		[AnimsTableSet.normfistm1s.id6] = AutoBlock,
-		[AnimsTableSet.blocks.fistblock] = ProtectGBS,
-		[AnimsTableSet.blocks.swordblock] = ProtectGBS,
-
-		[AnimsTableSet.DemonPunch.id] = AutoBlock,
-		[AnimsTableSet.LeapKick.id] = AutoPB,
-		[AnimsTableSet.DemonBlade.id] = AutoPB,
-
-		--rivosfsm1
-		["rbxassetid://81538235954358"] = nil,
-
-		["rbxassetid://92509099075919"] = nil,--rivofireblast
-		[AnimsTableSet.LovePang.id] = AutoPB,
-		[AnimsTableSet.CatLeggedWinds.id] = AutoBlock,
-		[AnimsTableSet.CatLoveShower.id] = AutoBlock,
-		[AnimsTableSet.ShiversOfFirstLove.id] = AutoBlock,
-		[AnimsTableSet.Waterdashlong.id] = AutoBlock,
-		[AnimsTableSet.WaterfallJar.id] = AutoBlock,
-		--GroundSpike
-		["rbxassetid://13988506187"] = nil,
-		[AnimsTableSet.bodyspike.id] = AutoPB,
-		--SpikeSlash
-		[AnimsTableSet.spikeslash.id] = AutoBlock,
-		--FlyingBloodSickles
-		["rbxassetid://13987191385"] = nil,
-		[AnimsTableSet.RampantArc.id] = AutoPB,
-		--RotatingSlashesOSns
-		["rbxassetid://13987199303"] = nil,
-		[AnimsTableSet.CuttingThread.id] = AutoBlock,
-		--DumbTamayoKnockMove
-		["rbxassetid://13989614620"] = nil,
-		[AnimsTableSet.FleshSeeds.id] = AutoPB,
-		[AnimsTableSet.StrongKickNez.id] = AutoBlock,
-		--BloodMine
-		["rbxassetid://13988114619"] = nil,
-		[AnimsTableSet.FlingingArrow.id] = AutoBlock,
-		[AnimsTableSet.BarrenHanging.id] = AutoBlock,
-		[AnimsTableSet.FreezingClouds.id] = AutoPB,
-		[AnimsTableSet.HantenguSpears.id] = AutoBlock,
-		--SonicScream
-		["rbxassetid://13989333281"] = nil,
-		[AnimsTableSet.ThousandNeedle.id] = AutoBlock,
-		[AnimsTableSet.TenThousand.id] = AutoBlock,
-		[AnimsTableSet.WaterPot.id] = AutoBlock,
-		[AnimsTableSet.BlueSilverAfterGlow.id] = AutoBlock,
-		[AnimsTableSet.DestructionStyle.id] = AutoPB,
-		[AnimsTableSet.VoidStyle.id] = AutoBlock,
-		--BallThrow
-		["rbxassetid://13988238363"] = nil,
-		--BallKick
-		["rbxassetid://13987391354"] = nil,
-		--BallBarrage
-		["rbxassetid://13988243685"] = nil,
-		--Daki1
-		["rbxassetid://13987852579"] = nil,
-		--Daki1
-		["rbxassetid://13987905193"] = nil,
-		--Daki1
-		["rbxassetid://13987898088"] = nil,
-		--Daki1
-		["rbxassetid://15780361276"] = nil,
-		[AnimsTableSet.UnknowingFire.id] = AutoPB,
-		[AnimsTableSet.UNdolation.id] = AutoBlock,
-		[AnimsTableSet.Rengoku.id] = AutoBlock,
-		[AnimsTableSet.FlameTiger.id] = AutoBlock,
-		[AnimsTableSet.ThunderClap.id] = AutoPB,
-		[AnimsTableSet.LightningBall.id] = AutoBlock,
-		[AnimsTableSet.LunarShine.id] = AutoBlock,
-		--[AnimsTableSet.MoonbowHalfMoonTheHighOne.id] = AutoBlock,
-		[AnimsTableSet.MoonHeavenJunk.id] = AutoBlock,
-		[AnimsTableSet.moondragonringtail.id] = AutoPB,
-		[AnimsTableSet.watersurfaceslash.id] = AutoPB,
-		[AnimsTableSet.WidningSerpentSlash.id] = AutoPB,
-		[AnimsTableSet.VenomFangs.id] = AutoBlock,
-		[AnimsTableSet.ZigZag.id] = AutoBlock,
-		[AnimsTableSet.Frolic.id] = AutoBlock,
-		[AnimsTableSet.MereFluttering.id] = AutoBlock,
-		[AnimsTableSet.RagingSunSpin.id] = AutoPB,
-		[AnimsTableSet.SunThrow.id] = AutoBlock,
-		[AnimsTableSet.SunDash.id] = AutoPB,
-		[AnimsTableSet.SolarHeatHaze.id] = AutoBlock,
-		[AnimsTableSet.Roar.id] = AutoPB,
-		[AnimsTableSet.Roar2.id] = AutoPB,
-		[AnimsTableSet.ConstantResounding.id] = AutoBlock,
-		[AnimsTableSet.RockSkin.id] = AutoBlock,
-		[AnimsTableSet.UpperSmash.id] = AutoBlock,
-		[AnimsTableSet.HonoreableShadowPlum.id] = AutoBlock,
-		[AnimsTableSet.Peonies.id] = AutoPB,
-		[AnimsTableSet.MadCleave.id] = AutoBlock,
-		[AnimsTableSet.CircularFangs.id] = AutoBlock,
-		[AnimsTableSet.PierceExtract.id] = AutoPB,
-		[AnimsTableSet.RipDevour.id] = AutoPB,
-		--Gale Wind
-		["rbxassetid://13988533435"] = nil,
-		[AnimsTableSet.CleanStorm.id] = AutoPB,
-		[AnimsTableSet.WhrilingPeach.id] = AutoPB,
-		--Moonlit
-		["rbxassetid://13988268938"] = nil,
-		[AnimsTableSet.Haze.id] = AutoBlock,
-
-		[AnimsTableSet.m2swordhigh.id] = AutoPB,
-		[AnimsTableSet.m2swordlower.id] = AutoPB,
-		[AnimsTableSet.m2high.id] = AutoPB,
-		[AnimsTableSet.m2slap.id] = AutoPB,
-		[AnimsTableSet.m2beastswordhigh.id] = AutoPB,
-		[AnimsTableSet.m2beastswordlow.id] = AutoPB,
-
-		["rbxassetid://507777826"] = function(targetPlayer)
-			print("Running animation detected from", targetPlayer.Name)
-		end
-	}
-
-	local function ShowInfo(Value)
-		for i, plr in ipairs(Players:GetChildren()) do
-			local theirstates = plr.states
-			local CharStats = plr.CharStats
-			local Data = plr:FindFirstChild("Data")
-			local TargChar = plr.Character
-			local TargHum = TargChar:FindFirstChild("Humanoid")
-			if TargHum then
-				local Race = CharStats.Race.Value
-				local Level
-				if Data then
-					Level = Data.Level.Value
-				end
-				if Value == true then
-					for i, v in pairs(TargChar:GetChildren()) do
-						if v.Name == "InfoHighlight" then
-							v:Destroy()
 						end
 					end
-					local InfoHighlight = Instance.new("Highlight")
-					InfoHighlight.Name = "InfoHighlight"
-					if Race == "Human" then
-						InfoHighlight.FillColor = Color3.fromRGB(71, 200, 255)
-					elseif Race == "Demon" then
-						InfoHighlight.FillColor = Color3.fromRGB(149, 0, 0)
-					elseif Race == "Hybrid" then
-						InfoHighlight.FillColor = Color3.fromRGB(176, 39, 255)
+				end)
+				break
+			end
+		end
+		for key, value in pairs(AnimsTableSet.beastswordm1s) do
+			if key ~= "dur" and value == id then
+				task.delay(AnimsTableSet.beastswordm1s.dur - 0.1, function()
+					if not theirstates or not theirstates:FindFirstChild("block") then
+						local Res = RiskChecker(targetPlayer, track, AnimsTableSet.beastswordm1s.bb)
+						if Res == "RiskyBlock" then
+							local random = math.random(1,2)
+							if random == 1 then
+								DashAway()
+							else
+								AutoM1()
+							end
+						else
+							if ourcds:FindFirstChild("blockstart") and not ourstates:FindFirstChild("block") then
+								AutoM1()
+							elseif ourcds:FindFirstChild("NormalAttack") and ourcds:FindFirstChild("blockstart") then
+								DashAway()
+							else
+								local Conti = true
+								local c1
+								if theirstates then
+									c1 = theirstates.ChildAdded:Connect(function(ch)
+										if ch.Name == "PerfectBlock" then
+											Conti = false
+											--heavytext.Text = "YOU GOTTA MOVE!"
+											--heavytext.Visible = true
+											AutoM2()
+											--	DashAway()
+											task.wait(2)
+											--heavytext.Visible = false
+										end
+									end)
+								end
+								if Conti == true then
+									combatremote:FireServer("blockstart")
+									task.wait(0.3)
+									combatremote:FireServer("blockend")
+									if theirstates and theirstates:FindFirstChild("block") then
+										AutoM2()
+									else
+										task.wait(0.3)
+										if Conti == true then
+											--heavytext.Text = "m1ing rlly good"
+											AutoM1()
+										end
+									end
+								end
+								task.wait(1.5)
+								if c1 then
+									c1:Disconnect()
+								end
+							end
+						end
 					end
-					InfoHighlight.Parent = TargChar
-					InfoHighlight.FillTransparency = 0.75
-					TargHum.HealthDisplayType = Enum.HumanoidHealthDisplayType.AlwaysOn
-					if Data then
-						TargHum.DisplayName = plr.Name .. " / ".. Race .. " / " .. tostring(Level)
+				end)
+				break
+			end
+		end
+		for key, value in pairs(AnimsTableSet.normfistm1s) do
+			if key ~= "dur" and value == id then
+				task.delay(AnimsTableSet.normfistm1s.dur - 0.1, function()
+					if not theirstates or not theirstates:FindFirstChild("block") then
+						local Res = RiskChecker(targetPlayer, track, AnimsTableSet.normfistm1s.bb)
+						if Res == "RiskyBlock" then
+							local random = math.random(1,2)
+							if random == 1 then
+								DashAway()
+							else
+								AutoM1()
+							end
+						else
+							if ourcds:FindFirstChild("blockstart") and not ourstates:FindFirstChild("block") then
+								AutoM1()
+							elseif ourcds:FindFirstChild("NormalAttack") and ourcds:FindFirstChild("blockstart") then
+								DashAway()
+							else
+								local Conti = true
+								local c1
+								if theirstates then
+									c1 = theirstates.ChildAdded:Connect(function(ch)
+										if ch.Name == "PerfectBlock" then
+											Conti = false
+											--heavytext.Text = "YOU GOTTA MOVE!"
+											--heavytext.Visible = true
+											AutoM2()
+											--	DashAway()
+											task.wait(2)
+											--heavytext.Visible = false
+										end
+									end)
+								end
+								if Conti == true then
+									combatremote:FireServer("blockstart")
+									task.wait(0.3)
+									combatremote:FireServer("blockend")
+									if theirstates and theirstates:FindFirstChild("block") then
+										AutoM2()
+									else
+										task.wait(0.3)
+										if Conti == true then
+											--heavytext.Text = "m1ing rlly good"
+											AutoM1()
+										end
+									end
+								end
+								task.wait(1.5)
+								if c1 then
+									c1:Disconnect()
+								end
+							end
+						end
+					end
+				end)
+				break
+			end
+		end
+		if id == AnimsTableSet.spikeslash.id then
+			if not theirstates or not theirstates:FindFirstChild("block") then
+				local Res = RiskChecker(targetPlayer, track, AnimsTableSet.spikeslash.bb)
+				if Res == "RiskyBlock" then
+					local random = math.random(1,2)
+					if random == 1 then
+						DashAway()
 					else
-						TargHum.DisplayName = plr.Name .. " / ".. Race
+						AutoM1()
 					end
 				else
-					local InfoHighlight = TargChar:FindFirstChild("InfoHighlight")
-					if InfoHighlight then
-						InfoHighlight:Destroy()
+					if ourcds:FindFirstChild("blockstart") and not ourstates:FindFirstChild("block") then
+						AutoM1()
+					elseif ourcds:FindFirstChild("NormalAttack") and ourcds:FindFirstChild("blockstart") then
+						DashAway()
+					else
+						combatremote:FireServer("blockstart")
+						task.wait(0.4)
+						combatremote:FireServer("blockend")
+						if theirstates and theirstates:FindFirstChild("block") then
+							AutoM2()
+						else
+							AutoM1()
+						end
 					end
-					TargHum.HealthDisplayType = Enum.HumanoidHealthDisplayType.AlwaysOff
-					TargHum.DisplayName = plr.Name
+				end
+			end
+		elseif id == AnimsTableSet.m2swordlower.id then
+			task.delay(AnimsTableSet.m2swordlower.dur - 0.1, function()
+				if not theirstates or not theirstates:FindFirstChild("block") then
+					combatremote:FireServer("blockstart")
+					task.wait(0.1)
+					combatremote:FireServer("blockend")
+					task.wait(0.1)
+					combatremote:FireServer("NormalAttack")
+				end
+			end)
+		else
+			for key, value in pairs(AnimsTableSet) do
+				if key and value.id and value.id == id then
+					task.delay(value.dur - 0.1, function()
+						if not theirstates or not theirstates:FindFirstChild("block") then
+							local Res = RiskChecker(targetPlayer, track, value.bb)
+							if Res == "RiskyBlock" and not value.multi then
+								local random = math.random(1,2)
+								if random == 1 then
+									local res = DashAway()
+									if res == false then
+										AutoM1()
+									end
+								else
+									AutoM1()
+								end
+							elseif Res == "RiskyBlock" and value.multi then
+								combatremote:FireServer("blockstart")
+								if value.d then
+									task.wait(value.d / 1.5)
+								end
+								combatremote:FireServer("blockend")
+								if theirstates and theirstates:FindFirstChild("block") then
+									local res = DashAway()
+									if res == false then
+										AutoM1()
+									end
+								else
+									AutoM1()
+								end
+								--DashAway()
+							else
+								if ourcds:FindFirstChild("blockstart") and not ourstates:FindFirstChild("block") then
+									AutoM1()
+								elseif ourcds:FindFirstChild("NormalAttack") and ourcds:FindFirstChild("blockstart") then
+									DashAway()
+								else
+									combatremote:FireServer("blockstart")
+									if value.d then
+										task.wait(value.d)
+									else
+										task.wait(0.4)
+									end
+									combatremote:FireServer("blockend")
+									if theirstates and theirstates:FindFirstChild("block") then
+										AutoM2()
+									else
+										AutoM1()
+									end
+								end
+							end
+						end
+					end)
+					break
 				end
 			end
 		end
-	end
-
-	local InfoButton = createButton("GeneralInfo", SectionThirdFrame)
-	local GeneralInfoOn = false
-	InfoButton.MouseButton1Click:Connect(function()
-		if GeneralInfoOn == false then
-			GeneralInfoOn = true
-			InfoButton.Text = "GeneralInfo: On"
-			ShowInfo(true)
-		else
-			GeneralInfoOn = false
-			InfoButton.Text = "GeneralInfo: Off"
-			ShowInfo(false)
-		end
 	end)
+end
 
-	local flying = false
-	local ContinusFlying = false
-	local flySpeed = 300
+local function Dodge4(targetPlayer, track)
 
-	local Flierbutton3 = createButton("Fly", SectionThirdFrame)
+	if IsAutoBlocking == false then return end
 
-	local function flyu()
-		if flying == true then return end
+	local targetChar = targetPlayer.Character
+	local myChar = game.Players.LocalPlayer.Character
+	if not targetChar or not myChar then return end
 
-		ContinusFlying = not ContinusFlying
+	local hrp = targetChar:FindFirstChild("HumanoidRootPart")
+	local myhrp = myChar:FindFirstChild("HumanoidRootPart")
+	if not hrp or not myhrp then return end
 
-		if ContinusFlying then
-			Flierbutton3.Text = "Flying: Active"
-		else
-			Flierbutton3.Text = "Flying: Inactive"
-		end
+	if (hrp.Position - myhrp.Position).Magnitude > 200 then return end
 
-		if not Michar then return end
-		local hrp = Michar:FindFirstChild("HumanoidRootPart")
-		if not hrp then return end
+	myChar:PivotTo(hrp.CFrame * CFrame.new(-15,0,5))
 
-		if ContinusFlying then
+	if track then
+		track.Stopped:Once(function()
 
-			task.spawn(function()
+			local newTargetChar = targetPlayer.Character
+			local newHRP = newTargetChar and newTargetChar:FindFirstChild("HumanoidRootPart")
 
-				while ContinusFlying and hrp.Parent do
-
-					local bv = Instance.new("BodyVelocity")
-					bv.Name = "gggg"
-					bv.MaxForce = Vector3.new(100000,100000,100000)
-					bv.Velocity = Vector3.zero
-					bv.Parent = hrp
-
-					local bg = Instance.new("BodyGyro")
-					bg.Name = "gggg"
-					bg.MaxTorque = Vector3.new(100000,100000,100000)
-					bg.CFrame = hrp.CFrame
-					bg.Parent = hrp
-
-					local cam = workspace.CurrentCamera
-
-					local startTime = tick()
-
-					while ContinusFlying and tick() - startTime < 7 and hrp.Parent do
-
-						local move = Vector3.zero
-
-						if UIS:IsKeyDown(Enum.KeyCode.W) then
-							move += cam.CFrame.LookVector
-						end
-
-						if UIS:IsKeyDown(Enum.KeyCode.S) then
-							move -= cam.CFrame.LookVector
-						end
-
-						if UIS:IsKeyDown(Enum.KeyCode.A) then
-							move -= cam.CFrame.RightVector
-						end
-
-						if UIS:IsKeyDown(Enum.KeyCode.D) then
-							move += cam.CFrame.RightVector
-						end
-
-						bv.Velocity = move * 200
-						bg.CFrame = cam.CFrame
-
-						task.wait()
-					end
-
-					bv:Destroy()
-					bg:Destroy()
-
-				end
-
-			end)
-
-		end
-	end
-
-	Flierbutton3.MouseButton1Click:Connect(function()
-		flyu()
-	end)
-	-- Update tracked players display
-	local function updateTrackedDisplay()
-
-		local names = {}
-
-		for plr,_ in pairs(trackedPlayers) do
-			print(plr)
-			table.insert(names, plr.Name)
-		end
-
-		if #names == 0 then
-			trackedLabel.Text = "Tracking: None"
-			trackedLabel2.Text = "Tracking: None"
-		else
-			trackedLabel.Text = "Tracking: "..table.concat(names,", ")
-			trackedLabel2.Text = "Tracking: "..table.concat(names,", ")
-		end
-
-	end
-
-	-- Start tracking a player
-	local function watchPlayerAnimations(targetPlayer)
-		if trackedPlayers[targetPlayer] then
-			return
-		end
-
-		local data = {}
-
-		local function hookCharacter(character)
-			-- Disconnect previous animation connection (if they respawn)
-			if data.targetAnimConnection then
-				data.targetAnimConnection:Disconnect()
-				data.targetAnimConnection = nil
+			if newHRP and myChar then
+				myChar:PivotTo(newHRP.CFrame * CFrame.new(0,0,-3))
 			end
 
-			local humanoid = character:WaitForChild("Humanoid")
+		end)
+	end
+end
 
-			data.targetAnimConnection = humanoid.AnimationPlayed:Connect(function(track)
-				if gui.Parent == nil then return end
-				if not targetPlayer or not targetPlayer.Parent then return end
-				if not (Detecting or detectingtwo) then return end
+local animationTriggers = {
+	["rbxassetid://128005402860390"] = function(targetPlayer)
+		print("Jump animation detected from", targetPlayer.Name)
 
-				local anim = track.Animation
-				if not anim then return end
+		local char = targetPlayer.Character
+		if not char then return end
 
-				local id = anim.AnimationId
+		local highlight = Instance.new("Highlight")
+		highlight.FillColor = Color3.fromRGB(255, 0, 0)
+		highlight.Parent = char
 
-				if id == "rbxassetid://15215952540" then return end
-				if id == "rbxassetid://15215921487" then return end
-				if id == "rbxassetid://13989102174" then return end
-				if id == "rbxassetid://13989317090" then return end
-				if id == "rbxassetid://13987893395" then return end
-				if id == "rbxassetid://13989696751" then return end
-				if id == "rbxassetid://13989690978" then return end
-				if id == "rbxassetid://13989415110" then return end
+		task.wait(2)
+		highlight:Destroy()
+	end,
 
-				if not animationTriggers[id] then
-					print("Animation from", targetPlayer.Name, ":", id)
+	[AnimsTableSet.beastswordm1s.id1] = AutoBlock,
+	[AnimsTableSet.beastswordm1s.id2] = AutoBlock,
+	[AnimsTableSet.beastswordm1s.id3] = AutoBlock,
+	[AnimsTableSet.beastswordm1s.id4] = AutoBlock,
+	[AnimsTableSet.beastswordm1s.id5] = AutoBlock,
+	[AnimsTableSet.normswordm1s.id1] = AutoBlock,
+	[AnimsTableSet.normswordm1s.id2] = AutoBlock,
+	[AnimsTableSet.normswordm1s.id3] = AutoBlock,
+	[AnimsTableSet.normswordm1s.id4] = AutoBlock,
+	[AnimsTableSet.normswordm1s.id5] = AutoBlock,
+	[AnimsTableSet.normfistm1s.id1] = AutoBlock,
+	[AnimsTableSet.normfistm1s.id2] = AutoBlock,
+	[AnimsTableSet.normfistm1s.id3] = AutoBlock,
+	[AnimsTableSet.normfistm1s.id4] = AutoBlock,
+	[AnimsTableSet.normfistm1s.id5] = AutoBlock,
+	[AnimsTableSet.normfistm1s.id6] = AutoBlock,
+	[AnimsTableSet.blocks.fistblock] = ProtectGBS,
+	[AnimsTableSet.blocks.swordblock] = ProtectGBS,
+
+	[AnimsTableSet.DemonPunch.id] = AutoBlock,
+	[AnimsTableSet.LeapKick.id] = AutoPB,
+	[AnimsTableSet.DemonBlade.id] = AutoPB,
+
+	--rivosfsm1
+	["rbxassetid://81538235954358"] = nil,
+
+	["rbxassetid://92509099075919"] = nil,--rivofireblast
+	[AnimsTableSet.LovePang.id] = AutoPB,
+	[AnimsTableSet.CatLeggedWinds.id] = AutoBlock,
+	[AnimsTableSet.CatLoveShower.id] = AutoBlock,
+	[AnimsTableSet.ShiversOfFirstLove.id] = AutoBlock,
+	[AnimsTableSet.Waterdashlong.id] = AutoBlock,
+	[AnimsTableSet.WaterfallJar.id] = AutoBlock,
+	--GroundSpike
+	["rbxassetid://13988506187"] = nil,
+	[AnimsTableSet.bodyspike.id] = AutoPB,
+	--SpikeSlash
+	[AnimsTableSet.spikeslash.id] = AutoBlock,
+	--FlyingBloodSickles
+	["rbxassetid://13987191385"] = nil,
+	[AnimsTableSet.RampantArc.id] = AutoPB,
+	--RotatingSlashesOSns
+	["rbxassetid://13987199303"] = nil,
+	[AnimsTableSet.CuttingThread.id] = AutoBlock,
+	--DumbTamayoKnockMove
+	["rbxassetid://13989614620"] = nil,
+	[AnimsTableSet.FleshSeeds.id] = AutoPB,
+	[AnimsTableSet.StrongKickNez.id] = AutoBlock,
+	--BloodMine
+	["rbxassetid://13988114619"] = nil,
+	[AnimsTableSet.FlingingArrow.id] = AutoBlock,
+	[AnimsTableSet.BarrenHanging.id] = AutoBlock,
+	[AnimsTableSet.FreezingClouds.id] = AutoPB,
+	[AnimsTableSet.HantenguSpears.id] = AutoBlock,
+	--SonicScream
+	["rbxassetid://13989333281"] = nil,
+	[AnimsTableSet.ThousandNeedle.id] = AutoBlock,
+	[AnimsTableSet.TenThousand.id] = AutoBlock,
+	[AnimsTableSet.WaterPot.id] = AutoBlock,
+	[AnimsTableSet.BlueSilverAfterGlow.id] = AutoBlock,
+	[AnimsTableSet.DestructionStyle.id] = AutoPB,
+	[AnimsTableSet.VoidStyle.id] = AutoBlock,
+	--BallThrow
+	["rbxassetid://13988238363"] = nil,
+	--BallKick
+	["rbxassetid://13987391354"] = nil,
+	--BallBarrage
+	["rbxassetid://13988243685"] = nil,
+	--Daki1
+	["rbxassetid://13987852579"] = nil,
+	--Daki1
+	["rbxassetid://13987905193"] = nil,
+	--Daki1
+	["rbxassetid://13987898088"] = nil,
+	--Daki1
+	["rbxassetid://15780361276"] = nil,
+	[AnimsTableSet.UnknowingFire.id] = AutoPB,
+	[AnimsTableSet.UNdolation.id] = AutoBlock,
+	[AnimsTableSet.Rengoku.id] = AutoBlock,
+	[AnimsTableSet.FlameTiger.id] = AutoBlock,
+	[AnimsTableSet.ThunderClap.id] = AutoPB,
+	[AnimsTableSet.LightningBall.id] = AutoBlock,
+	[AnimsTableSet.LunarShine.id] = AutoBlock,
+	--[AnimsTableSet.MoonbowHalfMoonTheHighOne.id] = AutoBlock,
+	[AnimsTableSet.MoonHeavenJunk.id] = AutoBlock,
+	[AnimsTableSet.moondragonringtail.id] = AutoPB,
+	[AnimsTableSet.watersurfaceslash.id] = AutoPB,
+	[AnimsTableSet.WidningSerpentSlash.id] = AutoPB,
+	[AnimsTableSet.VenomFangs.id] = AutoBlock,
+	[AnimsTableSet.ZigZag.id] = AutoBlock,
+	[AnimsTableSet.Frolic.id] = AutoBlock,
+	[AnimsTableSet.MereFluttering.id] = AutoBlock,
+	[AnimsTableSet.RagingSunSpin.id] = AutoPB,
+	[AnimsTableSet.SunThrow.id] = AutoBlock,
+	[AnimsTableSet.SunDash.id] = AutoPB,
+	[AnimsTableSet.SolarHeatHaze.id] = AutoBlock,
+	[AnimsTableSet.Roar.id] = AutoPB,
+	[AnimsTableSet.Roar2.id] = AutoPB,
+	[AnimsTableSet.ConstantResounding.id] = AutoBlock,
+	[AnimsTableSet.RockSkin.id] = AutoBlock,
+	[AnimsTableSet.UpperSmash.id] = AutoBlock,
+	[AnimsTableSet.HonoreableShadowPlum.id] = AutoBlock,
+	[AnimsTableSet.Peonies.id] = AutoPB,
+	[AnimsTableSet.MadCleave.id] = AutoBlock,
+	[AnimsTableSet.CircularFangs.id] = AutoBlock,
+	[AnimsTableSet.PierceExtract.id] = AutoPB,
+	[AnimsTableSet.RipDevour.id] = AutoPB,
+	--Gale Wind
+	["rbxassetid://13988533435"] = nil,
+	[AnimsTableSet.CleanStorm.id] = AutoPB,
+	[AnimsTableSet.WhrilingPeach.id] = AutoPB,
+	--Moonlit
+	["rbxassetid://13988268938"] = nil,
+	[AnimsTableSet.Haze.id] = AutoBlock,
+
+	[AnimsTableSet.m2swordhigh.id] = AutoPB,
+	[AnimsTableSet.m2swordlower.id] = AutoPB,
+	[AnimsTableSet.m2high.id] = AutoPB,
+	[AnimsTableSet.m2slap.id] = AutoPB,
+	[AnimsTableSet.m2beastswordhigh.id] = AutoPB,
+	[AnimsTableSet.m2beastswordlow.id] = AutoPB,
+
+	["rbxassetid://507777826"] = function(targetPlayer)
+		print("Running animation detected from", targetPlayer.Name)
+	end
+}
+
+local function ShowInfo(Value)
+	for i, plr in ipairs(Players:GetChildren()) do
+		local theirstates = plr.states
+		local CharStats = plr.CharStats
+		local Data = plr:FindFirstChild("Data")
+		local TargChar = plr.Character
+		local TargHum = TargChar:FindFirstChild("Humanoid")
+		if TargHum then
+			local Race = CharStats.Race.Value
+			local Level
+			if Data then
+				Level = Data.Level.Value
+			end
+			if Value == true then
+				for i, v in pairs(TargChar:GetChildren()) do
+					if v.Name == "InfoHighlight" then
+						v:Destroy()
+					end
 				end
-
-				if animationTriggers[id] then
-					animationTriggers[id](targetPlayer, track)
+				local InfoHighlight = Instance.new("Highlight")
+				InfoHighlight.Name = "InfoHighlight"
+				if Race == "Human" then
+					InfoHighlight.FillColor = Color3.fromRGB(71, 200, 255)
+				elseif Race == "Demon" then
+					InfoHighlight.FillColor = Color3.fromRGB(149, 0, 0)
+				elseif Race == "Hybrid" then
+					InfoHighlight.FillColor = Color3.fromRGB(176, 39, 255)
 				end
-			end)
-
-			targhrp = character:WaitForChild("HumanoidRootPart")
+				InfoHighlight.Parent = TargChar
+				InfoHighlight.FillTransparency = 0.75
+				TargHum.HealthDisplayType = Enum.HumanoidHealthDisplayType.AlwaysOn
+				if Data then
+					TargHum.DisplayName = plr.Name .. " / ".. Race .. " / " .. tostring(Level)
+				else
+					TargHum.DisplayName = plr.Name .. " / ".. Race
+				end
+			else
+				local InfoHighlight = TargChar:FindFirstChild("InfoHighlight")
+				if InfoHighlight then
+					InfoHighlight:Destroy()
+				end
+				TargHum.HealthDisplayType = Enum.HumanoidHealthDisplayType.AlwaysOff
+				TargHum.DisplayName = plr.Name
+			end
 		end
+	end
+end
 
-		if targetPlayer.Character then
-			hookCharacter(targetPlayer.Character)
-		end
+local InfoButton = createButton("GeneralInfo", SectionThirdFrame)
+local GeneralInfoOn = false
+InfoButton.MouseButton1Click:Connect(function()
+	if GeneralInfoOn == false then
+		GeneralInfoOn = true
+		InfoButton.Text = "GeneralInfo: On"
+		ShowInfo(true)
+	else
+		GeneralInfoOn = false
+		InfoButton.Text = "GeneralInfo: Off"
+		ShowInfo(false)
+	end
+end)
 
-		data.charConnection = targetPlayer.CharacterAdded:Connect(hookCharacter)
+local flying = false
+local ContinusFlying = false
+local flySpeed = 300
 
-		trackedPlayers[targetPlayer] = data
+local Flierbutton3 = createButton("Fly", SectionThirdFrame)
 
-		updateTrackedDisplay()
+local function flyu()
+	if flying == true then return end
+
+	ContinusFlying = not ContinusFlying
+
+	if ContinusFlying then
+		Flierbutton3.Text = "Flying: Active"
+	else
+		Flierbutton3.Text = "Flying: Inactive"
 	end
 
+	if not Michar then return end
+	local hrp = Michar:FindFirstChild("HumanoidRootPart")
+	if not hrp then return end
 
-	-- Stop tracking one player
-	local function stopTrackingPlayer(plr)
-		local data = trackedPlayers[plr]
-		if not data then
-			return
+	if ContinusFlying then
+
+		task.spawn(function()
+
+			while ContinusFlying and hrp.Parent do
+
+				local bv = Instance.new("BodyVelocity")
+				bv.Name = "gggg"
+				bv.MaxForce = Vector3.new(100000,100000,100000)
+				bv.Velocity = Vector3.zero
+				bv.Parent = hrp
+
+				local bg = Instance.new("BodyGyro")
+				bg.Name = "gggg"
+				bg.MaxTorque = Vector3.new(100000,100000,100000)
+				bg.CFrame = hrp.CFrame
+				bg.Parent = hrp
+
+				local cam = workspace.CurrentCamera
+
+				local startTime = tick()
+
+				while ContinusFlying and tick() - startTime < 7 and hrp.Parent do
+
+					local move = Vector3.zero
+
+					if UIS:IsKeyDown(Enum.KeyCode.W) then
+						move += cam.CFrame.LookVector
+					end
+
+					if UIS:IsKeyDown(Enum.KeyCode.S) then
+						move -= cam.CFrame.LookVector
+					end
+
+					if UIS:IsKeyDown(Enum.KeyCode.A) then
+						move -= cam.CFrame.RightVector
+					end
+
+					if UIS:IsKeyDown(Enum.KeyCode.D) then
+						move += cam.CFrame.RightVector
+					end
+
+					bv.Velocity = move * 200
+					bg.CFrame = cam.CFrame
+
+					task.wait()
+				end
+
+				bv:Destroy()
+				bg:Destroy()
+
+			end
+
+		end)
+
+	end
+end
+
+Flierbutton3.MouseButton1Click:Connect(function()
+	flyu()
+end)
+-- Update tracked players display
+local function updateTrackedDisplay()
+
+	local names = {}
+
+	for plr,_ in pairs(trackedPlayers) do
+		print(plr)
+		table.insert(names, plr.Name)
+	end
+
+	if #names == 0 then
+		trackedLabel.Text = "Tracking: None"
+		trackedLabel2.Text = "Tracking: None"
+	else
+		trackedLabel.Text = "Tracking: "..table.concat(names,", ")
+		trackedLabel2.Text = "Tracking: "..table.concat(names,", ")
+	end
+
+end
+
+-- Start tracking a player
+local function watchPlayerAnimations(targetPlayer)
+	if trackedPlayers[targetPlayer] then
+		return
+	end
+
+	local data = {}
+
+	local function hookCharacter(character)
+		-- Disconnect previous animation connection (if they respawn)
+		if data.targetAnimConnection then
+			data.targetAnimConnection:Disconnect()
+			data.targetAnimConnection = nil
 		end
 
+		local humanoid = character:WaitForChild("Humanoid")
+
+		data.targetAnimConnection = humanoid.AnimationPlayed:Connect(function(track)
+			if gui.Parent == nil then return end
+			if not targetPlayer or not targetPlayer.Parent then return end
+			if not (Detecting or detectingtwo) then return end
+
+			local anim = track.Animation
+			if not anim then return end
+
+			local id = anim.AnimationId
+
+			if id == "rbxassetid://15215952540" then return end
+			if id == "rbxassetid://15215921487" then return end
+			if id == "rbxassetid://13989102174" then return end
+			if id == "rbxassetid://13989317090" then return end
+			if id == "rbxassetid://13987893395" then return end
+			if id == "rbxassetid://13989696751" then return end
+			if id == "rbxassetid://13989690978" then return end
+			if id == "rbxassetid://13989415110" then return end
+
+			if not animationTriggers[id] then
+				print("Animation from", targetPlayer.Name, ":", id)
+			end
+
+			if animationTriggers[id] then
+				animationTriggers[id](targetPlayer, track)
+			end
+		end)
+
+		targhrp = character:WaitForChild("HumanoidRootPart")
+	end
+
+	if targetPlayer.Character then
+		hookCharacter(targetPlayer.Character)
+	end
+
+	data.charConnection = targetPlayer.CharacterAdded:Connect(hookCharacter)
+
+	trackedPlayers[targetPlayer] = data
+
+	updateTrackedDisplay()
+end
+
+
+-- Stop tracking one player
+local function stopTrackingPlayer(plr)
+	local data = trackedPlayers[plr]
+	if not data then
+		return
+	end
+
+	if data.targetAnimConnection then
+		data.targetAnimConnection:Disconnect()
+		data.targetAnimConnection = nil
+	end
+
+	if data.charConnection then
+		data.charConnection:Disconnect()
+		data.charConnection = nil
+	end
+	if data.NpctargetAnimConnection then
+		data.NpctargetAnimConnection:Disconnect()
+		data.NpctargetAnimConnection = nil
+	end
+	trackedPlayers[plr] = nil
+
+	--print("Stopped tracking:", plr.Name)
+
+	updateTrackedDisplay()
+end
+
+local function watchNpcnimations(targetNpc)
+	if trackedPlayers[targetNpc] then
+		return
+	end
+
+	local data = {}
+
+	local function hookCharacter(character)
+		-- Disconnect previous animation connection (if they respawn)
+		if data.NpctargetAnimConnection then
+			data.NpctargetAnimConnection:Disconnect()
+			data.NpctargetAnimConnection = nil
+		end
+
+		local humanoid = character:WaitForChild("Humanoid")
+
+		data.NpctargetAnimConnection = humanoid.AnimationPlayed:Connect(function(track)
+			if gui.Parent == nil then return end
+			if not targetNpc or not targetNpc.Parent then
+				trackedPlayers[targetNpc] = nil
+				return
+			end
+			if not (Detecting or detectingtwo) then return end
+
+			local anim = track.Animation
+			if not anim then return end
+
+			local id = anim.AnimationId
+
+			if id == "rbxassetid://15215952540" then return end
+			if id == "rbxassetid://15215921487" then return end
+			if id == "rbxassetid://13989102174" then return end
+			if id == "rbxassetid://13989317090" then return end
+			if id == "rbxassetid://13987893395" then return end
+			if id == "rbxassetid://13989696751" then return end
+			if id == "rbxassetid://13989690978" then return end
+			if id == "rbxassetid://13989415110" then return end
+
+			if not animationTriggers[id] then
+				print("Animation from", targetNpc.Name, ":", id)
+			end
+
+			if animationTriggers[id] then
+				animationTriggers[id](targetNpc, track)
+			end
+		end)
+
+		targhrp = character:WaitForChild("HumanoidRootPart")
+	end
+
+	hookCharacter(targetNpc)
+
+	trackedPlayers[targetNpc] = data
+
+	updateTrackedDisplay()
+end
+-- Clear all tracked players
+local function clearTrackedPlayers()
+	for plr, data in pairs(trackedPlayers) do
 		if data.targetAnimConnection then
 			data.targetAnimConnection:Disconnect()
 			data.targetAnimConnection = nil
@@ -2638,662 +2756,528 @@ if RS:FindFirstChild("events") then
 			data.charConnection:Disconnect()
 			data.charConnection = nil
 		end
+
 		if data.NpctargetAnimConnection then
 			data.NpctargetAnimConnection:Disconnect()
 			data.NpctargetAnimConnection = nil
 		end
-		trackedPlayers[plr] = nil
+	end
+	TARGPLR = nil
+	EnemyToFocusOn = nil
 
-		--print("Stopped tracking:", plr.Name)
+	table.clear(trackedPlayers)
 
-		updateTrackedDisplay()
+	--print("Cleared all tracked players")
+
+	updateTrackedDisplay()
+end
+
+local guis = game.Players.LocalPlayer.PlayerGui.guis
+local healthbar = guis.BottomFrame.Health.f
+local Level = guis.BottomFrame.Exp.Level
+Level.LevelText.Text = "Winner"
+healthbar.ImageTransparency = 1
+healthbar.BackgroundColor3 = Color3.fromRGB(70, 149, 206)
+--RunService.Heartbeat:Connect(function()
+task.spawn(function()
+	healthbar:getPropertyChangedSignal("BackgroundTransparency"):Connect(function()
+		if gui.Parent ~= nil then
+			healthbar.BackgroundColor3 = Color3.fromRGB(70, 149, 206)
+		end
+	end)
+end)
+--end)
+-- Player buttons
+local function createPlayerButton(plr)
+	local display = plr.DisplayName
+	local button = Instance.new("TextButton")
+	button.Size = UDim2.new(1,-10,0,30)
+	button.Text = plr.Name .. " / ".. display
+	button.Parent = playerList
+	button.Name = plr.Name
+	button.MouseButton1Click:Connect(function()
+		if trackedPlayers[plr] then
+			stopTrackingPlayer(plr)
+			EnemyToFocusOn = nil
+		else
+			local CheckIFPlayer = Players:FindFirstChild(plr.Name)
+			if CheckIFPlayer then
+				TARGPLR = plr.Character
+				EnemyToFocusOn = plr
+				--print("Monitoring animations for", plr.Name)
+				watchPlayerAnimations(plr)
+			else
+				TARGPLR = plr
+				EnemyToFocusOn = plr
+				--print("Monitoring animations for", plr.Name)
+				watchNpcnimations(plr)
+			end
+		end
+
+	end)
+	local button2 = Instance.new("TextButton")
+	button2.Size = UDim2.new(1,-10,0,30)
+	button2.Text = plr.Name .. " / ".. display
+	button2.Parent = playerListOustide
+	button2.Name = plr.Name
+	button2.MouseButton1Click:Connect(function()
+		if trackedPlayers[plr] then
+			stopTrackingPlayer(plr)
+			EnemyToFocusOn = nil
+		else
+			local CheckIFPlayer = Players:FindFirstChild(plr.Name)
+			if CheckIFPlayer then
+				TARGPLR = plr.Character
+				EnemyToFocusOn = plr
+				--print("Monitoring animations for", plr.Name)
+				watchPlayerAnimations(plr)
+			else
+				TARGPLR = plr
+				EnemyToFocusOn = plr
+				--print("Monitoring animations for", plr.Name)
+				watchNpcnimations(plr)
+			end
+		end
+
+	end)
+end
+
+local localAnimConnection
+
+for i, v in ipairs(Players[Players.LocalPlayer.Name].cds:GetChildren()) do
+	if v.Name == "HeavyAlert" then
+		v:Destroy()
+	end
+end
+
+local function hookLocalPlayer()
+	local character = Players.LocalPlayer.Character or Players.LocalPlayer.CharacterAdded:Wait()
+	local humanoid = character:WaitForChild("Humanoid")
+
+	if localAnimConnection then
+		localAnimConnection:Disconnect()
 	end
 
-	local function watchNpcnimations(targetNpc)
-		if trackedPlayers[targetNpc] then
+	localAnimConnection = humanoid.AnimationPlayed:Connect(function(track)
+		if gui.Parent == nil then
 			return
 		end
-
-		local data = {}
-
-		local function hookCharacter(character)
-			-- Disconnect previous animation connection (if they respawn)
-			if data.NpctargetAnimConnection then
-				data.NpctargetAnimConnection:Disconnect()
-				data.NpctargetAnimConnection = nil
-			end
-
-			local humanoid = character:WaitForChild("Humanoid")
-
-			data.NpctargetAnimConnection = humanoid.AnimationPlayed:Connect(function(track)
-				if gui.Parent == nil then return end
-				if not targetNpc or not targetNpc.Parent then
-					trackedPlayers[targetNpc] = nil
-					return
-				end
-				if not (Detecting or detectingtwo) then return end
-
-				local anim = track.Animation
-				if not anim then return end
-
-				local id = anim.AnimationId
-
-				if id == "rbxassetid://15215952540" then return end
-				if id == "rbxassetid://15215921487" then return end
-				if id == "rbxassetid://13989102174" then return end
-				if id == "rbxassetid://13989317090" then return end
-				if id == "rbxassetid://13987893395" then return end
-				if id == "rbxassetid://13989696751" then return end
-				if id == "rbxassetid://13989690978" then return end
-				if id == "rbxassetid://13989415110" then return end
-
-				if not animationTriggers[id] then
-					print("Animation from", targetNpc.Name, ":", id)
-				end
-
-				if animationTriggers[id] then
-					animationTriggers[id](targetNpc, track)
-				end
-			end)
-
-			targhrp = character:WaitForChild("HumanoidRootPart")
-		end
-
-		hookCharacter(targetNpc)
-
-		trackedPlayers[targetNpc] = data
-
-		updateTrackedDisplay()
-	end
-	-- Clear all tracked players
-	local function clearTrackedPlayers()
-		for plr, data in pairs(trackedPlayers) do
-			if data.targetAnimConnection then
-				data.targetAnimConnection:Disconnect()
-				data.targetAnimConnection = nil
-			end
-
-			if data.charConnection then
-				data.charConnection:Disconnect()
-				data.charConnection = nil
-			end
-
-			if data.NpctargetAnimConnection then
-				data.NpctargetAnimConnection:Disconnect()
-				data.NpctargetAnimConnection = nil
-			end
-		end
-		TARGPLR = nil
-		EnemyToFocusOn = nil
-
-		table.clear(trackedPlayers)
-
-		--print("Cleared all tracked players")
-
-		updateTrackedDisplay()
-	end
-
-	local guis = game.Players.LocalPlayer.PlayerGui.guis
-	local healthbar = guis.BottomFrame.Health.f
-	local Level = guis.BottomFrame.Exp.Level
-	Level.LevelText.Text = "Winner"
-	healthbar.ImageTransparency = 1
-	healthbar.BackgroundColor3 = Color3.fromRGB(70, 149, 206)
-	--RunService.Heartbeat:Connect(function()
-	task.spawn(function()
-		healthbar:getPropertyChangedSignal("BackgroundTransparency"):Connect(function()
-			if gui.Parent ~= nil then
-				healthbar.BackgroundColor3 = Color3.fromRGB(70, 149, 206)
-			end
-		end)
-	end)
-	--end)
-	-- Player buttons
-	local function createPlayerButton(plr)
-		local display = plr.DisplayName
-		local button = Instance.new("TextButton")
-		button.Size = UDim2.new(1,-10,0,30)
-		button.Text = plr.Name .. " / ".. display
-		button.Parent = playerList
-		button.Name = plr.Name
-		button.MouseButton1Click:Connect(function()
-			if trackedPlayers[plr] then
-				stopTrackingPlayer(plr)
-				EnemyToFocusOn = nil
-			else
-				local CheckIFPlayer = Players:FindFirstChild(plr.Name)
-				if CheckIFPlayer then
-					TARGPLR = plr.Character
-					EnemyToFocusOn = plr
-					--print("Monitoring animations for", plr.Name)
-					watchPlayerAnimations(plr)
-				else
-					TARGPLR = plr
-					EnemyToFocusOn = plr
-					--print("Monitoring animations for", plr.Name)
-					watchNpcnimations(plr)
-				end
-			end
-
-		end)
-		local button2 = Instance.new("TextButton")
-		button2.Size = UDim2.new(1,-10,0,30)
-		button2.Text = plr.Name .. " / ".. display
-		button2.Parent = playerListOustide
-		button2.Name = plr.Name
-		button2.MouseButton1Click:Connect(function()
-			if trackedPlayers[plr] then
-				stopTrackingPlayer(plr)
-				EnemyToFocusOn = nil
-			else
-				local CheckIFPlayer = Players:FindFirstChild(plr.Name)
-				if CheckIFPlayer then
-					TARGPLR = plr.Character
-					EnemyToFocusOn = plr
-					--print("Monitoring animations for", plr.Name)
-					watchPlayerAnimations(plr)
-				else
-					TARGPLR = plr
-					EnemyToFocusOn = plr
-					--print("Monitoring animations for", plr.Name)
-					watchNpcnimations(plr)
-				end
-			end
-
-		end)
-	end
-
-	local localAnimConnection
-
-	for i, v in ipairs(Players[Players.LocalPlayer.Name].cds:GetChildren()) do
-		if v.Name == "HeavyAlert" then
-			v:Destroy()
-		end
-	end
-
-	local function hookLocalPlayer()
-		local character = Players.LocalPlayer.Character or Players.LocalPlayer.CharacterAdded:Wait()
-		local humanoid = character:WaitForChild("Humanoid")
-
-		if localAnimConnection then
-			localAnimConnection:Disconnect()
-		end
-
-		localAnimConnection = humanoid.AnimationPlayed:Connect(function(track)
-			if gui.Parent == nil then
-				return
-			end
-			local anim = track.Animation
-			if anim then
-				curranimplaying = anim.AnimationId
-				for key, value in pairs(AnimsTableSet) do
-					if key and value.id and value.id == anim.AnimationId then
-						if value.M2 then
-							local HeavyAlertValue = Instance.new("StringValue")
-							HeavyAlertValue.Name = "HeavyAlert"
-							HeavyAlertValue.Parent = Players[Players.LocalPlayer.Name].cds
-							game.Debris:AddItem(HeavyAlertValue, track.Length + 0.2)
-							--heavytext.Text = "Playing ".. key .. " Heavy"
-							--heavytext.Visible = true
-							--task.wait(5)
-							--heavytext.Visible = false
-						end
+		local anim = track.Animation
+		if anim then
+			curranimplaying = anim.AnimationId
+			for key, value in pairs(AnimsTableSet) do
+				if key and value.id and value.id == anim.AnimationId then
+					if value.M2 then
+						local HeavyAlertValue = Instance.new("StringValue")
+						HeavyAlertValue.Name = "HeavyAlert"
+						HeavyAlertValue.Parent = Players[Players.LocalPlayer.Name].cds
+						game.Debris:AddItem(HeavyAlertValue, track.Length + 0.2)
+						--heavytext.Text = "Playing ".. key .. " Heavy"
+						--heavytext.Visible = true
+						--task.wait(5)
+						--heavytext.Visible = false
 					end
 				end
 			end
-		end)
-	end
-
-	hookLocalPlayer()
-	Players.LocalPlayer.CharacterAdded:Connect(function(chara)
-		hookLocalPlayer(chara)
-		if GeneralInfoOn == true then
-			ShowInfo(true)
 		end
 	end)
-	-- Populate player list
-	for _,plr in pairs(Players:GetPlayers()) do
-		createPlayerButton(plr)
+end
+
+hookLocalPlayer()
+Players.LocalPlayer.CharacterAdded:Connect(function(chara)
+	hookLocalPlayer(chara)
+	if GeneralInfoOn == true then
+		ShowInfo(true)
 	end
-	local npcfolder = workspace.npc
-	local CombatNpcs = npcfolder.npcs
-	local TargetAbleNpcs = {
-		"Flame Apprentice",
+end)
+-- Populate player list
+for _,plr in pairs(Players:GetPlayers()) do
+	createPlayerButton(plr)
+end
+local npcfolder = workspace.npc
+local CombatNpcs = npcfolder.npcs
+local TargetAbleNpcs = {
+	"Flame Apprentice",
 
-	}
+}
 
-	local SelectButton = createButton("SelectThem", SectionThirdFrame)
-	SelectButton.MouseButton1Click:Connect(function()
-		if player.Character then
-			local SelectTool = player.Character:FindFirstChild("SelectTool") or player.Backpack:FindFirstChild("SelectTool")
-			if SelectTool then
-				--SelectTool:Destroy()
-			end
-			local ClearTool = player.Character:FindFirstChild("ClearTool") or player.Backpack:FindFirstChild("ClearTool")
-			if ClearTool then
-				--ClearTool:Destroy()
-			end
-			SelectTool = Instance.new("Tool")
-			SelectTool.Name = "SelectTool"
-			SelectTool.RequiresHandle = false
-			SelectTool.Parent = player.Backpack
-			local selectedPlayer
-			local clickConnection
+local SelectButton = createButton("SelectThem", SectionThirdFrame)
+SelectButton.MouseButton1Click:Connect(function()
+	if player.Character then
+		local SelectTool = player.Character:FindFirstChild("SelectTool") or player.Backpack:FindFirstChild("SelectTool")
+		if SelectTool then
+			--SelectTool:Destroy()
+		end
+		local ClearTool = player.Character:FindFirstChild("ClearTool") or player.Backpack:FindFirstChild("ClearTool")
+		if ClearTool then
+			--ClearTool:Destroy()
+		end
+		SelectTool = Instance.new("Tool")
+		SelectTool.Name = "SelectTool"
+		SelectTool.RequiresHandle = false
+		SelectTool.Parent = player.Backpack
+		local selectedPlayer
+		local clickConnection
 
-			SelectTool.Equipped:Connect(function(mouse)
+		SelectTool.Equipped:Connect(function(mouse)
 
-				clickConnection = mouse.Button1Down:Connect(function()
-					local target = mouse.Target
-					if not target then return end
+			clickConnection = mouse.Button1Down:Connect(function()
+				local target = mouse.Target
+				if not target then return end
 
-					local character = target:FindFirstAncestorOfClass("Model")
-					local clickedPlayer = character and Players:GetPlayerFromCharacter(character)
-					if clickedPlayer and clickedPlayer ~= player then
-						selectedPlayer = clickedPlayer
-						print("Selected:", selectedPlayer.Name)
-						print("boom")
-						if trackedPlayers[selectedPlayer] then
-							stopTrackingPlayer(selectedPlayer)
-							EnemyToFocusOn = nil
+				local character = target:FindFirstAncestorOfClass("Model")
+				local clickedPlayer = character and Players:GetPlayerFromCharacter(character)
+				if clickedPlayer and clickedPlayer ~= player then
+					selectedPlayer = clickedPlayer
+					print("Selected:", selectedPlayer.Name)
+					print("boom")
+					if trackedPlayers[selectedPlayer] then
+						stopTrackingPlayer(selectedPlayer)
+						EnemyToFocusOn = nil
+					else
+						local CheckIFPlayer = Players:FindFirstChild(selectedPlayer.Name)
+						if CheckIFPlayer then
+							TARGPLR = selectedPlayer.Character
+							EnemyToFocusOn = selectedPlayer
+							--print("Monitoring animations for", plr.Name)
+							watchPlayerAnimations(selectedPlayer)
 						else
-							local CheckIFPlayer = Players:FindFirstChild(selectedPlayer.Name)
-							if CheckIFPlayer then
-								TARGPLR = selectedPlayer.Character
-								EnemyToFocusOn = selectedPlayer
-								--print("Monitoring animations for", plr.Name)
-								watchPlayerAnimations(selectedPlayer)
-							else
-								TARGPLR = selectedPlayer
-								EnemyToFocusOn = selectedPlayer
-								--print("Monitoring animations for", plr.Name)
-								watchNpcnimations(selectedPlayer)
+							TARGPLR = selectedPlayer
+							EnemyToFocusOn = selectedPlayer
+							--print("Monitoring animations for", plr.Name)
+							watchNpcnimations(selectedPlayer)
+						end
+					end
+				elseif character and character:FindFirstChild("Humanoid") then
+
+					if trackedPlayers[character] then
+						print("No longer Monitoring animations for", character.Name)
+						stopTrackingPlayer(character)
+						EnemyToFocusOn = nil
+					else
+						TARGPLR = character
+						EnemyToFocusOn = character
+						print("Monitoring animations for", character.Name)
+						watchNpcnimations(character)
+						character.Destroying:Once(function()
+							if trackedPlayers[character] then
+								print("No longer Monitoring animations for", character.Name)
+								stopTrackingPlayer(character)
+								EnemyToFocusOn = nil
 							end
-						end
-					elseif character and character:FindFirstChild("Humanoid") then
-
-						if trackedPlayers[character] then
-							print("No longer Monitoring animations for", character.Name)
-							stopTrackingPlayer(character)
-							EnemyToFocusOn = nil
-						else
-							TARGPLR = character
-							EnemyToFocusOn = character
-							print("Monitoring animations for", character.Name)
-							watchNpcnimations(character)
-							character.Destroying:Once(function()
-								if trackedPlayers[character] then
-									print("No longer Monitoring animations for", character.Name)
-									stopTrackingPlayer(character)
-									EnemyToFocusOn = nil
-								end
-							end)
-						end
+						end)
 					end
-				end)
-
-			end)
-
-			SelectTool.Unequipped:Connect(function()
-				if clickConnection then
-					clickConnection:Disconnect()
-					clickConnection = nil
 				end
-
-				selectedPlayer = nil
 			end)
-			ClearTool = Instance.new("Tool")
-			ClearTool.Name = "ClearTool"
-			ClearTool.RequiresHandle = false
-			ClearTool.Parent = player.Backpack
-			ClearTool.Activated:Connect(function()
-				clearTrackedPlayers()
-			end)
-		end
-	end)
 
-	local OnlyM1sNpc = createButton("OnlyM1sNpc", SectionThirdFrame)
-	OnlyM1sNpc.MouseButton1Click:Connect(function()
-		if OnlyUseM1sBtt == false then
-			OnlyUseM1sBtt = true
-			OnlyM1sNpc.Text = "AutoFightNpcs: On"
-		else
-			OnlyUseM1sBtt = false
-			OnlyM1sNpc.Text = "AutoFightNpcs: Off"
-		end
-	end)
-	
-	local CanClimbButton = createButton("CanClimb", SectionThirdFrame)
-		CanClimbButton.MouseButton1Click:Connect(function()
-			if CanClimb == false then
-				CanClimb = true
-				CanClimbButton.Text = "CanClimb: On"
-		else
-				CanClimb = false
-				CanClimbButton.Text = "CanClimb: Off"
-		end
 		end)
 
-	local WasClimbing = false
-	local TopTriggered = false
+		SelectTool.Unequipped:Connect(function()
+			if clickConnection then
+				clickConnection:Disconnect()
+				clickConnection = nil
+			end
 
-	local function IsCharacterPart(instance)
-		if not instance then
-			return false
-		end
+			selectedPlayer = nil
+		end)
+		ClearTool = Instance.new("Tool")
+		ClearTool.Name = "ClearTool"
+		ClearTool.RequiresHandle = false
+		ClearTool.Parent = player.Backpack
+		ClearTool.Activated:Connect(function()
+			clearTrackedPlayers()
+		end)
+	end
+end)
 
-		local model = instance:FindFirstAncestorOfClass("Model")
+local OnlyM1sNpc = createButton("OnlyM1sNpc", SectionThirdFrame)
+OnlyM1sNpc.MouseButton1Click:Connect(function()
+	if OnlyUseM1sBtt == false then
+		OnlyUseM1sBtt = true
+		OnlyM1sNpc.Text = "AutoFightNpcs: On"
+	else
+		OnlyUseM1sBtt = false
+		OnlyM1sNpc.Text = "AutoFightNpcs: Off"
+	end
+end)
 
-		if model and model:FindFirstChildOfClass("Humanoid") then
-			return true
-		end
+local CanClimbButton = createButton("CanClimb", SectionThirdFrame)
+CanClimbButton.MouseButton1Click:Connect(function()
+	if CanClimb == false then
+		CanClimb = true
+		CanClimbButton.Text = "CanClimb: On"
+	else
+		CanClimb = false
+		CanClimbButton.Text = "CanClimb: Off"
+	end
+end)
 
+local WasClimbing = false
+local TopTriggered = false
+
+local function IsCharacterPart(instance)
+	if not instance then
 		return false
 	end
 
-	task.spawn(function()
-		while true do
-			task.wait(0.5)
+	local model = instance:FindFirstAncestorOfClass("Model")
 
-			if CanClimb then
-				local Character = player.Character
-				local Humanoid = Character and Character:FindFirstChildOfClass("Humanoid")
-				local RootPart = Character and Character:FindFirstChild("HumanoidRootPart")
+	if model and model:FindFirstChildOfClass("Humanoid") then
+		return true
+	end
 
-				if Humanoid and RootPart and gui.Parent ~= nil then
+	return false
+end
 
-					local RayParams = RaycastParams.new()
-					RayParams.FilterType = Enum.RaycastFilterType.Exclude
-					RayParams.FilterDescendantsInstances = {Character}
+task.spawn(function()
+	while true do
+		task.wait(0.5)
 
-					-- Wall directly in front of the player's body
-					local WallResult = workspace:Raycast(
-						RootPart.Position,
+		if CanClimb then
+			local Character = player.Character
+			local Humanoid = Character and Character:FindFirstChildOfClass("Humanoid")
+			local RootPart = Character and Character:FindFirstChild("HumanoidRootPart")
+
+			if Humanoid and RootPart and gui.Parent ~= nil then
+
+				local RayParams = RaycastParams.new()
+				RayParams.FilterType = Enum.RaycastFilterType.Exclude
+				RayParams.FilterDescendantsInstances = {Character}
+
+				-- Wall directly in front of the player's body
+				local WallResult = workspace:Raycast(
+					RootPart.Position,
+					RootPart.CFrame.LookVector * 3,
+					RayParams
+				)
+
+				-- Only treat it as a wall if it isn't part of a character
+				if WallResult
+					and WallResult.Normal.Y < 0.5
+					and not IsCharacterPart(WallResult.Instance)
+				then
+					WasClimbing = true
+					TopTriggered = false
+
+					-- Push upward
+					RootPart.AssemblyLinearVelocity = Vector3.new(
+						RootPart.AssemblyLinearVelocity.X,
+						86,
+						RootPart.AssemblyLinearVelocity.Z
+					)
+
+					Humanoid.Jump = true
+
+					local Animation = Humanoid.Animator:LoadAnimation(
+						player.PlayerGui.WallJumps.WallJumpTopAnim
+					)
+
+					Animation:Play()
+				end
+
+				-- Only check for the ledge if we're actually climbing
+				if WasClimbing and not TopTriggered then
+
+					-- Check from above the player's head
+					local HeadOrigin =
+						RootPart.Position + Vector3.new(0, 3, 0)
+
+					local HeadWall = workspace:Raycast(
+						HeadOrigin,
 						RootPart.CFrame.LookVector * 3,
 						RayParams
 					)
 
-					-- Only treat it as a wall if it isn't part of a character
-					if WallResult
-						and WallResult.Normal.Y < 0.5
-						and not IsCharacterPart(WallResult.Instance)
+					-- Check for a surface in front of the player
+					local TopOrigin =
+						RootPart.Position
+						+ RootPart.CFrame.LookVector * 2
+						+ Vector3.new(0, 2, 0)
+
+					local TopSurface = workspace:Raycast(
+						TopOrigin,
+						Vector3.new(0, -5, 0),
+						RayParams
+					)
+
+					-- Make sure the detected objects aren't character parts
+					local HeadIsCharacterPart =
+						HeadWall and IsCharacterPart(HeadWall.Instance)
+
+					local TopIsCharacterPart =
+						TopSurface and IsCharacterPart(TopSurface.Instance)
+
+					-- Head cleared the wall AND there's a real surface
+					if not HeadWall
+						and TopSurface
+						and not TopIsCharacterPart
 					then
-						WasClimbing = true
-						TopTriggered = false
+						TopTriggered = true
+						WasClimbing = false
 
-						-- Push upward
-						RootPart.AssemblyLinearVelocity = Vector3.new(
-							RootPart.AssemblyLinearVelocity.X,
-							86,
-							RootPart.AssemblyLinearVelocity.Z
-						)
-
-						Humanoid.Jump = true
-
-						local Animation = Humanoid.Animator:LoadAnimation(
-							player.PlayerGui.WallJumps.WallJumpTopAnim
-						)
-
-						Animation:Play()
-					end
-
-					-- Only check for the ledge if we're actually climbing
-					if WasClimbing and not TopTriggered then
-
-						-- Check from above the player's head
-						local HeadOrigin =
-							RootPart.Position + Vector3.new(0, 3, 0)
-
-						local HeadWall = workspace:Raycast(
-							HeadOrigin,
-							RootPart.CFrame.LookVector * 3,
-							RayParams
-						)
-
-						-- Check for a surface in front of the player
-						local TopOrigin =
-							RootPart.Position
-							+ RootPart.CFrame.LookVector * 2
-							+ Vector3.new(0, 2, 0)
-
-						local TopSurface = workspace:Raycast(
-							TopOrigin,
-							Vector3.new(0, -5, 0),
-							RayParams
-						)
-
-						-- Make sure the detected objects aren't character parts
-						local HeadIsCharacterPart =
-							HeadWall and IsCharacterPart(HeadWall.Instance)
-
-						local TopIsCharacterPart =
-							TopSurface and IsCharacterPart(TopSurface.Instance)
-
-						-- Head cleared the wall AND there's a real surface
-						if not HeadWall
-							and TopSurface
-							and not TopIsCharacterPart
-						then
-							TopTriggered = true
-							WasClimbing = false
-
-							DashAwayForward()
-						end
+						DashAwayForward()
 					end
 				end
-			else
-				WasClimbing = false
-				TopTriggered = false
 			end
-		end
-	end)
-	local TargetAnyoneNearbyButton = createButton("TargetAnyoneNearby", SectionThirdFrame)
-	TargetAnyoneNearbyButton.MouseButton1Click:Connect(function()
-		if TargetAnyoneNearby == false then
-			TargetAnyoneNearby = true
-			TargetAnyoneNearbyButton.Text = "TargetAnyoneNearby: On"
 		else
-			TargetAnyoneNearby = false
-			TargetAnyoneNearbyButton.Text = "TargetAnyoneNearby: Off"
+			WasClimbing = false
+			TopTriggered = false
 		end
-	end)
-	local blockedUsers = {
-		"benjialt",
-		"benjiboy",
-		"lostto"
-	}
+	end
+end)
+local TargetAnyoneNearbyButton = createButton("TargetAnyoneNearby", SectionThirdFrame)
+TargetAnyoneNearbyButton.MouseButton1Click:Connect(function()
+	if TargetAnyoneNearby == false then
+		TargetAnyoneNearby = true
+		TargetAnyoneNearbyButton.Text = "TargetAnyoneNearby: On"
+	else
+		TargetAnyoneNearby = false
+		TargetAnyoneNearbyButton.Text = "TargetAnyoneNearby: Off"
+	end
+end)
 
-	local function isBlockedUser(playerName)
-		playerName = playerName:lower()
+local AutoCrimTotalButton = createButton("AutoCrimTotal", SectionThirdFrame)
+AutoCrimTotalButton.MouseButton1Click:Connect(function()
+	if AutoCrimTotal == false then
+		AutoCrimTotal = true
+		AutoCrimTotalButton.Text = "AutoCrimTotal: On"
+	else
+		AutoCrimTotal = false
+		AutoCrimTotalButton.Text = "AutoCrimTotal: Off"
+	end
+end)
+local blockedUsers = {
+	"benjialt",
+	"benjiboy",
+	"lostto"
+}
 
-		for _, blockedName in ipairs(blockedUsers) do
-			if playerName:find(blockedName, 1, true) then
-				return true
-			end
+local function isBlockedUser(playerName)
+	playerName = playerName:lower()
+
+	for _, blockedName in ipairs(blockedUsers) do
+		if playerName:find(blockedName, 1, true) then
+			return true
 		end
-
-		return false
 	end
 
-	task.spawn(function()
+	return false
+end
 
-		while true do
-			task.wait(0.05)
-			if TargetAnyoneNearby == true then
-				local Character = player.Character
-				local Humanoid = Character and Character:FindFirstChildOfClass("Humanoid")
-				local RootPart = Character and Character:FindFirstChild("HumanoidRootPart")
+task.spawn(function()
 
-				if Humanoid and RootPart and gui.Parent ~= nil and FightingForYou == true then
-					local ourstates = player:FindFirstChild("states")
+	while true do
+		task.wait(0.05)
+		if TargetAnyoneNearby == true then
+			local Character = player.Character
+			local Humanoid = Character and Character:FindFirstChildOfClass("Humanoid")
+			local RootPart = Character and Character:FindFirstChild("HumanoidRootPart")
 
-					if ourstates and ourstates:FindFirstChild("CT") then
-						local NearestTarget = nil
-						local NearestDistance = 100
+			if Humanoid and RootPart and gui.Parent ~= nil and FightingForYou == true then
+				local ourstates = player:FindFirstChild("states")
 
-						for _, otherPlayer in pairs(Players:GetPlayers()) do
-							if otherPlayer ~= player then
+				if ourstates and ourstates:FindFirstChild("CT") then
+					local NearestTarget = nil
+					local NearestDistance = 100
 
-								-- Don't target blocked players
-								if isBlockedUser(otherPlayer.Name) then
-									continue
-								end
+					for _, otherPlayer in pairs(Players:GetPlayers()) do
+						if otherPlayer ~= player then
 
-								local otherCharacter = otherPlayer.Character
-								local otherHumanoid = otherCharacter
-									and otherCharacter:FindFirstChildOfClass("Humanoid")
+							-- Don't target blocked players
+							if isBlockedUser(otherPlayer.Name) then
+								continue
+							end
 
-								local otherRootPart = otherCharacter
-									and otherCharacter:FindFirstChild("HumanoidRootPart")
+							local otherCharacter = otherPlayer.Character
+							local otherHumanoid = otherCharacter
+								and otherCharacter:FindFirstChildOfClass("Humanoid")
 
-								local otherStates = otherPlayer:FindFirstChild("states")
+							local otherRootPart = otherCharacter
+								and otherCharacter:FindFirstChild("HumanoidRootPart")
 
-								if otherHumanoid and otherRootPart and otherStates then
-									local distance =
-										(RootPart.Position - otherRootPart.Position).Magnitude
+							local otherStates = otherPlayer:FindFirstChild("states")
 
-									if distance < NearestDistance then
-										NearestTarget = otherPlayer
-										NearestDistance = distance
-									end
+							if otherHumanoid and otherRootPart and otherStates then
+								local distance =
+									(RootPart.Position - otherRootPart.Position).Magnitude
+
+								if distance < NearestDistance then
+									NearestTarget = otherPlayer
+									NearestDistance = distance
 								end
 							end
 						end
+					end
 
-						if NearestTarget and NearestDistance <= 1000 then
-							local CheckIFThisPlayer =
-								Players:GetPlayerFromCharacter(NearestTarget)
+					if NearestTarget and NearestDistance <= 1000 then
+						local CheckIFThisPlayer =
+							Players:GetPlayerFromCharacter(NearestTarget)
 
-							if not CheckIFThisPlayer then
-								TARGPLR = NearestTarget
-								EnemyToFocusOn = NearestTarget
-								watchNpcnimations(NearestTarget)
-							else
-								TARGPLR = NearestTarget.Character
-								EnemyToFocusOn = NearestTarget
-								watchPlayerAnimations(NearestTarget)
-							end
+						if not CheckIFThisPlayer then
+							TARGPLR = NearestTarget
+							EnemyToFocusOn = NearestTarget
+							watchNpcnimations(NearestTarget)
 						else
-							clearTrackedPlayers()
+							TARGPLR = NearestTarget.Character
+							EnemyToFocusOn = NearestTarget
+							watchPlayerAnimations(NearestTarget)
 						end
+					else
+						clearTrackedPlayers()
 					end
 				end
 			end
 		end
-	end)
-
-	Players.PlayerAdded:Connect(createPlayerButton)
-	Players.PlayerRemoving:Connect(function(plr)
-
-		if trackedPlayers[plr] then
-			stopTrackingPlayer(plr)
-		end
-		local targbutton = playerList:FindFirstChild(plr.Name)
-		if targbutton then
-			targbutton:Destroy()
-		end
-		local targbutton2 = playerListOustide:FindFirstChild(plr.Name)
-		if targbutton2 then
-			targbutton2:Destroy()
-		end
-	end)
-
-	-- Clear tracking button
-
-	clearButton.MouseButton1Click:Connect(function()
-		clearTrackedPlayers()
-	end)
-
-	local dragging
-	local dragStart
-	local startPos
-
-	local function update(input)
-		local delta = input.Position - dragStart
-		frame.Position = UDim2.new(startPos.X.Scale,startPos.X.Offset + delta.X,startPos.Y.Scale,startPos.Y.Offset + delta.Y)
 	end
+end)
 
-	frame.InputBegan:Connect(function(input)
-		if input.UserInputType == Enum.UserInputType.MouseButton1 then
-			dragging = true
-			dragStart = input.Position
-			startPos = frame.Position
+Players.PlayerAdded:Connect(createPlayerButton)
+Players.PlayerRemoving:Connect(function(plr)
 
-			input.Changed:Connect(function()
-				if input.UserInputState == Enum.UserInputState.End then
-					dragging = false
-				end
-			end)
-		end
-	end)
-
-	UIS.InputChanged:Connect(function(input)
-		if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
-			update(input)
-		end
-	end)
-else
-	-- Player buttons
-	local function createPlayerButton(plr)
-		local display = plr.DisplayName
-		local button = Instance.new("TextButton")
-		button.Size = UDim2.new(1,-10,0,30)
-		button.Text = plr.Name .. " / ".. display
-		button.Parent = playerList
-		button.Name = plr.Name
-		local button2 = Instance.new("TextButton")
-		button2.Size = UDim2.new(1,-10,0,30)
-		button2.Text = plr.Name .. " / ".. display
-		button2.Parent = playerListOustide
-		button2.Name = plr.Name
+	if trackedPlayers[plr] then
+		stopTrackingPlayer(plr)
 	end
-
-	local localAnimConnection
-	-- Populate player list
-	for _,plr in pairs(Players:GetPlayers()) do
-		createPlayerButton(plr)
+	local targbutton = playerList:FindFirstChild(plr.Name)
+	if targbutton then
+		targbutton:Destroy()
 	end
-
-	Players.PlayerAdded:Connect(createPlayerButton)
-	Players.PlayerRemoving:Connect(function(plr)
-
-		local targbutton = playerList:FindFirstChild(plr.Name)
-		if targbutton then
-			targbutton:Destroy()
-		end
-		local targbutton2 = playerListOustide:FindFirstChild(plr.Name)
-		if targbutton2 then
-			targbutton2:Destroy()
-		end
-	end)
-
-	-- Clear tracking button
-
-	local dragging
-	local dragStart
-	local startPos
-
-	local function update(input)
-		local delta = input.Position - dragStart
-		frame.Position = UDim2.new(startPos.X.Scale,startPos.X.Offset + delta.X,startPos.Y.Scale,startPos.Y.Offset + delta.Y)
+	local targbutton2 = playerListOustide:FindFirstChild(plr.Name)
+	if targbutton2 then
+		targbutton2:Destroy()
 	end
+end)
 
-	frame.InputBegan:Connect(function(input)
-		if input.UserInputType == Enum.UserInputType.MouseButton1 then
-			dragging = true
-			dragStart = input.Position
-			startPos = frame.Position
+-- Clear tracking button
 
-			input.Changed:Connect(function()
-				if input.UserInputState == Enum.UserInputState.End then
-					dragging = false
-				end
-			end)
-		end
-	end)
+clearButton.MouseButton1Click:Connect(function()
+	clearTrackedPlayers()
+end)
 
-	UIS.InputChanged:Connect(function(input)
-		if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
-			update(input)
-		end
-	end)
+local dragging
+local dragStart
+local startPos
+
+local function update(input)
+	local delta = input.Position - dragStart
+	frame.Position = UDim2.new(startPos.X.Scale,startPos.X.Offset + delta.X,startPos.Y.Scale,startPos.Y.Offset + delta.Y)
 end
+
+frame.InputBegan:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseButton1 then
+		dragging = true
+		dragStart = input.Position
+		startPos = frame.Position
+
+		input.Changed:Connect(function()
+			if input.UserInputState == Enum.UserInputState.End then
+				dragging = false
+			end
+		end)
+	end
+end)
+
+UIS.InputChanged:Connect(function(input)
+	if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+		update(input)
+	end
+end)

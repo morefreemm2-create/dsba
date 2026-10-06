@@ -1645,9 +1645,14 @@ UIS.InputBegan:Connect(function(input, gpe)
 	end
 end)
 
+--//========================================================
+--// MODE-AWARE MOVEMENT
+--//========================================================
+local AnnoyingRetreatState = false
+
 local function FollowEnemy(Enemy)
 	task.spawn(function()
-		if NpcMode == "Passive" and not EnemyToFocusOn then return end -- Disabled if not running
+		if NpcMode == "Passive" and not EnemyToFocusOn then return end
 
 		local CHeckIFPlayer = Players:FindFirstChild(Enemy.Name)
 		local EnemyCharacter = CHeckIFPlayer and Enemy.Character or Enemy
@@ -1665,27 +1670,87 @@ local function FollowEnemy(Enemy)
 
 		local Distance = (HRP.Position - EnemyHRP.Position).Magnitude
 
-		if NpcMode == "Aggressive" then
-			-- AGGRESSIVE: Aggressively close distance, ignore safety gaps
+		if NpcMode == "SuperAggressive" then
+			-- SUPER AGGRESSIVE: Non-stop forward dash spam & sprint
+			RS.events.ClientEvents:Fire("Sprint", true)
+			Hum:MoveTo(EnemyHRP.Position)
+			DashAwayForward()
+
+		elseif NpcMode == "Aggressive" then
+			-- AGGRESSIVE: Rapid gap closing
 			if Distance > 3 then
 				RS.events.ClientEvents:Fire("Sprint", true)
 				Hum:MoveTo(EnemyHRP.Position)
 				if Distance > 10 then
-					DashAwayForward() -- Rapid forward dash gap-closer
+					DashAwayForward()
 				end
+			end
+
+		elseif NpcMode == "Annoying" then
+			-- ANNOYING: Strike, run away, delay, and spin back
+			if AnnoyingRetreatState then
+				-- Retreat away from enemy
+				RS.events.ClientEvents:Fire("Sprint", true)
+				local directionAway = (HRP.Position - EnemyHRP.Position).Unit
+				Hum:MoveTo(HRP.Position + directionAway * 25)
+				DashAway()
+			else
+				-- Spin back in to attack
+				RS.events.ClientEvents:Fire("Sprint", true)
+				Hum:MoveTo(EnemyHRP.Position)
+				if Distance > 15 then
+					DashAwayForward()
+				end
+			end
+
+		elseif NpcMode == "Amateur" then
+			-- AMATEUR: Slower tracking with occasional hesitations
+			if math.random(1, 10) > 3 then
+				if Distance <= 1000 and Distance >= 10 then
+					RS.events.ClientEvents:Fire("Sprint", true)
+					Hum:MoveTo(EnemyHRP.Position)
+				else
+					RS.events.ClientEvents:Fire("Sprint", false)
+					Hum:MoveTo(EnemyHRP.Position)
+				end
+			end
+
+		elseif NpcMode == "Noob" then
+			-- NOOB: Wanders aimlessly with wrong movement inputs
+			if math.random(1, 10) <= 4 then
+				-- Walk in a random direction near the enemy
+				local randomOffset = Vector3.new(math.random(-15, 15), 0, math.random(-15, 15))
+				Hum:MoveTo(EnemyHRP.Position + randomOffset)
+				RS.events.ClientEvents:Fire("Sprint", false)
+			else
+				Hum:MoveTo(EnemyHRP.Position)
+			end
+
+		elseif NpcMode == "Juggernaut" then
+			-- JUGGERNAUT: Slow, steady approach without dashes or sprinting
+			RS.events.ClientEvents:Fire("Sprint", false)
+			Hum:MoveTo(EnemyHRP.Position)
+
+		elseif NpcMode == "Ninja" then
+			-- NINJA: Circle-strafe around the enemy using side vectors
+			RS.events.ClientEvents:Fire("Sprint", true)
+			local sideVector = (math.random(1, 2) == 1) and EnemyHRP.CFrame.RightVector or -EnemyHRP.CFrame.RightVector
+			local strafePos = EnemyHRP.Position + (sideVector * 8)
+			Hum:MoveTo(strafePos)
+			if Distance > 12 then
+				DashAway()
 			end
 
 		elseif NpcMode == "Passive" then
 			-- PASSIVE: Maintain safe distance (12 - 25 studs)
 			if Distance < 10 then
-				DashAway() -- Back up if enemy gets too close
+				DashAway()
 			elseif Distance > 15 and Distance <= 1000 then
 				RS.events.ClientEvents:Fire("Sprint", false)
 				Hum:MoveTo(EnemyHRP.Position)
 			end
 
 		else -- NORMAL
-			-- Standard balanced tracking
 			if Distance <= 1000 and Distance >= 10 then
 				RS.events.ClientEvents:Fire("Sprint", true)
 				Hum:MoveTo(EnemyHRP.Position)
@@ -1701,12 +1766,12 @@ local function FollowEnemy(Enemy)
 end
 
 local CDThing = false
+--//========================================================
+--// MODE-AWARE SPECIALS / BREATHING MOVES
+--//========================================================
 local function RandomSpecials(Enemy)
 	task.spawn(function()
-		if NpcMode == "Passive" then 
-			-- PASSIVE: Avoid throwing abilities randomly
-			return 
-		end
+		if NpcMode == "Passive" or NpcMode == "Noob" then return end
 
 		if CDThing == true then return end
 		combatremote:FireServer("manacharges")
@@ -1728,8 +1793,15 @@ local function RandomSpecials(Enemy)
 		local PlayerBackpack = Player.Backpack
 		local Distance = (HRP.Position - EnemyHRP.Position).Magnitude
 
-		-- AGGRESSIVE allows skill usage from farther away (35 studs vs 25 studs)
-		local maxRange = (NpcMode == "Aggressive") and 35 or 25
+		-- Mode Range Configurations
+		local maxRange = 25
+		if NpcMode == "SuperAggressive" then
+			maxRange = 40
+		elseif NpcMode == "Aggressive" or NpcMode == "Ninja" then
+			maxRange = 35
+		elseif NpcMode == "Amateur" then
+			maxRange = 18
+		end
 
 		if Distance <= maxRange and Distance >= 0 then
 			local AbilitySkills = {}
@@ -1753,7 +1825,15 @@ local function RandomSpecials(Enemy)
 					TargTool.Parent = Character
 					TargTool:Activate()
 
-					local cdTime = (NpcMode == "Aggressive") and 0.8 or 2 -- Faster skill rotation on Aggressive
+					-- Mode Cooldown Delays
+					local cdTime = 2
+					if NpcMode == "SuperAggressive" then
+						cdTime = 0.1 -- Instant skill rotation
+					elseif NpcMode == "Aggressive" or NpcMode == "Annoying" then
+						cdTime = 0.8
+					elseif NpcMode == "Amateur" then
+						cdTime = 3.5
+					end
 
 					task.delay(0, function()
 						TargTool.Parent = PlayerBackpack
@@ -1811,12 +1891,12 @@ local function AutoGrip(Enemy)
 	end)
 end
 
+--//========================================================
+--// MODE-AWARE ATTACKS
+--//========================================================
 local function RandomAttacks(Enemy)
 	task.spawn(function()
-		if NpcMode == "Passive" then 
-			-- PASSIVE: Do NOT attack proactively. Only punish via AutoBlock/AutoPB.
-			return 
-		end
+		if NpcMode == "Passive" then return end
 
 		local CHeckIFPlayer = Players:FindFirstChild(Enemy.Name)
 		local EnemyCharacter = CHeckIFPlayer and Enemy.Character or Enemy
@@ -1834,15 +1914,67 @@ local function RandomAttacks(Enemy)
 		local HRP = Character.HumanoidRootPart
 		local Distance = (HRP.Position - EnemyHRP.Position).Magnitude
 
-		if NpcMode == "Aggressive" then
-			-- AGGRESSIVE: Extended attack range (10 studs), heavily prioritizes M2 (StrongAttack)
+		if NpcMode == "SuperAggressive" then
+			-- SUPER AGGRESSIVE: Fires M1 and M2 simultaneously from up to 12 studs away
+			if Distance <= 12 then
+				AutoM2()
+				AutoM1()
+			end
+
+		elseif NpcMode == "Aggressive" then
 			if Distance <= 10 and Distance >= 1 then
 				local StrongAttack = ourcds:FindFirstChild("StrongAttack")
 				if not StrongAttack then
-					AutoM2() -- Force Guard Break as much as possible
+					AutoM2()
 				else
 					AutoM1()
 				end
+			end
+
+		elseif NpcMode == "Annoying" then
+			-- ANNOYING: Hits 1-2 times, then triggers a retreat phase
+			if Distance <= 7 and not AnnoyingRetreatState then
+				AutoM1()
+				if math.random(1, 2) == 1 then AutoM2() end
+
+				-- Trigger temporary retreat
+				AnnoyingRetreatState = true
+				task.delay(1.5, function()
+					AnnoyingRetreatState = false -- Spin back in after 1.5 seconds
+				end)
+			end
+
+		elseif NpcMode == "Amateur" then
+			-- AMATEUR: 40% chance to miss or hesitate on attack inputs
+			if Distance <= 7 and Distance >= 1 then
+				if math.random(1, 10) > 4 then
+					AutoM1()
+				end
+			end
+
+		elseif NpcMode == "Noob" then
+			-- NOOB: Swings randomly from way too far away or completely misses
+			if Distance <= 18 then
+				if math.random(1, 10) <= 2 then
+					AutoM1()
+				elseif math.random(1, 20) == 1 then
+					combatremote:FireServer("blockstart")
+					task.wait(0.8)
+					combatremote:FireServer("blockend")
+				end
+			end
+
+		elseif NpcMode == "Juggernaut" then
+			-- JUGGERNAUT: Focuses heavily on guard-breaking M2 attacks
+			if Distance <= 6 then
+				AutoM2()
+				AutoM1()
+			end
+
+		elseif NpcMode == "Ninja" then
+			-- NINJA: Strike quickly from flank range
+			if Distance <= 8 then
+				AutoM1()
 			end
 
 		else -- NORMAL

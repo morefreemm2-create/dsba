@@ -886,6 +886,14 @@ NpcModeButton.MouseButton1Click:Connect(function()
 		NpcMode = "Perfect"
 		NpcModeButton.Text = "Mode: Perfect"
 		NpcModeButton.TextColor3 = Color3.fromRGB(255, 255, 255) -- White / Glowing
+	elseif NpcMode == "Perfect" then  
+		NpcMode = "Gemini"  
+		NpcModeButton.Text = "Mode: Gemini"  
+		NpcModeButton.TextColor3 = Color3.fromRGB(138, 180, 248) -- Glowing Gemini Cyan
+	elseif NpcMode == "Gemini" then
+		NpcMode = "GeminiAI"
+		NpcModeButton.Text = "Mode: Gemini AI"
+		NpcModeButton.TextColor3 = Color3.fromRGB(0, 170, 255) -- Gemini Cyan/Blue
 	else -- Currently "Perfect" (or any unknown mode)
 		NpcMode = "Normal"
 		NpcModeButton.Text = "Mode: Normal"
@@ -1003,6 +1011,112 @@ local function ExecutePerfectDefense(targetPlayer, isPB)
 			else
 				-- Immediate frame-trap M1 interrupt during enemy recovery frame
 				AutoM1()
+			end
+		end
+	end)
+end
+
+local function ExecuteGeminiDefense(targetPlayer, isPB)  
+	if NpcMode ~= "Gemini" then return end  
+
+	local ourstates = Players.LocalPlayer:FindFirstChild("states")  
+	if not ourstates or IsStunned() then return end  
+
+	task.spawn(function()  
+		-- Core 1: Dynamic Micro-Parry Window
+		combatremote:FireServer("blockstart")  
+
+		local pingOffset = math.clamp(workspace:GetRealPhysicsFPS() > 50 and 0.10 or 0.16, 0.08, 0.20)
+		local startTime = tick()  
+
+		repeat  
+			task.wait()  
+		until (tick() - startTime >= pingOffset) or IsStunned()  
+
+		combatremote:FireServer("blockend")  
+
+		-- Core 2: Dynamic Punish Branching
+		if not IsStunned() then  
+			if isPB then  
+				-- Punish: Heavy Guard-Break -> Instant Multi-M1 Burst
+				AutoM2()  
+				task.wait(0.03)  
+				AutoM1()  
+			else  
+				-- Adaptive Interrupt: Fast frame-trap M1
+				AutoM1()  
+			end  
+		end  
+	end)  
+end
+
+
+local TextChatService = game:GetService("TextChatService")
+local Stats = game:GetService("Stats")
+
+local function GetGeminiCombatState()
+	local char = Players.LocalPlayer.Character
+	if not char then return "Neutral" end
+	local hum = char:FindFirstChildOfClass("Humanoid")
+	if not hum or hum.MaxHealth <= 0 then return "Neutral" end
+
+	local hpPercent = hum.Health / hum.MaxHealth
+
+	if hpPercent < 0.30 then
+		return "Desperation" -- Survival kiting & heavy iframe use
+	elseif hpPercent < 0.60 then
+		return "Counter"     -- Predictive parries & baiting
+	else
+		return "Pressure"    -- Relentless M1/M2 rushdown
+	end
+end
+
+local function GeminiChat(msg)
+	pcall(function()
+		if TextChatService.ChatVersion == Enum.ChatVersion.TextChatService then
+			TextChatService.TextChannels.RBXGeneral:SendAsync("[Gemini]: " .. msg)
+		else
+			game:GetService("ReplicatedStorage").DefaultChatSystemChatEvents.SayMessageRequest:SendAsync("[Gemini]: " .. msg, "All")
+		end
+	end)
+end
+
+local function ExecuteGeminiDefenseAI(targetPlayer, isPB)
+	if NpcMode ~= "GeminiAI" then return end
+	if IsStunned() then return end
+
+	task.spawn(function()
+		local state = GetGeminiCombatState()
+
+		-- Adapt block window based on live ping
+		local livePing = Stats.Network.ServerStatsItem["Data Ping"]:GetValue() / 1000
+		local blockWindow = math.clamp(0.12 + livePing, 0.12, 0.30)
+
+		combatremote:FireServer("blockstart")
+
+		local startTime = tick()
+		repeat
+			task.wait()
+		until (tick() - startTime >= blockWindow) or IsStunned()
+
+		combatremote:FireServer("blockend")
+
+		if not IsStunned() then
+			if isPB then
+				-- Optional taunt on parry
+				if math.random() > 0.6 then
+					GeminiChat("Pattern recognized. Parried.")
+				end
+
+				AutoM2()
+				task.wait(0.05)
+				AutoM1()
+			else
+				if state == "Pressure" then
+					AutoM1()
+				elseif state == "Counter" then
+					AutoM2() -- Guardbreak counter-strike
+				end
 			end
 		end
 	end)
@@ -1841,6 +1955,66 @@ local function FollowEnemy(Enemy)
 					Hum:MoveTo(EnemyHRP.Position + (sideDir * 3))
 				end
 			end
+		elseif NpcMode == "Gemini" then  
+			local targetStates = CHeckIFPlayer and Players[Enemy.Name]:FindFirstChild("states") or Enemy:FindFirstChild("states")  
+			local isEnemyDisabled = targetStates and (  
+				targetStates:FindFirstChild("PerfectBlock")   
+					or targetStates:FindFirstChild("stun")   
+					or targetStates:FindFirstChild("RD")  
+			)  
+
+			RS.events.ClientEvents:Fire("Sprint", true)  
+
+			if isEnemyDisabled then  
+				-- Collapse Phase: Close in immediately on vulnerable target
+				Hum:MoveTo(EnemyHRP.Position)  
+			else  
+				-- Orbit Phase: Dual-vector weaving around the target (2 to 5 studs)
+				if Distance > 5 then  
+					Hum:MoveTo(EnemyHRP.Position)  
+					if Distance > 12 then  
+						DashAwayForward()  
+					end  
+				else  
+					-- Alternating orbital vector calculated via oscillating wave
+					local weaveSide = math.sin(tick() * 8) > 0 and EnemyHRP.CFrame.RightVector or -EnemyHRP.CFrame.RightVector
+					local weaveForward = EnemyHRP.CFrame.LookVector * 1.5
+
+					Hum:MoveTo(EnemyHRP.Position + (weaveSide * 4) + weaveForward)  
+				end  
+			end
+		elseif NpcMode == "GeminiAI" then
+			local state = GetGeminiCombatState()
+			local targetStates = CHeckIFPlayer and Players[Enemy.Name]:FindFirstChild("states") or Enemy:FindFirstChild("states")
+			local isEnemyDisabled = targetStates and (
+				targetStates:FindFirstChild("PerfectBlock") 
+					or targetStates:FindFirstChild("stun") 
+					or targetStates:FindFirstChild("RD")
+			)
+
+			RS.events.ClientEvents:Fire("Sprint", true)
+
+			if isEnemyDisabled then
+				Hum:MoveTo(EnemyHRP.Position)
+			elseif state == "Desperation" then
+				-- Kiting: Keep safe distance (8-12 studs) and force enemy to whiff
+				if Distance < 8 then
+					DashAway()
+				else
+					Hum:MoveTo(EnemyHRP.Position + (EnemyHRP.CFrame.LookVector * -10))
+				end
+			elseif state == "Counter" then
+				-- Baiting range (4-6 studs)
+				Hum:MoveTo(EnemyHRP.Position + (EnemyHRP.CFrame.RightVector * 5))
+			else
+				-- High pressure aggressive orbit (1-3 studs)
+				if Distance > 3.5 then
+					Hum:MoveTo(EnemyHRP.Position)
+				else
+					local orbit = (tick() % 0.6 > 0.3) and EnemyHRP.CFrame.RightVector or -EnemyHRP.CFrame.RightVector
+					Hum:MoveTo(EnemyHRP.Position + (orbit * 2))
+				end
+			end
 		else -- NORMAL
 			if Distance <= 1000 and Distance >= 10 then
 				RS.events.ClientEvents:Fire("Sprint", true)
@@ -2090,6 +2264,58 @@ local function RandomAttacks(Enemy)
 					AutoM1()
 				end
 			end
+		elseif NpcMode == "Gemini" then  
+			if Distance <= 8 then  
+				local targetStates = CHeckIFPlayer and Players[Enemy.Name]:FindFirstChild("states") or Enemy:FindFirstChild("states")  
+				local isEnemyBlocking = targetStates and targetStates:FindFirstChild("block")  
+				local isEnemyDisabled = targetStates and (  
+					targetStates:FindFirstChild("PerfectBlock")   
+						or targetStates:FindFirstChild("stun")   
+						or targetStates:FindFirstChild("RD")  
+				)  
+
+				if isEnemyDisabled then  
+					-- Optimal Max-Damage Loop
+					AutoM1()  
+					task.wait(0.02)
+					AutoM2()  
+				elseif isEnemyBlocking then  
+					-- Guard-Break Overwrite
+					AutoM2()  
+				else  
+					-- Alternating Startup Interruption
+					if math.random(1, 10) > 3 then
+						AutoM1()  
+					else
+						-- Sudden M2 Heavy Mix-up
+						AutoM2()
+					end
+				end  
+			end
+		elseif NpcMode == "GeminiAI" then
+			local state = GetGeminiCombatState()
+			if Distance <= 8 then
+				local targetStates = CHeckIFPlayer and Players[Enemy.Name]:FindFirstChild("states") or Enemy:FindFirstChild("states")
+				local isEnemyBlocking = targetStates and targetStates:FindFirstChild("block")
+
+				if isEnemyBlocking then
+					AutoM2() -- Guard break immediately
+				elseif state == "Pressure" then
+					AutoM1()
+				elseif state == "Counter" then
+					-- Mixup M1 and heavy attacks to break enemy parry rhythm
+					if math.random() > 0.5 then
+						AutoM1()
+					else
+						AutoM2()
+					end
+				elseif state == "Desperation" then
+					-- Only punish if within strict 4-stud range
+					if Distance <= 4 then
+						AutoM1()
+					end
+				end
+			end
 		else -- NORMAL
 			if Distance <= 7 and Distance >= 1 then
 				local random = math.random(1, 2)
@@ -2108,9 +2334,43 @@ local function RandomAttacks(Enemy)
 	end)
 end
 
+-- Gemini Dynamic Recovery Loop
+task.spawn(function()  
+	while task.wait(0.015) do  
+		if gui.Parent == nil then
+			break
+		end
+		if NpcMode == "Gemini" then  
+			local ourstates = Players.LocalPlayer:FindFirstChild("states")  
+			if ourstates then  
+				local isStunned = ourstates:FindFirstChild("stun")   
+					or ourstates:FindFirstChild("selfstun")   
+					or ourstates:FindFirstChild("RD")  
+
+				if isStunned then  
+					-- Instant remote unlock
+					combatremote:FireServer("blockend")  
+
+					-- Flash-step / Adaptive escape maneuver
+					DashAway()  
+
+					-- Dynamic Skill Trigger
+					local escapeSkill = Players.LocalPlayer.cds:FindFirstChild("Skill1")  
+					if not escapeSkill then  
+						RS.events.ClientEvents:Fire("Skill", 1)  
+					end  
+				end  
+			end  
+		end  
+	end  
+end)
+
 -- Auto Combo-Breaker / Dynamic Escape
 task.spawn(function()
 	while task.wait(0.02) do
+		if gui.Parent == nil then
+			break
+		end
 		if NpcMode == "Perfect" then
 			local ourstates = Players.LocalPlayer:FindFirstChild("states")
 			if ourstates then

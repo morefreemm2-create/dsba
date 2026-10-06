@@ -978,38 +978,39 @@ end
 local function ExecutePerfectDefense(targetPlayer, isPB)
 	task.spawn(function()
 		if NpcMode ~= "Perfect" then return end
-
-		-- If we are already hard-stunned, don't waste remote calls
 		if IsStunned() then return end
 
 		local ourstates = Players.LocalPlayer.states
 		local ourcds = Players.LocalPlayer.cds
 
-		-- Priority 1: Instant reactive block/PB without artificial delay
+		-- Instant block
 		if not ourstates:FindFirstChild("block") then
 			combatremote:FireServer("blockstart")
 		end
 
-		-- Hold guard dynamically based on target's active attack frame rather than hardcoded wait
+		-- Hold guard only for the active strike window
 		local startTime = tick()
 		repeat
 			task.wait()
-			-- Auto-parry / punish if opponent gets guardbroken or drops block
-		until (tick() - startTime >= 0.45) or IsStunned()
+		until (tick() - startTime >= 0.25) or IsStunned()
 
-		-- End block instantly and counter-attack
+		-- Drop block immediately so we can act
 		combatremote:FireServer("blockend")
 
-		-- Immediate combo-break counter if not in stun
 		if not IsStunned() then
 			if isPB then
-				AutoM2() -- High punish option on parry
+				-- Target is PB'd! Fire M2 immediately to break/punish, followed by M1
+				AutoM2()
+				task.wait(0.1)
+				AutoM1()
 			else
-				AutoM1() -- Immediate fast interrupt
+				-- Frame interrupt M1
+				AutoM1()
 			end
 		end
 	end)
 end
+
 local AnimsTableSet = {
 
 	["m2swordlower"] = {
@@ -1818,21 +1819,32 @@ local function FollowEnemy(Enemy)
 				Hum:MoveTo(EnemyHRP.Position)
 			end
 		elseif NpcMode == "Perfect" then
-			-- PERFECT MOVEMENT: Dynamic spacing. Maintains precise 4.5 stud range (hitbox edge)
+			-- Check if enemy is PB'd / stunned / down
+			local targetStates = CHeckIFPlayer and Players[Enemy.Name]:FindFirstChild("states") or Enemy:FindFirstChild("states")
+			local isEnemyDisabled = targetStates and (
+				targetStates:FindFirstChild("PerfectBlock") 
+					or targetStates:FindFirstChild("stun") 
+					or targetStates:FindFirstChild("selfstun")
+					or targetStates:FindFirstChild("RD")
+			)
+
 			RS.events.ClientEvents:Fire("Sprint", true)
 
-			if Distance > 6 then
+			if isEnemyDisabled then
+				-- DO NOT DASH AWAY! Drive straight into the target for an unpunishable combo
 				Hum:MoveTo(EnemyHRP.Position)
-				if Distance > 14 then
-					DashAwayForward()
-				end
-			elseif Distance < 3.5 then
-				-- Backpedal / dash away to avoid getting hit by close-up frame traps
-				DashAway()
 			else
-				-- Circle strafe tightly to break target lock-on
-				local sideVector = (tick() % 2 > 1) and EnemyHRP.CFrame.RightVector or -EnemyHRP.CFrame.RightVector
-				Hum:MoveTo(EnemyHRP.Position + (sideVector * 4))
+				-- High-pressure aggressive spacing (2 - 5 studs)
+				if Distance > 5 then
+					Hum:MoveTo(EnemyHRP.Position)
+					if Distance > 12 then
+						DashAwayForward()
+					end
+				else
+					-- Tightly orbit target while staying inside attack range
+					local sideVector = (tick() % 1.5 > 0.75) and EnemyHRP.CFrame.RightVector or -EnemyHRP.CFrame.RightVector
+					Hum:MoveTo(EnemyHRP.Position + (sideVector * 2))
+				end
 			end
 		else -- NORMAL
 			if Distance <= 1000 and Distance >= 10 then
@@ -2062,15 +2074,27 @@ local function RandomAttacks(Enemy)
 			end
 			-- Add inside RandomAttacks(Enemy):
 		elseif NpcMode == "Perfect" then
-			-- PERFECT ATTACK: Frame-perfect M1/M2 buffer based on enemy state
-			if Distance <= 6.5 then
+			if Distance <= 8 then
 				local targetStates = CHeckIFPlayer and Players[Enemy.Name]:FindFirstChild("states") or Enemy:FindFirstChild("states")
 
-				if targetStates and targetStates:FindFirstChild("block") then
-					-- Guardbreak immediately if opponent is holding block
+				-- If enemy is PB'd or stunned, relentlessly unleash attacks
+				local isEnemyDisabled = targetStates and (
+					targetStates:FindFirstChild("PerfectBlock") 
+						or targetStates:FindFirstChild("stun") 
+						or targetStates:FindFirstChild("RD")
+				)
+
+				if isEnemyDisabled then
+					AutoM1()
+					local StrongAttack = ourcds:FindFirstChild("StrongAttack")
+					if not StrongAttack then
+						AutoM2()
+					end
+				elseif targetStates and targetStates:FindFirstChild("block") then
+					-- Guard-break if enemy is holding block
 					AutoM2()
-				elseif not IsStunned() then
-					-- Interrupt with M1 instantly if opponent is open
+				else
+					-- Frame trap: Fast aggressive M1 pressure
 					AutoM1()
 				end
 			end

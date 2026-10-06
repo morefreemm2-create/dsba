@@ -44,20 +44,36 @@ local COLORS = {
 --// MAIN PANEL
 --//========================================================
 
+local UserInputService = game:GetService("UserInputService")
+local isMobile = UserInputService.TouchEnabled and not UserInputService.KeyboardEnabled
+
 local frame = Instance.new("Frame")
 frame.Name = "MainPanel"
-frame.Size = UDim2.new(0.395, 0, 0.435, 0)
-frame.Position = UDim2.new(0.5, 0, 0.5, 0)
+
+-- Adaptive scaling: Cover 82% of screen height/width on Mobile, ~48% on PC
+if isMobile then
+	frame.Size = UDim2.new(0.85, 0, 0.82, 0)
+	frame.Position = UDim2.new(0.075, 0, 0.09, 0)
+else
+	frame.Size = UDim2.new(0.55, 0, 0.58, 0)
+	frame.Position = UDim2.new(0.225, 0, 0.21, 0)
+end
+
 frame.BackgroundColor3 = COLORS.Background
 frame.BorderSizePixel = 0
 frame.Parent = gui
 
--- Prevent distortion on non-16:9 screens
+-- Prevent over-stretching without making it tiny on mobile screens
 local mainAspectRatio = Instance.new("UIAspectRatioConstraint")
 mainAspectRatio.AspectRatio = 1.617
 mainAspectRatio.AspectType = Enum.AspectType.FitWithinMaxSize
-mainAspectRatio.DominantAxis = Enum.DominantAxis.Width
+mainAspectRatio.DominantAxis = Enum.DominantAxis.Height -- Key fix for phone screens
 mainAspectRatio.Parent = frame
+
+-- Scale all UI text automatically across devices
+local uiScale = Instance.new("UIScale")
+uiScale.Scale = isMobile and 1.2 or 1.0
+uiScale.Parent = frame
 
 local frameCorner = Instance.new("UICorner")
 frameCorner.CornerRadius = UDim.new(0, 12)
@@ -102,7 +118,7 @@ topFix.Parent = topBar
 
 -- Accent line
 local accentLine = Instance.new("Frame")
-accentLine.Size = UDim2.new(0.005, 0, 0.483, 0)
+accentLine.Size = UDim2.new(0.006, 0, 0.483, 0)
 accentLine.Position = UDim2.new(0.024, 0, 0.258, 0)
 accentLine.BackgroundColor3 = COLORS.Accent
 accentLine.BorderSizePixel = 0
@@ -136,8 +152,8 @@ subtitle.Parent = topBar
 
 --// Hide button
 local hideButton = Instance.new("TextButton")
-hideButton.Size = UDim2.new(0.092, 0, 0.517, 0)
-hideButton.Position = UDim2.new(0.796, 0, 0.241, 0)
+hideButton.Size = UDim2.new(0.1, 0, 0.517, 0)
+hideButton.Position = UDim2.new(0.78, 0, 0.241, 0)
 hideButton.Text = "HIDE"
 hideButton.Font = Enum.Font.GothamBold
 hideButton.TextSize = 11
@@ -152,8 +168,8 @@ hideCorner.Parent = hideButton
 
 --// Destroy button
 local destroyButton = Instance.new("TextButton")
-destroyButton.Size = UDim2.new(0.092, 0, 0.517, 0)
-destroyButton.Position = UDim2.new(0.897, 0, 0.241, 0)
+destroyButton.Size = UDim2.new(0.1, 0, 0.517, 0)
+destroyButton.Position = UDim2.new(0.89, 0, 0.241, 0)
 destroyButton.Text = "CLOSE"
 destroyButton.Font = Enum.Font.GothamBold
 destroyButton.TextSize = 11
@@ -261,7 +277,7 @@ tabLayout.Parent = tabBar
 
 local function createTab(text)
 	local button = Instance.new("TextButton")
-	button.Size = UDim2.new(0.278, 0, 1, 0)
+	button.Size = UDim2.new(0.3, 0, 1, 0)
 	button.Text = text
 	button.Font = Enum.Font.GothamBold
 	button.TextSize = 11
@@ -318,8 +334,8 @@ SectionThirdFrame.Parent = content
 --// Button grids
 local function setupGrid(parent)
 	local grid = Instance.new("UIGridLayout")
-	grid.CellSize = UDim2.new(0.278, 0, 0.146, 0)
-	grid.CellPadding = UDim2.new(0.015, 0, 0.028, 0)
+	grid.CellSize = UDim2.new(0.31, 0, 0.15, 0)
+	grid.CellPadding = UDim2.new(0.02, 0, 0.03, 0)
 	grid.SortOrder = Enum.SortOrder.LayoutOrder
 	grid.Parent = parent
 	return grid
@@ -337,10 +353,10 @@ local function createButton(name, par)
 	local b = Instance.new("TextButton")
 
 	b.Name = name
-	b.Size = UDim2.new(0.278, 0, 0.146, 0)
+	b.Size = UDim2.new(0.31, 0, 0.15, 0)
 	b.Text = name
 	b.Font = Enum.Font.GothamBold
-	b.TextSize = 12
+	b.TextSize = 11
 	b.TextColor3 = COLORS.Text
 	b.BackgroundColor3 = COLORS.Panel2
 	b.BorderSizePixel = 0
@@ -427,7 +443,7 @@ trackedLabel.Parent = trackingBox
 -- Old external tracking label retained
 local trackedLabel2 = Instance.new("TextLabel")
 trackedLabel2.Visible = false
-trackedLabel2.Size = UDim2.new(0.055, 0, 0.036, 0)
+trackedLabel2.Size = UDim2.new(0.1, 0, 0.05, 0)
 trackedLabel2.Position = UDim2.new(0.045, 0, 0.009, 0)
 trackedLabel2.TextScaled = true
 trackedLabel2.TextColor3 = Color3.new(1,1,1)
@@ -441,8 +457,8 @@ trackedLabel2.Parent = gui
 --//========================================================
 
 local clearButton = Instance.new("TextButton")
-clearButton.Size = UDim2.new(0.264, 0, 0.092, 0)
-clearButton.Position = UDim2.new(0.027, 0, 0.871, 0)
+clearButton.Size = UDim2.new(0.3, 0, 0.1, 0)
+clearButton.Position = UDim2.new(0.027, 0, 0.86, 0)
 clearButton.Text = "CLEAR TARGET"
 clearButton.Font = Enum.Font.GothamBold
 clearButton.TextSize = 10
@@ -542,8 +558,8 @@ end
 local playerListOustide = Instance.new("ScrollingFrame")
 playerListOustide.Name = "PlayerListOutside"
 playerListOustide.Visible = false
-playerListOustide.Size = UDim2.new(0.099, 0, 0.231, 0)
-playerListOustide.Position = UDim2.new(0.008, 0, 0.056, 0)
+playerListOustide.Size = UDim2.new(0.2, 0, 0.4, 0)
+playerListOustide.Position = UDim2.new(0.02, 0, 0.1, 0)
 playerListOustide.BackgroundColor3 = COLORS.Panel
 playerListOustide.BackgroundTransparency = 0
 playerListOustide.CanvasSize = UDim2.new(0, 0, 0, 1500)
@@ -561,16 +577,16 @@ layoutOutside.Padding = UDim.new(0, 5)
 layoutOutside.Parent = playerListOustide
 
 --//========================================================
---// SHOW BUTTON
+--// SHOW / OPEN BUTTON
 --//========================================================
 
 local showButton = Instance.new("TextButton")
-showButton.Size = UDim2.new(0.044, 0, 0.031, 0)
-showButton.Position = UDim2.new(0.008, 0, 0.014, 0)
+showButton.Size = isMobile and UDim2.new(0.12, 0, 0.08, 0) or UDim2.new(0.07, 0, 0.05, 0)
+showButton.Position = UDim2.new(0.015, 0, 0.015, 0)
 showButton.Text = "OPEN"
 showButton.Visible = false
 showButton.Font = Enum.Font.GothamBold
-showButton.TextSize = 11
+showButton.TextSize = 12
 showButton.TextColor3 = COLORS.Text
 showButton.BackgroundColor3 = COLORS.Panel
 showButton.BorderSizePixel = 0
@@ -3257,62 +3273,31 @@ clearButton.MouseButton1Click:Connect(function()
 	clearTrackedPlayers()
 end)
 
-local UserInputService = game:GetService("UserInputService")
-local workspace = game:GetService("Workspace")
-
-local dragging = false
-local dragStart = Vector3.new()
-local startPos = UDim2.new()
+local dragging
+local dragStart
+local startPos
 
 local function update(input)
-	local camera = workspace.CurrentCamera
-	if not camera then return end
-
-	local viewportSize = camera.ViewportSize
-	if viewportSize.X == 0 or viewportSize.Y == 0 then return end
-
-	-- Calculate drag offset relative to screen resolution (pure Scale)
 	local delta = input.Position - dragStart
-	local scaleDeltaX = delta.X / viewportSize.X
-	local scaleDeltaY = delta.Y / viewportSize.Y
-
-	frame.Position = UDim2.new(
-		startPos.X.Scale + scaleDeltaX, 0,
-		startPos.Y.Scale + scaleDeltaY, 0
-	)
-end
-
--- Works for both Left Mouse Click and Finger Touch
-local function isDragInput(input)
-	return input.UserInputType == Enum.UserInputType.MouseButton1 
-		or input.UserInputType == Enum.UserInputType.Touch
-end
-
--- Works for both Mouse Dragging and Finger Swiping
-local function isMoveInput(input)
-	return input.UserInputType == Enum.UserInputType.MouseMovement 
-		or input.UserInputType == Enum.UserInputType.Touch
+	frame.Position = UDim2.new(startPos.X.Scale,startPos.X.Offset + delta.X,startPos.Y.Scale,startPos.Y.Offset + delta.Y)
 end
 
 frame.InputBegan:Connect(function(input)
-	if isDragInput(input) then
+	if input.UserInputType == Enum.UserInputType.MouseButton1 then
 		dragging = true
 		dragStart = input.Position
 		startPos = frame.Position
 
-		-- Detect release (mouse lift or finger lifting off screen)
-		local connection
-		connection = input.Changed:Connect(function()
+		input.Changed:Connect(function()
 			if input.UserInputState == Enum.UserInputState.End then
 				dragging = false
-				connection:Disconnect()
 			end
 		end)
 	end
 end)
 
-UserInputService.InputChanged:Connect(function(input)
-	if dragging and isMoveInput(input) then
+UIS.InputChanged:Connect(function(input)
+	if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
 		update(input)
 	end
 end)

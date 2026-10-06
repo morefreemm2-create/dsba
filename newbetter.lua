@@ -47,7 +47,7 @@ local COLORS = {
 local frame = Instance.new("Frame")
 frame.Name = "MainPanel"
 frame.Size = UDim2.new(0.395, 0, 0.435, 0)
-frame.Position = UDim2.new(0.302, 0, 0.282, 0)
+frame.Position = UDim2.new(0.5, 0, 0.5, 0)
 frame.BackgroundColor3 = COLORS.Background
 frame.BorderSizePixel = 0
 frame.Parent = gui
@@ -3257,31 +3257,62 @@ clearButton.MouseButton1Click:Connect(function()
 	clearTrackedPlayers()
 end)
 
-local dragging
-local dragStart
-local startPos
+local UserInputService = game:GetService("UserInputService")
+local workspace = game:GetService("Workspace")
+
+local dragging = false
+local dragStart = Vector3.new()
+local startPos = UDim2.new()
 
 local function update(input)
+	local camera = workspace.CurrentCamera
+	if not camera then return end
+
+	local viewportSize = camera.ViewportSize
+	if viewportSize.X == 0 or viewportSize.Y == 0 then return end
+
+	-- Calculate drag offset relative to screen resolution (pure Scale)
 	local delta = input.Position - dragStart
-	frame.Position = UDim2.new(startPos.X.Scale,startPos.X.Offset + delta.X,startPos.Y.Scale,startPos.Y.Offset + delta.Y)
+	local scaleDeltaX = delta.X / viewportSize.X
+	local scaleDeltaY = delta.Y / viewportSize.Y
+
+	frame.Position = UDim2.new(
+		startPos.X.Scale + scaleDeltaX, 0,
+		startPos.Y.Scale + scaleDeltaY, 0
+	)
+end
+
+-- Works for both Left Mouse Click and Finger Touch
+local function isDragInput(input)
+	return input.UserInputType == Enum.UserInputType.MouseButton1 
+		or input.UserInputType == Enum.UserInputType.Touch
+end
+
+-- Works for both Mouse Dragging and Finger Swiping
+local function isMoveInput(input)
+	return input.UserInputType == Enum.UserInputType.MouseMovement 
+		or input.UserInputType == Enum.UserInputType.Touch
 end
 
 frame.InputBegan:Connect(function(input)
-	if input.UserInputType == Enum.UserInputType.MouseButton1 then
+	if isDragInput(input) then
 		dragging = true
 		dragStart = input.Position
 		startPos = frame.Position
 
-		input.Changed:Connect(function()
+		-- Detect release (mouse lift or finger lifting off screen)
+		local connection
+		connection = input.Changed:Connect(function()
 			if input.UserInputState == Enum.UserInputState.End then
 				dragging = false
+				connection:Disconnect()
 			end
 		end)
 	end
 end)
 
-UIS.InputChanged:Connect(function(input)
-	if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+UserInputService.InputChanged:Connect(function(input)
+	if dragging and isMoveInput(input) then
 		update(input)
 	end
 end)

@@ -46,16 +46,18 @@ local COLORS = {
 
 local frame = Instance.new("Frame")
 frame.Name = "MainPanel"
-frame.Size = UDim2.new(0.8, 0, 0.8, 0)
-frame.Position = UDim2.new(0.5, 0, 0.5, 0)
+frame.Size = UDim2.new(0.395, 0, 0.435, 0)
+frame.Position = UDim2.new(0.302, 0, 0.282, 0)
 frame.BackgroundColor3 = COLORS.Background
 frame.BorderSizePixel = 0
 frame.Parent = gui
 
--- Preserve the original 760:470 shape while the frame uses Scale sizing.
-local frameAspect = Instance.new("UIAspectRatioConstraint")
-frameAspect.AspectRatio = 760 / 470
-frameAspect.Parent = frame
+-- Prevent distortion on non-16:9 screens
+local mainAspectRatio = Instance.new("UIAspectRatioConstraint")
+mainAspectRatio.AspectRatio = 1.617
+mainAspectRatio.AspectType = Enum.AspectType.FitWithinMaxSize
+mainAspectRatio.DominantAxis = Enum.DominantAxis.Width
+mainAspectRatio.Parent = frame
 
 local frameCorner = Instance.new("UICorner")
 frameCorner.CornerRadius = UDim.new(0, 12)
@@ -81,7 +83,7 @@ frameGradient.Parent = frame
 
 local topBar = Instance.new("Frame")
 topBar.Name = "TopBar"
-topBar.Size = UDim2.new(1, 0, 0.123404, 0)
+topBar.Size = UDim2.new(1, 0, 0.123, 0)
 topBar.BackgroundColor3 = COLORS.Panel
 topBar.BorderSizePixel = 0
 topBar.Parent = frame
@@ -92,16 +94,16 @@ topCorner.Parent = topBar
 
 -- Cover bottom corners
 local topFix = Instance.new("Frame")
-topFix.Size = UDim2.new(1, 0, 0.031915, 0)
-topFix.Position = UDim2.new(0, 0, 0.968085, 0)
+topFix.Size = UDim2.new(1, 0, 0.258, 0)
+topFix.Position = UDim2.new(0, 0, 0.742, 0)
 topFix.BackgroundColor3 = COLORS.Panel
 topFix.BorderSizePixel = 0
 topFix.Parent = topBar
 
 -- Accent line
 local accentLine = Instance.new("Frame")
-accentLine.Size = UDim2.new(0.005263, 0, 0.059574, 0)
-accentLine.Position = UDim2.new(0.023684, 0, 0.470213, 0)
+accentLine.Size = UDim2.new(0.005, 0, 0.483, 0)
+accentLine.Position = UDim2.new(0.024, 0, 0.258, 0)
 accentLine.BackgroundColor3 = COLORS.Accent
 accentLine.BorderSizePixel = 0
 accentLine.Parent = topBar
@@ -111,8 +113,8 @@ accentCorner.CornerRadius = UDim.new(1, 0)
 accentCorner.Parent = accentLine
 
 local title = Instance.new("TextLabel")
-title.Size = UDim2.new(0.394737, 0, 0.053191, 0)
-title.Position = UDim2.new(0.042105, 0, 0.017021, 0)
+title.Size = UDim2.new(0.395, 0, 0.431, 0)
+title.Position = UDim2.new(0.042, 0, 0.138, 0)
 title.Text = "LostTokyo"
 title.Font = Enum.Font.GothamBold
 title.TextSize = 18
@@ -122,8 +124,8 @@ title.TextXAlignment = Enum.TextXAlignment.Left
 title.Parent = topBar
 
 local subtitle = Instance.new("TextLabel")
-subtitle.Size = UDim2.new(0.394737, 0, 0.038298, 0)
-subtitle.Position = UDim2.new(0.043421, 0, 0.06383, 0)
+subtitle.Size = UDim2.new(0.395, 0, 0.31, 0)
+subtitle.Position = UDim2.new(0.043, 0, 0.517, 0)
 subtitle.Text = "UTILITY PANEL  •  v1.0"
 subtitle.Font = Enum.Font.GothamMedium
 subtitle.TextSize = 10
@@ -134,8 +136,8 @@ subtitle.Parent = topBar
 
 --// Hide button
 local hideButton = Instance.new("TextButton")
-hideButton.Size = UDim2.new(0.092105, 0, 0.06383, 0)
-hideButton.Position = UDim2.new(0.796053, 0, 0.468085, 0)
+hideButton.Size = UDim2.new(0.092, 0, 0.517, 0)
+hideButton.Position = UDim2.new(0.796, 0, 0.241, 0)
 hideButton.Text = "HIDE"
 hideButton.Font = Enum.Font.GothamBold
 hideButton.TextSize = 11
@@ -150,8 +152,8 @@ hideCorner.Parent = hideButton
 
 --// Destroy button
 local destroyButton = Instance.new("TextButton")
-destroyButton.Size = UDim2.new(0.092105, 0, 0.06383, 0)
-destroyButton.Position = UDim2.new(0.897368, 0, 0.468085, 0)
+destroyButton.Size = UDim2.new(0.092, 0, 0.517, 0)
+destroyButton.Position = UDim2.new(0.897, 0, 0.241, 0)
 destroyButton.Text = "CLOSE"
 destroyButton.Font = Enum.Font.GothamBold
 destroyButton.TextSize = 11
@@ -170,23 +172,23 @@ destroyCorner.Parent = destroyButton
 
 local playerPanel = Instance.new("Frame")
 playerPanel.Name = "PlayerPanel"
-playerPanel.Size = UDim2.new(0.276316, 0, 0.876596, 0)
-playerPanel.Position = UDim2.new(0, 0, 0.123404, 0)
+playerPanel.Size = UDim2.new(0.276, 0, 0.877, 0)
+playerPanel.Position = UDim2.new(0, 0, 0.123, 0)
 playerPanel.BackgroundColor3 = COLORS.Panel
 playerPanel.BorderSizePixel = 0
 playerPanel.Parent = frame
 
 -- Sidebar separator
 local separator = Instance.new("Frame")
-separator.Size = UDim2.new(0.004762, 0, 0.951456, 0)
-separator.Position = UDim2.new(0.995238, 0, 0.024272, 0)
+separator.Size = UDim2.new(0.005, 0, 0.951, 0)
+separator.Position = UDim2.new(0.995, 0, 0.024, 0)
 separator.BackgroundColor3 = Color3.fromRGB(38, 42, 49)
 separator.BorderSizePixel = 0
 separator.Parent = playerPanel
 
 local playerHeader = Instance.new("TextLabel")
-playerHeader.Size = UDim2.new(0.880952, 0, 0.06068, 0)
-playerHeader.Position = UDim2.new(0.071429, 0, 0.033981, 0)
+playerHeader.Size = UDim2.new(0.881, 0, 0.061, 0)
+playerHeader.Position = UDim2.new(0.071, 0, 0.034, 0)
 playerHeader.Text = "PLAYERS"
 playerHeader.Font = Enum.Font.GothamBold
 playerHeader.TextSize = 11
@@ -196,8 +198,8 @@ playerHeader.TextXAlignment = Enum.TextXAlignment.Left
 playerHeader.Parent = playerPanel
 
 local playerCount = Instance.new("TextLabel")
-playerCount.Size = UDim2.new(0.166667, 0, 0.048544, 0)
-playerCount.Position = UDim2.new(0.761905, 0, 0.036408, 0)
+playerCount.Size = UDim2.new(0.167, 0, 0.048, 0)
+playerCount.Position = UDim2.new(0.762, 0, 0.036, 0)
 playerCount.Text = "0"
 playerCount.Font = Enum.Font.GothamBold
 playerCount.TextSize = 10
@@ -206,11 +208,11 @@ playerCount.BackgroundTransparency = 1
 playerCount.Parent = playerPanel
 
 local playerList = Instance.new("ScrollingFrame")
-playerList.Size = UDim2.new(0.904762, 0, 0.866505, 0)
-playerList.Position = UDim2.new(0.047619, 0, 0.109223, 0)
+playerList.Size = UDim2.new(0.905, 0, 0.866, 0)
+playerList.Position = UDim2.new(0.048, 0, 0.109, 0)
 playerList.BackgroundTransparency = 1
 playerList.BorderSizePixel = 0
-playerList.CanvasSize = UDim2.new(0, 0, 3.640777, 0)
+playerList.CanvasSize = UDim2.new(0, 0, 0, 1500)
 playerList.ScrollBarThickness = 3
 playerList.ScrollBarImageColor3 = COLORS.AccentDark
 playerList.Parent = playerPanel
@@ -225,8 +227,8 @@ layout.Parent = playerList
 
 local content = Instance.new("Frame")
 content.Name = "Content"
-content.Size = UDim2.new(0.723684, 0, 0.876596, 0)
-content.Position = UDim2.new(0.276316, 0, 0.123404, 0)
+content.Size = UDim2.new(0.724, 0, 0.877, 0)
+content.Position = UDim2.new(0.276, 0, 0.123, 0)
 content.BackgroundTransparency = 1
 content.Parent = frame
 
@@ -235,8 +237,8 @@ content.Parent = frame
 --//========================================================
 
 local tabBar = Instance.new("Frame")
-tabBar.Size = UDim2.new(0.945455, 0, 0.109223, 0)
-tabBar.Position = UDim2.new(0.027273, 0, 0.029126, 0)
+tabBar.Size = UDim2.new(0.945, 0, 0.109, 0)
+tabBar.Position = UDim2.new(0.027, 0, 0.029, 0)
 tabBar.BackgroundColor3 = COLORS.Panel
 tabBar.BorderSizePixel = 0
 tabBar.Parent = content
@@ -259,7 +261,7 @@ tabLayout.Parent = tabBar
 
 local function createTab(text)
 	local button = Instance.new("TextButton")
-	button.Size = UDim2.new(0.278846, 0, 1, 0)
+	button.Size = UDim2.new(0.278, 0, 1, 0)
 	button.Text = text
 	button.Font = Enum.Font.GothamBold
 	button.TextSize = 11
@@ -291,24 +293,24 @@ SectionThreeButton.Name = "DSBAPVP"
 
 local SectionOneFrame = Instance.new("Frame")
 SectionOneFrame.Name = "SectionOneFrame"
-SectionOneFrame.Size = UDim2.new(0.945455, 0, 0.696602, 0)
-SectionOneFrame.Position = UDim2.new(0.027273, 0, 0.169903, 0)
+SectionOneFrame.Size = UDim2.new(0.945, 0, 0.697, 0)
+SectionOneFrame.Position = UDim2.new(0.027, 0, 0.17, 0)
 SectionOneFrame.BackgroundTransparency = 1
 SectionOneFrame.Visible = false
 SectionOneFrame.Parent = content
 
 local SectionTwoFrame = Instance.new("Frame")
 SectionTwoFrame.Name = "SectionTwoFrame"
-SectionTwoFrame.Size = UDim2.new(0.945455, 0, 0.696602, 0)
-SectionTwoFrame.Position = UDim2.new(0.027273, 0, 0.169903, 0)
+SectionTwoFrame.Size = UDim2.new(0.945, 0, 0.697, 0)
+SectionTwoFrame.Position = UDim2.new(0.027, 0, 0.17, 0)
 SectionTwoFrame.BackgroundTransparency = 1
 SectionTwoFrame.Visible = false
 SectionTwoFrame.Parent = content
 
 local SectionThirdFrame = Instance.new("Frame")
 SectionThirdFrame.Name = "SectionThreeFrame"
-SectionThirdFrame.Size = UDim2.new(0.945455, 0, 0.696602, 0)
-SectionThirdFrame.Position = UDim2.new(0.027273, 0, 0.169903, 0)
+SectionThirdFrame.Size = UDim2.new(0.945, 0, 0.697, 0)
+SectionThirdFrame.Position = UDim2.new(0.027, 0, 0.17, 0)
 SectionThirdFrame.BackgroundTransparency = 1
 SectionThirdFrame.Visible = false
 SectionThirdFrame.Parent = content
@@ -316,8 +318,8 @@ SectionThirdFrame.Parent = content
 --// Button grids
 local function setupGrid(parent)
 	local grid = Instance.new("UIGridLayout")
-	grid.CellSize = UDim2.new(0.278846, 0, 0.146341, 0)
-	grid.CellPadding = UDim2.new(0.015385, 0, 0.027875, 0)
+	grid.CellSize = UDim2.new(0.278, 0, 0.146, 0)
+	grid.CellPadding = UDim2.new(0.015, 0, 0.028, 0)
 	grid.SortOrder = Enum.SortOrder.LayoutOrder
 	grid.Parent = parent
 	return grid
@@ -335,7 +337,7 @@ local function createButton(name, par)
 	local b = Instance.new("TextButton")
 
 	b.Name = name
-	b.Size = UDim2.new(0.278846, 0, 0.146341, 0)
+	b.Size = UDim2.new(0.278, 0, 0.146, 0)
 	b.Text = name
 	b.Font = Enum.Font.GothamBold
 	b.TextSize = 12
@@ -385,8 +387,8 @@ end
 --//========================================================
 
 local trackingBox = Instance.new("Frame")
-trackingBox.Size = UDim2.new(0.545455, 0, 0.169903, 0)
-trackingBox.Position = UDim2.new(0.418182, 0, 0.793689, 0)
+trackingBox.Size = UDim2.new(0.545, 0, 0.17, 0)
+trackingBox.Position = UDim2.new(0.418, 0, 0.794, 0)
 trackingBox.BackgroundColor3 = COLORS.Panel
 trackingBox.BorderSizePixel = 0
 trackingBox.Parent = content
@@ -401,8 +403,8 @@ trackingStroke.Thickness = 1
 trackingStroke.Parent = trackingBox
 
 local trackingTitle = Instance.new("TextLabel")
-trackingTitle.Size = UDim2.new(0.933333, 0, 0.285714, 0)
-trackingTitle.Position = UDim2.new(0.033333, 0, 0.114286, 0)
+trackingTitle.Size = UDim2.new(0.933, 0, 0.286, 0)
+trackingTitle.Position = UDim2.new(0.033, 0, 0.114, 0)
 trackingTitle.Text = "CURRENT TARGET"
 trackingTitle.Font = Enum.Font.GothamBold
 trackingTitle.TextSize = 9
@@ -412,8 +414,8 @@ trackingTitle.TextXAlignment = Enum.TextXAlignment.Left
 trackingTitle.Parent = trackingBox
 
 local trackedLabel = Instance.new("TextLabel")
-trackedLabel.Size = UDim2.new(0.933333, 0, 0.428571, 0)
-trackedLabel.Position = UDim2.new(0.033333, 0, 0.4, 0)
+trackedLabel.Size = UDim2.new(0.933, 0, 0.429, 0)
+trackedLabel.Position = UDim2.new(0.033, 0, 0.4, 0)
 trackedLabel.Text = "None"
 trackedLabel.Font = Enum.Font.GothamBold
 trackedLabel.TextSize = 14
@@ -425,8 +427,8 @@ trackedLabel.Parent = trackingBox
 -- Old external tracking label retained
 local trackedLabel2 = Instance.new("TextLabel")
 trackedLabel2.Visible = false
-trackedLabel2.Size = UDim2.new(0.138158, 0, 0.082979, 0)
-trackedLabel2.Position = UDim2.new(0.114474, 0, 0.021277, 0)
+trackedLabel2.Size = UDim2.new(0.055, 0, 0.036, 0)
+trackedLabel2.Position = UDim2.new(0.045, 0, 0.009, 0)
 trackedLabel2.TextScaled = true
 trackedLabel2.TextColor3 = Color3.new(1,1,1)
 trackedLabel2.BackgroundTransparency = 1
@@ -439,8 +441,8 @@ trackedLabel2.Parent = gui
 --//========================================================
 
 local clearButton = Instance.new("TextButton")
-clearButton.Size = UDim2.new(0.263636, 0, 0.092233, 0)
-clearButton.Position = UDim2.new(0.027273, 0, 0.871359, 0)
+clearButton.Size = UDim2.new(0.264, 0, 0.092, 0)
+clearButton.Position = UDim2.new(0.027, 0, 0.871, 0)
 clearButton.Text = "CLEAR TARGET"
 clearButton.Font = Enum.Font.GothamBold
 clearButton.TextSize = 10
@@ -458,20 +460,18 @@ clearCorner.Parent = clearButton
 --//========================================================
 
 local argumentBox = Instance.new("Frame")
-argumentBox.Size = UDim2.new(0.381818, 0, 0.133495, 0)
+argumentBox.Size = UDim2.new(0.382, 0, 0.133, 0)
 argumentBox.Visible = false
-argumentBox.Position = UDim2.new(0.590909, 0, 0.871359, 0)
+argumentBox.Position = UDim2.new(0.591, 0, 0.871, 0)
 argumentBox.BackgroundColor3 = COLORS.Panel
 argumentBox.BorderSizePixel = 0
---argumentBox.Parent = content
 
 local argumentCorner = Instance.new("UICorner")
 argumentCorner.CornerRadius = UDim.new(0, 7)
---argumentCorner.Parent = argumentBox
 
 local TextBoxArguments = Instance.new("TextBox")
-TextBoxArguments.Size = UDim2.new(0.952381, 0, 0.818182, 0)
-TextBoxArguments.Position = UDim2.new(0.02381, 0, 0.090909, 0)
+TextBoxArguments.Size = UDim2.new(0.952, 0, 0.818, 0)
+TextBoxArguments.Position = UDim2.new(0.024, 0, 0.091, 0)
 TextBoxArguments.BackgroundColor3 = COLORS.Panel3
 TextBoxArguments.TextColor3 = COLORS.Text
 TextBoxArguments.PlaceholderColor3 = COLORS.Muted
@@ -483,7 +483,6 @@ TextBoxArguments.TextXAlignment = Enum.TextXAlignment.Center
 TextBoxArguments.ClearTextOnFocus = false
 TextBoxArguments.BorderSizePixel = 0
 TextBoxArguments.Visible = false
---TextBoxArguments.Parent = argumentBox
 
 local argumentCorner2 = Instance.new("UICorner")
 argumentCorner2.CornerRadius = UDim.new(0, 5)
@@ -496,11 +495,11 @@ argumentCorner2.Parent = TextBoxArguments
 local remoteList = Instance.new("ScrollingFrame")
 remoteList.Name = "RemoteList"
 remoteList.Visible = false
-remoteList.Size = UDim2.new(0.368421, 0, 0.361702, 0)
-remoteList.Position = UDim2.new(0.611842, 0, 0.489362, 0)
+remoteList.Size = UDim2.new(0.368, 0, 0.362, 0)
+remoteList.Position = UDim2.new(0.612, 0, 0.489, 0)
 remoteList.BackgroundColor3 = COLORS.Panel
 remoteList.BackgroundTransparency = 0
-remoteList.CanvasSize = UDim2.new(0, 0, 3.191489, 0)
+remoteList.CanvasSize = UDim2.new(0, 0, 0, 1500)
 remoteList.BorderSizePixel = 0
 remoteList.ScrollBarThickness = 3
 remoteList.ScrollBarImageColor3 = COLORS.Accent
@@ -517,7 +516,7 @@ layoutrem.Parent = remoteList
 local function createremotes(rem)
 	local button = Instance.new("TextButton")
 
-	button.Size = UDim2.new(0.964286, 0, 0.188235, 0)
+	button.Size = UDim2.new(0.964, 0, 0.188, 0)
 	button.Text = "  " .. rem.Name
 	button.TextXAlignment = Enum.TextXAlignment.Left
 	button.Font = Enum.Font.GothamMedium
@@ -543,11 +542,11 @@ end
 local playerListOustide = Instance.new("ScrollingFrame")
 playerListOustide.Name = "PlayerListOutside"
 playerListOustide.Visible = false
-playerListOustide.Size = UDim2.new(0.25, 0, 0.531915, 0)
-playerListOustide.Position = UDim2.new(0.019737, 0, 0.12766, 0)
+playerListOustide.Size = UDim2.new(0.099, 0, 0.231, 0)
+playerListOustide.Position = UDim2.new(0.008, 0, 0.056, 0)
 playerListOustide.BackgroundColor3 = COLORS.Panel
 playerListOustide.BackgroundTransparency = 0
-playerListOustide.CanvasSize = UDim2.new(0, 0, 3.191489, 0)
+playerListOustide.CanvasSize = UDim2.new(0, 0, 0, 1500)
 playerListOustide.BorderSizePixel = 0
 playerListOustide.ScrollBarThickness = 3
 playerListOustide.ScrollBarImageColor3 = COLORS.Accent
@@ -566,8 +565,8 @@ layoutOutside.Parent = playerListOustide
 --//========================================================
 
 local showButton = Instance.new("TextButton")
-showButton.Size = UDim2.new(0.111842, 0, 0.07234, 0)
-showButton.Position = UDim2.new(0.019737, 0, 0.031915, 0)
+showButton.Size = UDim2.new(0.044, 0, 0.031, 0)
+showButton.Position = UDim2.new(0.008, 0, 0.014, 0)
 showButton.Text = "OPEN"
 showButton.Visible = false
 showButton.Font = Enum.Font.GothamBold
@@ -585,7 +584,6 @@ local showStroke = Instance.new("UIStroke")
 showStroke.Color = COLORS.Accent
 showStroke.Thickness = 1
 showStroke.Parent = showButton
-
 
 --//========================================================
 --// TAB STATE

@@ -843,20 +843,48 @@ NpcModeButton.MouseButton1Click:Connect(function()
 	if NpcMode == "Normal" then
 		NpcMode = "Aggressive"
 		NpcModeButton.Text = "Mode: Aggressive"
-		NpcModeButton.TextColor3 = Color3.fromRGB(240, 100, 100) -- Red accent for aggressive
+		NpcModeButton.TextColor3 = Color3.fromRGB(240, 100, 100) -- Red
 
 	elseif NpcMode == "Aggressive" then
+		NpcMode = "SuperAggressive"
+		NpcModeButton.Text = "Mode: Super Aggressive"
+		NpcModeButton.TextColor3 = Color3.fromRGB(255, 30, 30) -- Dark Red
+
+	elseif NpcMode == "SuperAggressive" then
 		NpcMode = "Passive"
 		NpcModeButton.Text = "Mode: Passive"
-		NpcModeButton.TextColor3 = Color3.fromRGB(100, 200, 250) -- Light blue for passive
+		NpcModeButton.TextColor3 = Color3.fromRGB(100, 200, 250) -- Light Blue
 
-	else -- Currently "Passive"
+	elseif NpcMode == "Passive" then
+		NpcMode = "Annoying"
+		NpcModeButton.Text = "Mode: Annoying"
+		NpcModeButton.TextColor3 = Color3.fromRGB(255, 170, 0) -- Orange
+
+	elseif NpcMode == "Annoying" then
+		NpcMode = "Amateur"
+		NpcModeButton.Text = "Mode: Amateur"
+		NpcModeButton.TextColor3 = Color3.fromRGB(200, 200, 100) -- Yellow-Green
+
+	elseif NpcMode == "Amateur" then
+		NpcMode = "Noob"
+		NpcModeButton.Text = "Mode: Noob"
+		NpcModeButton.TextColor3 = Color3.fromRGB(150, 150, 150) -- Gray
+
+	elseif NpcMode == "Noob" then
+		NpcMode = "Juggernaut"
+		NpcModeButton.Text = "Mode: Juggernaut"
+		NpcModeButton.TextColor3 = Color3.fromRGB(140, 0, 200) -- Purple
+
+	elseif NpcMode == "Juggernaut" then
+		NpcMode = "Ninja"
+		NpcModeButton.Text = "Mode: Ninja"
+		NpcModeButton.TextColor3 = Color3.fromRGB(50, 205, 50) -- Lime Green
+
+	else -- Currently "Ninja" (or any unknown mode)
 		NpcMode = "Normal"
 		NpcModeButton.Text = "Mode: Normal"
 		NpcModeButton.TextColor3 = COLORS.Text -- Default text color
 	end
-
-	-- You can check `NpcMode` elsewhere in your script to dictate NPC AI behavior
 end)
 
 DexButton.MouseButton1Click:Connect(function()

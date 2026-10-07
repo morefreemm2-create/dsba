@@ -839,6 +839,40 @@ end)
 -- Modes: "Normal", "Aggressive", "Passive"
 local NpcMode = "Normal"
 
+local ChatGPTMemory = {
+	M1PB = 0,
+	M2Blocked = 0,
+	LastAction = nil,
+	LastChange = 0
+}
+
+local function ResetChatGPTMemory()
+	ChatGPTMemory.M1PB = 0
+	ChatGPTMemory.M2Blocked = 0
+	ChatGPTMemory.LastAction = nil
+	ChatGPTMemory.LastChange = tick()
+end
+
+local function GetChatGPTState()
+	local Character = Players.LocalPlayer.Character
+	if not Character then return "Neutral" end
+
+	local Hum = Character:FindFirstChild("Humanoid")
+	if not Hum or Hum.MaxHealth <= 0 then
+		return "Neutral"
+	end
+
+	local hp = Hum.Health / Hum.MaxHealth
+
+	if hp > 0.65 then
+		return "Pressure"
+	elseif hp > 0.35 then
+		return "Adaptive"
+	else
+		return "Desperation"
+	end
+end
+
 local NpcModeButton = createButton("NpcMode", SectionThirdFrame)
 NpcModeButton.Text = "Mode: Normal"
 
@@ -894,10 +928,17 @@ NpcModeButton.MouseButton1Click:Connect(function()
 		NpcMode = "GeminiAI"
 		NpcModeButton.Text = "Mode: Gemini AI"
 		NpcModeButton.TextColor3 = Color3.fromRGB(0, 170, 255) -- Gemini Cyan/Blue
-	else -- Currently "Perfect" (or any unknown mode)
+
+	elseif NpcMode == "GeminiAI" then
+		NpcMode = "ChatGPTAdaptive"
+		NpcModeButton.Text = "Mode: ChatGPT Adaptive"
+		NpcModeButton.TextColor3 = Color3.fromRGB(170, 100, 255)
+		ResetChatGPTMemory()
+	else
 		NpcMode = "Normal"
 		NpcModeButton.Text = "Mode: Normal"
 		NpcModeButton.TextColor3 = COLORS.Text
+		ResetChatGPTMemory()
 	end
 end)
 
@@ -1082,7 +1123,7 @@ local function GeminiChat(msg)
 end
 
 local function ExecuteGeminiDefenseAI(targetPlayer, isPB)
-	if NpcMode ~= "GeminiAI" then return end
+	if NpcMode ~= "GeminiAI" and NpcMode ~= "ChatGPTAdaptive" then return end
 	if IsStunned() then return end
 
 	task.spawn(function()
@@ -1102,6 +1143,21 @@ local function ExecuteGeminiDefenseAI(targetPlayer, isPB)
 		combatremote:FireServer("blockend")
 
 		if not IsStunned() then
+			if NpcMode == "ChatGPTAdaptive" then
+				if isPB then
+					if ChatGPTMemory.LastAction == "M1" then
+						ChatGPTMemory.M1PB += 1
+					end
+
+					AutoM2()
+					task.wait(0.05)
+					AutoM1()
+				else
+					AutoM1()
+				end
+
+				return
+			end
 			if isPB then
 				-- Optional taunt on parry
 				if math.random() > 0.6 then
@@ -2015,6 +2071,62 @@ local function FollowEnemy(Enemy)
 					Hum:MoveTo(EnemyHRP.Position + (orbit * 2))
 				end
 			end
+		elseif NpcMode == "ChatGPTAdaptive" then
+			local state = GetChatGPTState()
+
+			local targetStates = CHeckIFPlayer and Players[Enemy.Name]:FindFirstChild("states") or Enemy:FindFirstChild("states")
+
+			local isEnemyDisabled = targetStates and (
+				targetStates:FindFirstChild("PerfectBlock")
+					or targetStates:FindFirstChild("stun")
+					or targetStates:FindFirstChild("RD")
+			)
+
+			RS.events.ClientEvents:Fire("Sprint", true)
+
+			if isEnemyDisabled then
+				-- Stay on a vulnerable target.
+				Hum:MoveTo(EnemyHRP.Position)
+
+			elseif state == "Desperation" then
+				-- Low HP: don't flee like GeminiAI.
+				if Distance < 3 then
+					local directionAway = (HRP.Position - EnemyHRP.Position).Unit
+					Hum:MoveTo(HRP.Position + directionAway * 4)
+				elseif Distance > 7 then
+					Hum:MoveTo(EnemyHRP.Position)
+				else
+					local sideDir = (tick() % 0.8 > 0.4)
+						and EnemyHRP.CFrame.RightVector
+						or -EnemyHRP.CFrame.RightVector
+
+					Hum:MoveTo(EnemyHRP.Position + (sideDir * 3))
+				end
+
+			elseif state == "Adaptive" then
+				-- Mid HP: stay mobile and bait reactions.
+				if Distance > 6 then
+					Hum:MoveTo(EnemyHRP.Position)
+				else
+					local sideDir = (tick() % 0.6 > 0.3)
+						and EnemyHRP.CFrame.RightVector
+						or -EnemyHRP.CFrame.RightVector
+
+					Hum:MoveTo(EnemyHRP.Position + (sideDir * 3))
+				end
+
+			else
+				-- High HP: direct pressure.
+				if Distance > 4 then
+					Hum:MoveTo(EnemyHRP.Position)
+				else
+					local sideDir = (tick() % 0.8 > 0.4)
+						and EnemyHRP.CFrame.RightVector
+						or -EnemyHRP.CFrame.RightVector
+
+					Hum:MoveTo(EnemyHRP.Position + (sideDir * 2))
+				end
+			end
 		else -- NORMAL
 			if Distance <= 1000 and Distance >= 10 then
 				RS.events.ClientEvents:Fire("Sprint", true)
@@ -2313,6 +2425,81 @@ local function RandomAttacks(Enemy)
 					-- Only punish if within strict 4-stud range
 					if Distance <= 4 then
 						AutoM1()
+					end
+				end
+			end
+		elseif NpcMode == "ChatGPTAdaptive" then
+			local state = GetChatGPTState()
+
+			local targetStates = CHeckIFPlayer and Players[Enemy.Name]:FindFirstChild("states") or Enemy:FindFirstChild("states")
+
+			local isEnemyBlocking = targetStates and targetStates:FindFirstChild("block")
+
+			local isEnemyDisabled = targetStates and (
+				targetStates:FindFirstChild("PerfectBlock")
+					or targetStates:FindFirstChild("stun")
+					or targetStates:FindFirstChild("RD")
+			)
+
+			if Distance <= 8 then
+
+				-- Punish disabled targets immediately
+				if isEnemyDisabled then
+					AutoM1()
+					AutoM2()
+
+					-- Blocking -> M2
+				elseif isEnemyBlocking then
+					AutoM2()
+					ChatGPTMemory.LastAction = "M2"
+
+					-- If M1 has repeatedly been punished by Perfect Block,
+					-- stop blindly using M1.
+				elseif ChatGPTMemory.M1PB >= 2 then
+					if math.random(1, 4) <= 3 then
+						AutoM2()
+						ChatGPTMemory.LastAction = "M2"
+					else
+						task.wait(0.15)
+						AutoM1()
+						ChatGPTMemory.LastAction = "M1"
+					end
+
+					-- If M2 has repeatedly been blocked,
+					-- return to M1 pressure.
+				elseif ChatGPTMemory.M2Blocked >= 2 then
+					AutoM1()
+					ChatGPTMemory.LastAction = "M1"
+
+				elseif state == "Pressure" then
+					-- Mostly M1, occasional M2
+					if math.random(1, 10) <= 7 then
+						AutoM1()
+						ChatGPTMemory.LastAction = "M1"
+					else
+						AutoM2()
+						ChatGPTMemory.LastAction = "M2"
+					end
+
+				elseif state == "Adaptive" then
+					-- True 50/50 when there isn't enough information yet
+					if math.random(1, 2) == 1 then
+						AutoM1()
+						ChatGPTMemory.LastAction = "M1"
+					else
+						AutoM2()
+						ChatGPTMemory.LastAction = "M2"
+					end
+
+				elseif state == "Desperation" then
+					-- Don't become Gemini's "run away at low HP" behavior.
+					-- Stay in range and use whichever attack has been punished less.
+					if ChatGPTMemory.M1PB <= ChatGPTMemory.M2Blocked then
+						AutoM1()
+						ChatGPTMemory.LastAction = "M1"
+					else
+						AutoM2()
+						ChatGPTMemory.LastAction = "M2"
 					end
 				end
 			end

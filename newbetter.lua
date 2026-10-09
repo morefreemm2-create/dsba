@@ -873,6 +873,41 @@ local function GetChatGPTState()
 	end
 end
 
+local ApexMemory = {
+	M1ParriedCount = 0,
+	M2BlockedCount = 0,
+	LastAction = "M1",
+	BaitTimer = 0
+}
+
+local function ResetApexMemory()
+	ApexMemory.M1ParriedCount = 0
+	ApexMemory.M2BlockedCount = 0
+	ApexMemory.LastAction = "M1"
+	ApexMemory.BaitTimer = 0
+end
+
+local function GetApexCombatState(enemyPlayer)
+	local char = Players.LocalPlayer.Character
+	if not char then return "Neutral" end
+	local hum = char:FindFirstChildOfClass("Humanoid")
+	if not hum or hum.MaxHealth <= 0 then return "Neutral" end
+
+	local myHP = hum.Health / hum.MaxHealth
+	local enemyChar = Players:FindFirstChild(enemyPlayer.Name) and enemyPlayer.Character or enemyPlayer
+	local enemyHum = enemyChar and enemyChar:FindFirstChildOfClass("Humanoid")
+	local enemyHP = enemyHum and (enemyHum.Health / enemyHum.MaxHealth) or 1.0
+
+	if enemyHP < 0.25 then
+		return "ApexRush" 
+	elseif myHP < 0.30 then
+		return "BaitAndBurst" 
+	else
+		return "AdaptiveOrbit"
+	end
+end
+
+
 local NpcModeButton = createButton("NpcMode", SectionThirdFrame)
 NpcModeButton.Text = "Mode: Normal"
 
@@ -933,6 +968,17 @@ NpcModeButton.MouseButton1Click:Connect(function()
 		NpcMode = "ChatGPTAdaptive"
 		NpcModeButton.Text = "Mode: ChatGPT Adaptive"
 		NpcModeButton.TextColor3 = Color3.fromRGB(170, 100, 255)
+		ResetChatGPTMemory()
+	elseif NpcMode == "ChatGPTAdaptive" then
+		NpcMode = "ApexProtocol"
+		NpcModeButton.Text = "Mode: Apex Protocol"
+		NpcModeButton.TextColor3 = Color3.fromRGB(0, 255, 180) -- Teal/Green
+		ResetApexMemory()
+
+	elseif NpcMode == "ApexProtocol" then
+		NpcMode = "Normal"
+		NpcModeButton.Text = "Mode: Normal"
+		NpcModeButton.TextColor3 = COLORS.Text
 		ResetChatGPTMemory()
 	else
 		NpcMode = "Normal"
@@ -1091,6 +1137,38 @@ local function ExecuteGeminiDefense(targetPlayer, isPB)
 	end)  
 end
 
+local function ExecuteApexDefense(targetPlayer, isPB)
+	if NpcMode ~= "ApexProtocol" then return end
+	if IsStunned() then return end
+
+	task.spawn(function()
+		-- Native, non-deprecated way to get player ping in seconds
+		local livePing = Players.LocalPlayer:GetNetworkPing()
+		local blockWindow = math.clamp(0.11 + livePing, 0.10, 0.25)
+
+		combatremote:FireServer("blockstart")
+
+		local startTime = tick()
+		repeat
+			task.wait()
+		until (tick() - startTime >= blockWindow) or IsStunned()
+
+		combatremote:FireServer("blockend")
+
+		if not IsStunned() then
+			if isPB then
+				if ApexMemory.LastAction == "M1" then
+					ApexMemory.M1ParriedCount += 1
+				end
+				AutoM2()
+				task.wait(0.03)
+				AutoM1()
+			else
+				AutoM1()
+			end
+		end
+	end)
+end
 
 local TextChatService = game:GetService("TextChatService")
 local Stats = game:GetService("Stats")
@@ -2127,6 +2205,39 @@ local function FollowEnemy(Enemy)
 					Hum:MoveTo(EnemyHRP.Position + (sideDir * 2))
 				end
 			end
+		elseif NpcMode == "ApexProtocol" then
+			local state = GetApexCombatState(Enemy)
+			local targetStates = CHeckIFPlayer and Players[Enemy.Name]:FindFirstChild("states") or Enemy:FindFirstChild("states")
+			local isEnemyDisabled = targetStates and (targetStates:FindFirstChild("PerfectBlock") or targetStates:FindFirstChild("stun") or targetStates:FindFirstChild("RD"))
+			RS.events.ClientEvents:Fire("Sprint", true)
+
+			if isEnemyDisabled then
+				Hum:MoveTo(EnemyHRP.Position)
+			elseif state == "ApexRush" then
+				if Distance > 2 then
+					Hum:MoveTo(EnemyHRP.Position)
+					if Distance > 8 then DashAwayForward() end
+				else
+					local orbit = (tick() % 0.4 > 0.2) and EnemyHRP.CFrame.RightVector or -EnemyHRP.CFrame.RightVector
+					Hum:MoveTo(EnemyHRP.Position + (orbit * 1.5))
+				end
+			elseif state == "BaitAndBurst" then
+				if Distance < 4 then
+					DashAway()
+				elseif Distance > 7 then
+					Hum:MoveTo(EnemyHRP.Position)
+				else
+					local sideDir = (tick() % 0.6 > 0.3) and EnemyHRP.CFrame.RightVector or -EnemyHRP.CFrame.RightVector
+					Hum:MoveTo(EnemyHRP.Position + (sideDir * 4))
+				end
+			else
+				if Distance > 3.5 then
+					Hum:MoveTo(EnemyHRP.Position)
+				else
+					local orbit = (tick() % 0.6 > 0.3) and EnemyHRP.CFrame.RightVector or -EnemyHRP.CFrame.RightVector
+					Hum:MoveTo(EnemyHRP.Position + (orbit * 2.5))
+				end
+			end
 		else -- NORMAL
 			if Distance <= 1000 and Distance >= 10 then
 				RS.events.ClientEvents:Fire("Sprint", true)
@@ -2503,6 +2614,43 @@ local function RandomAttacks(Enemy)
 					end
 				end
 			end
+		elseif NpcMode == "ApexProtocol" then
+			local state = GetApexCombatState(Enemy)
+			if Distance <= 8 then
+				local targetStates = CHeckIFPlayer and Players[Enemy.Name]:FindFirstChild("states") or Enemy:FindFirstChild("states")
+				local isEnemyBlocking = targetStates and targetStates:FindFirstChild("block")
+				local isEnemyDisabled = targetStates and (targetStates:FindFirstChild("PerfectBlock") or targetStates:FindFirstChild("stun") or targetStates:FindFirstChild("RD"))
+
+				if isEnemyDisabled then
+					AutoM1()
+					task.wait(0.02)
+					AutoM2()
+				elseif isEnemyBlocking then
+					AutoM2()
+					ApexMemory.LastAction = "M2"
+				elseif ApexMemory.M1ParriedCount >= 2 then
+					if math.random(1, 3) == 1 then
+						AutoM2()
+						ApexMemory.LastAction = "M2"
+					else
+						task.wait(0.12)
+						AutoM1()
+						ApexMemory.LastAction = "M1"
+					end
+				elseif state == "ApexRush" then
+					AutoM1()
+					task.wait(0.01)
+					AutoM2()
+				else
+					if math.random(1, 10) <= 7 then
+						AutoM1()
+						ApexMemory.LastAction = "M1"
+					else
+						AutoM2()
+						ApexMemory.LastAction = "M2"
+					end
+				end
+			end
 		else -- NORMAL
 			if Distance <= 7 and Distance >= 1 then
 				local random = math.random(1, 2)
@@ -2668,7 +2816,6 @@ task.spawn(function()
 		--combatremote:FireServer("manacharges")
 	end
 end)
-
 
 local function ProtectGBS(targetPlayer, track)
 	task.spawn(function()

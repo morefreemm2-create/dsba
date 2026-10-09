@@ -1201,14 +1201,20 @@ local function GeminiChat(msg)
 end
 
 local function ExecuteGeminiDefenseAI(targetPlayer, isPB)
-	if NpcMode ~= "GeminiAI" and NpcMode ~= "ChatGPTAdaptive" then return end
+	if NpcMode ~= "GeminiAI" and NpcMode ~= "ChatGPTAdaptive" and NpcMode ~= "ApexProtocol" then return end
 	if IsStunned() then return end
 
 	task.spawn(function()
 		local state = GetGeminiCombatState()
 
-		-- Adapt block window based on live ping
-		local livePing = Stats.Network.ServerStatsItem["Data Ping"]:GetValue() / 1000
+		-- Gemini AI's original ping calculation left 100% untouched:
+		local livePing
+		if NpcMode == "ApexProtocol" then
+			livePing = Players.LocalPlayer:GetNetworkPing() -- Only changed for Apex
+		else
+			livePing = Stats.Network.ServerStatsItem["Data Ping"]:GetValue() / 1000 -- Original Gemini AI math
+		end
+
 		local blockWindow = math.clamp(0.12 + livePing, 0.12, 0.30)
 
 		combatremote:FireServer("blockstart")
@@ -1235,7 +1241,23 @@ local function ExecuteGeminiDefenseAI(targetPlayer, isPB)
 				end
 
 				return
+			elseif NpcMode == "ApexProtocol" then
+				if isPB then
+					if ApexMemory.LastAction == "M1" then
+						ApexMemory.M1ParriedCount += 1
+					end
+
+					AutoM2()
+					task.wait(0.05)
+					AutoM1()
+				else
+					AutoM1()
+				end
+
+				return
 			end
+
+			-- Gemini AI's original reaction branch (completely unmodified):
 			if isPB then
 				-- Optional taunt on parry
 				if math.random() > 0.6 then
@@ -2623,25 +2645,17 @@ local function RandomAttacks(Enemy)
 
 				if isEnemyDisabled then
 					AutoM1()
-					task.wait(0.02)
-					AutoM2()
+					ApexMemory.LastAction = "M1"
 				elseif isEnemyBlocking then
-					AutoM2()
+					AutoM2() -- Clean M2 guard break without canceling M1
 					ApexMemory.LastAction = "M2"
 				elseif ApexMemory.M1ParriedCount >= 2 then
-					if math.random(1, 3) == 1 then
-						AutoM2()
-						ApexMemory.LastAction = "M2"
-					else
-						task.wait(0.12)
-						AutoM1()
-						ApexMemory.LastAction = "M1"
-					end
-				elseif state == "ApexRush" then
-					AutoM1()
-					task.wait(0.01)
+					-- Delayed heavy to throw off parry timing
+					task.wait(0.12)
 					AutoM2()
+					ApexMemory.LastAction = "M2"
 				else
+					-- Dynamic M1/M2 Mixup
 					if math.random(1, 10) <= 7 then
 						AutoM1()
 						ApexMemory.LastAction = "M1"

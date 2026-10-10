@@ -719,59 +719,77 @@ local Air = NoSaveValue.Air
 local LocalPlayer = Players.LocalPlayer
 local Backpack = LocalPlayer.Backpack
 -- Helper function to find the Gourd tool in character or backpack
+-- Priority list: Tries to find gourds matching these keywords in order
+local GourdPriorities = {"small", "medium", "big"}
+
+-- Helper function to find a gourd based on priority
 local function findGourd()
 	local character = LocalPlayer.Character
 	if not character then
 		return nil
 	end
 
-	-- Check character first (equipped tools)
+	-- Collect all available gourd tools from both Character and Backpack
+	local foundGourds = {}
+
 	for _, child in ipairs(character:GetChildren()) do
 		if child:IsA("Tool") and string.find(child.Name:lower(), "gourd") then
-			return child
+			table.insert(foundGourds, child)
 		end
 	end
 
-	-- Check backpack
 	for _, child in ipairs(Backpack:GetChildren()) do
 		if child:IsA("Tool") and string.find(child.Name:lower(), "gourd") then
-			return child
+			table.insert(foundGourds, child)
 		end
 	end
 
-	return nil
+	if #foundGourds == 0 then
+		return nil
+	end
+
+	-- Loop through our priority keywords first ("small", then "medium", then "big")
+	for _, priorityKeyword in ipairs(GourdPriorities) do
+		for _, tool in ipairs(foundGourds) do
+			if string.find(tool.Name:lower(), priorityKeyword) then
+				return tool -- Return the highest priority gourd found
+			end
+		end
+	end
+
+	-- Fallback: If it has "gourd" in the name but doesn't match small/medium/big, just return the first one
+	return foundGourds[1]
 end
 
 task.spawn(function()
-	local OURCDS = LocalPlayer.cds
+	local OURCDS = LocalPlayer:WaitForChild("cds")
 	-- The FarmingStuff
 	task.spawn(function()
 		while true do
-			local RandomDelay = math.random(1, 4)
-			RandomDelay = RandomDelay / 25
-			print(RandomDelay)
+			local RandomDelay = math.random(1, 2)
+			RandomDelay = RandomDelay / math.random(20, 25)
 			task.wait(RandomDelay)
+
 			if gui.Parent ~= nil and DoingGourds == true then
 				local character = LocalPlayer.Character
 				if character then
-					-- Check if air value is 100 or more
 					local gourdTool = findGourd()
+					-- Check if air value is 100 or more, gourd exists, and it's not on cooldown
 					if Air and Air.Value >= 100 and gourdTool and not OURCDS:FindFirstChild(gourdTool.Name) then
 						combatremote:FireServer("manacharged")
-						if gourdTool then
-							-- If the gourd is in the backpack, equip it to the character
-							if gourdTool.Parent == Backpack then
-								local humanoid = character:FindFirstChildOfClass("Humanoid")
-								if humanoid then
-									humanoid:EquipTool(gourdTool)
-								end
-							end
 
-							-- Fire the remote with the gourd's name
-							combatremote:FireServer(gourdTool.Name)
+						-- If the gourd is in the backpack, equip it to the character
+						if gourdTool.Parent == Backpack then
+							local humanoid = character:FindFirstChildOfClass("Humanoid")
+							if humanoid then
+								humanoid:EquipTool(gourdTool)
+							end
 						end
+
+						-- Fire the remote with the gourd's name
+						combatremote:FireServer(gourdTool.Name)
 					else
-						-- Only charges when Air is under 100
+						-- Only charges when Air is under 100 or conditions aren't met
 						combatremote:FireServer("manacharges")
 					end
 				end
@@ -782,7 +800,6 @@ task.spawn(function()
 		end
 	end)
 end)
-
 local detectButtonPVP = createButton("Detect Animations", SectionThirdFrame)
 local AntiFlingTo = false
 local LastPos = nil

@@ -11,6 +11,8 @@ player.CharacterAdded:Connect(function(char)
 	Michar = char
 end)
 local TweenService = game:GetService("TweenService")
+local RS = game:GetService("ReplicatedStorage")
+local OnlyUseM1sBtt = false
 
 --//========================================================
 --// LOSTTOKYO PANEL - REDESIGNED UI
@@ -298,7 +300,7 @@ end
 local SectionOneButton = createTab("DSBA  /  MAIN")
 SectionOneButton.Name = "Section1B"
 
-local SectionTwoButton = createTab("MM2  /  MAIN")
+local SectionTwoButton = createTab("DSBA  /  Grinding")
 SectionTwoButton.Name = "Section2B"
 
 local SectionThreeButton = createTab("DSBA  /  PVP")
@@ -698,10 +700,88 @@ local Flierbutton = createButton("Continuous Fly", SectionOneFrame)
 local jork = createButton("JerkFE", SectionOneFrame)
 local EmergencyDip = createButton("EmergencyDip", SectionOneFrame)
 
-local Flierbutton2 = createButton("Fly", SectionTwoFrame)
-local tpbutton2 = createButton("Teleport", SectionTwoFrame)
-local jork2 = createButton("JerkFE", SectionTwoFrame)
-local AntiFling = createButton("AntiFling", SectionTwoFrame)
+local DoGourdsButton = createButton("Do Gourds", SectionTwoFrame)
+local DoingGourds = false
+DoGourdsButton.MouseButton1Click:Connect(function()
+	if DoingGourds == false then
+		DoingGourds = true
+		DoGourdsButton.Text = "Doing Gourds: On"
+	else
+		DoingGourds = false
+		DoGourdsButton.Text = "Doing Gourds: Off"
+	end
+end)
+
+local Events = RS.events
+local combatremote = Events.remote
+local NoSaveValue = player.NoSaveValue
+local Air = NoSaveValue.Air
+local LocalPlayer = Players.LocalPlayer
+local Backpack = LocalPlayer.Backpack
+-- Helper function to find the Gourd tool in character or backpack
+local function findGourd()
+	local character = LocalPlayer.Character
+	if not character then
+		return nil
+	end
+
+	-- Check character first (equipped tools)
+	for _, child in ipairs(character:GetChildren()) do
+		if child:IsA("Tool") and string.find(child.Name:lower(), "gourd") then
+			return child
+		end
+	end
+
+	-- Check backpack
+	for _, child in ipairs(Backpack:GetChildren()) do
+		if child:IsA("Tool") and string.find(child.Name:lower(), "gourd") then
+			return child
+		end
+	end
+
+	return nil
+end
+
+task.spawn(function()
+	local OURCDS = LocalPlayer.cds
+	-- The FarmingStuff
+	task.spawn(function()
+		while true do
+			local RandomDelay = math.random(1, 4)
+			RandomDelay = RandomDelay / 25
+			print(RandomDelay)
+			task.wait(RandomDelay)
+			if gui.Parent ~= nil and DoingGourds == true then
+				local character = LocalPlayer.Character
+				if character then
+					-- Check if air value is 100 or more
+					local gourdTool = findGourd()
+					if Air and Air.Value >= 100 and gourdTool and not OURCDS:FindFirstChild(gourdTool.Name) then
+						combatremote:FireServer("manacharged")
+						if gourdTool then
+							-- If the gourd is in the backpack, equip it to the character
+							if gourdTool.Parent == Backpack then
+								local humanoid = character:FindFirstChildOfClass("Humanoid")
+								if humanoid then
+									humanoid:EquipTool(gourdTool)
+								end
+							end
+
+							-- Fire the remote with the gourd's name
+							combatremote:FireServer(gourdTool.Name)
+						end
+					else
+						-- Only charges when Air is under 100
+						combatremote:FireServer("manacharges")
+					end
+				end
+			end
+			if gui.Parent == nil then
+				break
+			end
+		end
+	end)
+end)
 
 local detectButtonPVP = createButton("Detect Animations", SectionThirdFrame)
 local AntiFlingTo = false
@@ -757,9 +837,6 @@ end)
 
 jork.MouseButton1Click:Once(function()
 	loadstring(game:HttpGet("https://pastefy.app/wa3v2Vgm/raw"))("Spider Script")
-end)
-
-jork2.MouseButton1Click:Once(function()
 	loadstring(game:HttpGet("https://pastefy.app/YZoglOyJ/raw"))()
 end)
 
@@ -988,10 +1065,7 @@ NpcModeButton.MouseButton1Click:Connect(function()
 	end
 end)
 
-local RS = game:GetService("ReplicatedStorage")
-local Events = RS.events
-local combatremote = Events.remote
-local OnlyUseM1sBtt = false
+
 local TrackedNpcs = {}
 
 local function UseSTW()

@@ -586,7 +586,7 @@ layoutOutside.Parent = playerListOustide
 local showButton = Instance.new("TextButton")
 showButton.Size = isMobile and UDim2.new(0.12, 0, 0.08, 0) or UDim2.new(0.07, 0, 0.05, 0)
 showButton.Position = UDim2.new(0.015, 0, 0.015, 0)
-showButton.Text = "OPEN"
+showButton.Text = "LostTokyo UI"
 showButton.Visible = false
 showButton.Font = Enum.Font.GothamBold
 showButton.TextSize = 12
@@ -661,7 +661,7 @@ end
 hideButton.MouseButton1Click:Connect(function()
 	frame.Visible = false
 	showButton.Visible = true
-	playerListOustide.Visible = true
+	--playerListOustide.Visible = true
 	trackedLabel2.Visible = true
 end)
 
@@ -690,6 +690,13 @@ SectionThreeButton.MouseButton1Click:Connect(function()
 	SectionThirdFrame.Visible = true
 end)
 
+local Events = RS.events
+local combatremote = Events.remote
+local NoSaveValue = player.NoSaveValue
+local Air = NoSaveValue.Air
+local LocalPlayer = Players.LocalPlayer
+local Backpack = LocalPlayer.Backpack
+
 local detectButton = createButton("Detect Animations", SectionOneFrame)
 local flybutton = createButton("Fly", SectionOneFrame)
 local tpbutton = createButton("Teleport", SectionOneFrame)
@@ -712,15 +719,13 @@ DoGourdsButton.MouseButton1Click:Connect(function()
 	end
 end)
 
-local Events = RS.events
-local combatremote = Events.remote
-local NoSaveValue = player.NoSaveValue
-local Air = NoSaveValue.Air
-local LocalPlayer = Players.LocalPlayer
-local Backpack = LocalPlayer.Backpack
+local TestButton = createButton("TestButton", SectionTwoFrame)
+TestButton.MouseButton1Click:Connect(function()
+	combatremote:FireServer("Freezing Clouds")
+end)
 -- Helper function to find the Gourd tool in character or backpack
 -- Priority list: Tries to find gourds matching these keywords in order
-local GourdPriorities = {"small", "medium", "big"}
+local GourdPriorities = {"small", "medium", "big", "massive"}
 
 -- Helper function to find a gourd based on priority
 local function findGourd()

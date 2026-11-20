@@ -697,16 +697,254 @@ local Air = NoSaveValue.Air
 local LocalPlayer = Players.LocalPlayer
 local Backpack = LocalPlayer.Backpack
 
-local detectButton = createButton("Detect Animations", SectionOneFrame)
-local flybutton = createButton("Fly", SectionOneFrame)
-local tpbutton = createButton("Teleport", SectionOneFrame)
-local escapeButton = createButton("Escape", SectionOneFrame)
-local safebutton = createButton("Safe Floor", SectionOneFrame)
-local m1sbutton = createButton("Counter", SectionOneFrame)
-local Flierbutton = createButton("Continuous Fly", SectionOneFrame)
-local jork = createButton("JerkFE", SectionOneFrame)
-local EmergencyDip = createButton("EmergencyDip", SectionOneFrame)
+local SetDie = createButton("Set Die", SectionOneFrame)
+SetDie.MouseButton1Click:Connect(function()
+	LocalPlayer.Character.Humanoid.Health = 0
+end)
+local StealVFX = createButton("Steal VFX(5 second record)", SectionOneFrame)
+StealVFX.MouseButton1Click:Connect(function()
+	-- Auto-generated capture script (Auto-called at 0,0,0, no debris)
+	local EffectFolder = workspace:WaitForChild("EFFECT")
+	local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
+	local TARGET_NAME = nil -- Set to a string like "IceStrom" to filter, or leave as nil/empty to grab EVERYTHING added
+	local WINDOW_DURATION = 5-- Seconds to look for targets
+
+	-- Helper to convert Roblox data types into valid Luau code strings
+	local function serializeValue(val)
+		local t = typeof(val)
+		if t == "string" then
+			return string.format("%q", val)
+		elseif t == "number" or t == "boolean" then
+			return tostring(val)
+		elseif t == "Vector2" then
+			return string.format("Vector2.new(%s, %s)", val.X, val.Y)
+		elseif t == "Vector3" then
+			return string.format("Vector3.new(%s, %s, %s)", val.X, val.Y, val.Z)
+		elseif t == "CFrame" then
+			return string.format("CFrame.new(%s)", table.concat({val:GetComponents()}, ", "))
+		elseif t == "Color3" then
+			return string.format("Color3.fromRGB(%d, %d, %d)", math.round(val.R * 255), math.round(val.G * 255), math.round(val.B * 255))
+		elseif t == "BrickColor" then
+			return string.format("BrickColor.new(%q)", val.Name)
+		elseif t == "EnumItem" then
+			return tostring(val)
+		elseif t == "NumberSequence" then
+			local kps = {}
+			for _, kp in ipairs(val.Keypoints) do
+				table.insert(kps, string.format("NumberSequenceKeypoint.new(%s, %s, %s)", kp.Time, kp.Value, kp.Envelope))
+			end
+			return "NumberSequence.new({" .. table.concat(kps, ", ") .. "})"
+		elseif t == "ColorSequence" then
+			local kps = {}
+			for _, kp in ipairs(val.Keypoints) do
+				local c = kp.Value
+				table.insert(kps, string.format("ColorSequenceKeypoint.new(%s, Color3.fromRGB(%d, %d, %d))", kp.Time, math.round(c.R * 255), math.round(c.G * 255), math.round(c.B * 255)))
+			end
+			return "ColorSequence.new({" .. table.concat(kps, ", ") .. "})"
+		elseif t == "NumberRange" then
+			return string.format("NumberRange.new(%s, %s)", val.Min, val.Max)
+		end
+		return nil
+	end
+
+	local PROPERTIES_TO_CAPTURE = {
+		-- BasePart / MeshPart
+		"Size", "CFrame", "Color", "Material", "Transparency", "Reflectance",
+		"Anchored", "CanCollide", "CastShadow", "TextureID",
+		-- SpecialMesh
+		"MeshType", "MeshId", "Scale", "Offset", "VertexColor",
+		-- Decal / Texture
+		"Texture", "Face", "Color3", "StudsPerTileU", "StudsPerTileV",
+		-- ParticleEmitter / Beam / Trail
+		"Rate", "Lifetime", "Speed", "SpreadAngle", "Acceleration", "Drag",
+		"LightEmission", "LightInfluence", "Orientation", "RotSpeed", "Rotation",
+		"Squash", "ZOffset", "Enabled", "LockedToPart", "Width0", "Width1",
+		"CurveSize0", "CurveSize1", "FaceCamera", "Segments", "TextureLength", "TextureSpeed",
+		"Color", "Transparency", "Brightness", "Lifetime",
+		-- Attachment Properties
+		"Position", "Axis", "SecondaryAxis",
+		-- PointLight / SurfaceLight / SpotLight
+		"Brightness", "Range", "Shadows"
+	}
+
+	local backupFolder = Instance.new("Folder")
+	backupFolder.Name = "Captured_Batch_" .. tostring(math.floor(os.time()))
+	backupFolder.Parent = ReplicatedStorage
+
+	local capturedItems = {}
+	local isRecording = false
+	local connection
+	local finalized = false
+
+	local function finalizeCapture()
+		if finalized then return end
+		finalized = true
+		if connection then connection:Disconnect() end
+
+		local lines = {
+			"-- Auto-generated capture script (Auto-called at 0,0,0, no debris)",
+			"local InsertService = game:GetService(\"InsertService\")",
+			"",
+			"local function buildCleanTrees(targetCFrame)",
+			"\ttargetCFrame = targetCFrame or CFrame.new(0, 0, 0)",
+			"\tlocal container = Instance.new(\"Folder\")",
+			"\tcontainer.Name = \"CleanTreeBatch\"",
+			"\tlocal models = {}"
+		}
+
+		local globalCounter = 0
+
+		for i, itemData in ipairs(capturedItems) do
+			local inst = itemData.instance
+			globalCounter += 1
+			local rootVar = "item_" .. i .. "_root"
+			local varMap = {[inst] = rootVar}
+
+			table.insert(lines, string.format("\n\t-- Instance %d (%s: %s)", i, inst.Name, inst.ClassName))
+
+			local function writeObject(obj, parentVar, varName)
+				if obj:IsA("MeshPart") then
+					table.insert(lines, string.format("\tlocal %s = InsertService:CreateMeshPartAsync(%q, Enum.CollisionFidelity.Default, Enum.RenderFidelity.Automatic)", varName, obj.MeshId))
+				else
+					table.insert(lines, string.format("\tlocal %s = Instance.new(%q)", varName, obj.ClassName))
+				end
+				table.insert(lines, string.format("\t%s.Name = %q", varName, obj.Name))
+
+				for _, prop in ipairs(PROPERTIES_TO_CAPTURE) do
+					if not (obj:IsA("MeshPart") and prop == "MeshId") then
+						local ok, val = pcall(function() return obj[prop] end)
+						if ok and val ~= nil then
+							local serialized = serializeValue(val)
+							if serialized then
+								table.insert(lines, string.format("\t%s.%s = %s", varName, prop, serialized))
+							end
+						end
+					end
+				end
+				table.insert(lines, string.format("\t%s.Parent = %s", varName, parentVar))
+			end
+
+			if inst:IsA("Model") then
+				table.insert(lines, string.format("\tlocal %s = Instance.new(\"Model\")", rootVar))
+				table.insert(lines, string.format("\t%s.Name = %q", rootVar, inst.Name))
+
+				for _, desc in ipairs(inst:GetDescendants()) do
+					globalCounter += 1
+					local descVar = "obj_" .. globalCounter
+					varMap[desc] = descVar
+					local parentVar = varMap[desc.Parent] or rootVar
+					writeObject(desc, parentVar, descVar)
+				end
+
+				-- Safely find a valid BasePart for PrimaryPart
+				local primaryVar = nil
+				if inst.PrimaryPart and inst.PrimaryPart:IsA("BasePart") and varMap[inst.PrimaryPart] then
+					primaryVar = varMap[inst.PrimaryPart]
+				else
+					for _, desc in ipairs(inst:GetDescendants()) do
+						if desc:IsA("BasePart") and varMap[desc] then
+							primaryVar = varMap[desc]
+							break
+						end
+					end
+				end
+
+				if primaryVar then
+					table.insert(lines, string.format("\t%s.PrimaryPart = %s", rootVar, primaryVar))
+				end
+
+				table.insert(lines, string.format("\t%s.Parent = container", rootVar))
+				table.insert(lines, string.format("\ttable.insert(models, %s)", rootVar))
+			else
+				table.insert(lines, string.format("\tlocal %s = Instance.new(\"Model\")", rootVar))
+				table.insert(lines, string.format("\t%s.Name = %q", rootVar, inst.Name))
+
+				globalCounter += 1
+				local rootPartVar = "obj_" .. globalCounter
+				writeObject(inst, rootVar, rootPartVar)
+
+				for _, desc in ipairs(inst:GetDescendants()) do
+					globalCounter += 1
+					local descVar = "obj_" .. globalCounter
+					varMap[desc] = descVar
+					local parentVar = varMap[desc.Parent] or rootPartVar
+					writeObject(desc, parentVar, descVar)
+				end
+
+				if inst:IsA("BasePart") then
+					table.insert(lines, string.format("\t%s.PrimaryPart = %s", rootVar, rootPartVar))
+				else
+					for _, desc in ipairs(inst:GetDescendants()) do
+						if desc:IsA("BasePart") and varMap[desc] then
+							table.insert(lines, string.format("\t%s.PrimaryPart = %s", rootVar, varMap[desc]))
+							break
+						end
+					end
+				end
+
+				table.insert(lines, string.format("\t%s.Parent = container", rootVar))
+				table.insert(lines, string.format("\ttable.insert(models, %s)", rootVar))
+			end
+		end
+
+		table.insert(lines, [[
+	-- Apply relative world alignment using targetCFrame
+	if #models > 0 then
+		local originCFrame = models[1]:GetPrimaryPartCFrame()
+		for _, model in ipairs(models) do
+			local rel = originCFrame:ToObjectSpace(model:GetPrimaryPartCFrame())
+			model:SetPrimaryPartCFrame(targetCFrame:ToWorldSpace(rel))
+		end
+	end
+
+	container.Parent = workspace.EFFECT
+	return container
+end
+
+-- Auto-call the function immediately
+buildCleanTrees()]])
+
+		local finalScript = table.concat(lines, "\n")
+		print("=== CAPTURED SCRIPT ===\n" .. finalScript)
+		if setclipboard then
+			setclipboard(finalScript)
+			print("[Success] Script copied to clipboard!")
+		end
+	end
+
+	connection = EffectFolder.ChildAdded:Connect(function(child)
+		if not TARGET_NAME or TARGET_NAME == "" or child.Name == TARGET_NAME then
+			if not isRecording then
+				isRecording = true
+				print(string.format("[Capture] Recording window started! (Duration: %ds)", WINDOW_DURATION))
+				task.delay(WINDOW_DURATION, function()
+					if not finalized then
+						print("[Capture] Window closed. Generating script...")
+						finalizeCapture()
+					end
+				end)
+			end
+
+			task.delay(0.1, function()
+				if finalized then return end
+				child.Archivable = true
+				local clone = child:Clone()
+				if clone then
+					clone.Parent = backupFolder
+					table.insert(capturedItems, {instance = clone})
+					print(string.format("[Capture] Grabbed child with all descendants: '%s' (Total captured: %d)", child.Name, #capturedItems))
+				end
+			end)
+		end
+	end)
+
+	if TARGET_NAME then
+		print("[Ready] Listening for specific target '" .. TARGET_NAME .. "' inside workspace.EFFECT...")
+	else
+		print("[Ready] Listening for ANY child added inside workspace.EFFECT for " .. WINDOW_DURATION .. " seconds...")
+	end
+end)
 local DoGourdsButton = createButton("Do Gourds", SectionTwoFrame)
 local DoingGourds = false
 DoGourdsButton.MouseButton1Click:Connect(function()

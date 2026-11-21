@@ -1095,11 +1095,6 @@ destroyButton.MouseButton1Click:Once(function()
 	gui:Destroy()
 end)
 
-jork.MouseButton1Click:Once(function()
-	loadstring(game:HttpGet("https://pastefy.app/wa3v2Vgm/raw"))("Spider Script")
-	loadstring(game:HttpGet("https://pastefy.app/YZoglOyJ/raw"))()
-end)
-
 local trackedPlayers = {}
 
 local EmergGencDip = false

@@ -945,6 +945,99 @@ buildCleanTrees()]])
 		print("[Ready] Listening for ANY child added inside workspace.EFFECT for " .. WINDOW_DURATION .. " seconds...")
 	end
 end)
+
+local NewboxArgs = Instance.new("TextBox")
+NewboxArgs.Size = UDim2.new(0.952, 0, 0.818, 0)
+NewboxArgs.Position = UDim2.new(0.024, 0, 0.091, 0)
+NewboxArgs.BackgroundColor3 = COLORS.Panel3
+NewboxArgs.TextColor3 = COLORS.Text
+NewboxArgs.PlaceholderColor3 = COLORS.Muted
+NewboxArgs.PlaceholderText = "Thing to look for here."
+NewboxArgs.Text = ""
+NewboxArgs.TextSize = 12
+NewboxArgs.Font = Enum.Font.GothamMedium
+NewboxArgs.TextXAlignment = Enum.TextXAlignment.Center
+NewboxArgs.ClearTextOnFocus = false
+NewboxArgs.BorderSizePixel = 0
+NewboxArgs.Visible = true
+NewboxArgs.Parent = SectionOneFrame
+
+local GrabTrail = createButton("Grab Trail", SectionOneFrame)
+GrabTrail.MouseButton1Click:Connect(function()
+	local TRAIL_NAME = NewboxArgs.Text
+
+	local weaponFolder = workspace:FindFirstChild("BenjiAltOofff") 
+		and workspace.BenjiAltOofff:FindFirstChild("Weapon") 
+		and workspace.BenjiAltOofff.Weapon:FindFirstChild("weapon")
+
+	local trail = weaponFolder and weaponFolder:FindFirstChild(TRAIL_NAME)
+
+	if not trail or not trail:IsA("Trail") then
+		warn("Could not find Trail named '" .. TRAIL_NAME .. "' at workspace.BenjiAltOofff.Weapon.weapon")
+		return
+	end
+
+	local function formatColorSequence(cs)
+		local keypoints = {}
+		for _, kp in ipairs(cs.Keypoints) do
+			local c = kp.Value
+			table.insert(keypoints, string.format("ColorSequenceKeypoint.new(%.3f, Color3.fromRGB(%d, %d, %d))", kp.Time, math.round(c.R * 255), math.round(c.G * 255), math.round(c.B * 255)))
+		end
+		return "ColorSequence.new({" .. table.concat(keypoints, ", ") .. "})"
+	end
+
+	local function formatNumberSequence(ns)
+		local keypoints = {}
+		for _, kp in ipairs(ns.Keypoints) do
+			table.insert(keypoints, string.format("NumberSequenceKeypoint.new(%.3f, %.3f, %.3f)", kp.Time, kp.Value, kp.Envelope))
+		end
+		return "NumberSequence.new({" .. table.concat(keypoints, ", ") .. "})"
+	end
+
+	local lines = {
+		string.format("\t[\"%s\"] = {", trail.Name),
+		"\t\tAttachment0 = \"FrontAttachment\",",
+		"\t\tAttachment1 = \"BackAttachment\",",
+		string.format("\t\tColor = %s,", formatColorSequence(trail.Color)),
+		string.format("\t\tEnabled = %s,", tostring(trail.Enabled)),
+		string.format("\t\tFaceCamera = %s,", tostring(trail.FaceCamera)),
+		string.format("\t\tLifetime = %.3f,", trail.Lifetime),
+		string.format("\t\tLightEmission = %.3f,", trail.LightEmission),
+		string.format("\t\tLightInfluence = %.3f,", trail.LightInfluence),
+		string.format("\t\tBrightness = %.3f,", trail.Brightness),
+		string.format("\t\tMaxLength = %.3f,", trail.MaxLength),
+		string.format("\t\tMinLength = %.3f,", trail.MinLength),
+		string.format("\t\tTexture = \"%s\",", trail.Texture),
+		string.format("\t\tTextureLength = %.3f,", trail.TextureLength),
+		string.format("\t\tTextureMode = Enum.TextureMode.%s,", trail.TextureMode.Name),
+		string.format("\t\tTransparency = %s,", formatNumberSequence(trail.Transparency)),
+		string.format("\t\tWidthScale = %s,", formatNumberSequence(trail.WidthScale)),
+		"\t},"
+	}
+
+	local result = table.concat(lines, "\n")
+
+	-- Try direct clipboard if supported, otherwise open a temporary script to copy from
+	local ok = pcall(function()
+		if setclipboard then
+			setclipboard(result)
+		else
+			error("No setclipboard")
+		end
+	end)
+
+	if ok then
+		print("Copied '" .. trail.Name .. "' directly to your clipboard!")
+	else
+		local tempScript = Instance.new("Script")
+		tempScript.Name = trail.Name .. "_Config_COPY_ME"
+		tempScript.Source = result
+		tempScript.Parent = game:GetService("ServerStorage")
+		game:GetService("ScriptEditorService"):OpenScriptDocumentAsync(tempScript)
+		print("Opened temporary script with config—press Ctrl+A then Ctrl+C to copy, then delete the script!")
+	end
+end)
+
 local DoGourdsButton = createButton("Do Gourds", SectionTwoFrame)
 local DoingGourds = false
 DoGourdsButton.MouseButton1Click:Connect(function()

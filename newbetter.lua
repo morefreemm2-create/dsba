@@ -1038,6 +1038,106 @@ GrabTrail.MouseButton1Click:Connect(function()
 	end
 end)
 
+local GrabAura = createButton("Grab Aura", SectionOneFrame)
+GrabAura.MouseButton1Click:Connect(function()
+
+	local character = workspace[NewboxArgs.Text]
+
+	local partsToCheck = {
+		["LA"] = character:FindFirstChild("LA"),
+		["RA"] = character:FindFirstChild("RA"),
+		["T"] = character:FindFirstChild("T")
+	}
+
+	local function serializeValue(val)
+		local t = typeof(val)
+		if t == "number" or t == "boolean" then
+			return tostring(val)
+		elseif t == "string" then
+			return string.format("%q", val)
+		elseif t == "EnumItem" then
+			return tostring(val)
+		elseif t == "Vector2" then
+			return string.format("Vector2.new(%f, %f)", val.X, val.Y)
+		elseif t == "Vector3" then
+			return string.format("Vector3.new(%f, %f, %f)", val.X, val.Y, val.Z)
+		elseif t == "NumberRange" then
+			return string.format("NumberRange.new(%f, %f)", val.Min, val.Max)
+		elseif t == "NumberSequence" then
+			local keypointsStr = {}
+			for _, kp in ipairs(val.Keypoints) do
+				table.insert(keypointsStr, string.format("NumberSequenceKeypoint.new(%f, %f, %f)", kp.Time, kp.Value, kp.Envelope))
+			end
+			return string.format("NumberSequence.new({%s})", table.concat(keypointsStr, ", "))
+		elseif t == "ColorSequence" then
+			local keypointsStr = {}
+			for _, kp in ipairs(val.Keypoints) do
+				table.insert(keypointsStr, string.format("ColorSequenceKeypoint.new(%f, Color3.new(%f, %f, %f))", kp.Time, kp.Value.R, kp.Value.G, kp.Value.B))
+			end
+			return string.format("ColorSequence.new({%s})", table.concat(keypointsStr, ", "))
+		else
+			return tostring(val)
+		end
+	end
+
+	local propertiesToVerify = {
+		"Acceleration", "Brightness", "Color", "Drag", "EmissionDirection", 
+		"Enabled", "FlipbookFramerate", "FlipbookLayout", "FlipbookMode", 
+		"FlipbookStartRandom", "Lifetime", "LightEmission", "LightInfluence", 
+		"LockedToPart", "Orientation", "Rate", "Rotation", "RotSpeed", 
+		"Shape", "ShapeInOut", "ShapeStyle", "Size", "Speed", 
+		"SpreadAngle", "Texture", "TimeScale", "Transparency", "ZOffset"
+	}
+
+	-- We build a wrapper template script that targets workspace.Haori
+	local outputLines = {}
+
+	table.insert(outputLines, "-- Auto-generated particle application script")
+	table.insert(outputLines, "local character = workspace:WaitForChild(\"Haori\")")
+	table.insert(outputLines, "local leftArm = character:WaitForChild(\"HaoriL\")")
+	table.insert(outputLines, "local rightArm = character:WaitForChild(\"HaoriR\")")
+	table.insert(outputLines, "local torso = character:WaitForChild(\"HaoriM\")")
+	table.insert(outputLines, "local LA = leftArm")
+	table.insert(outputLines, "local RA = rightArm")
+	table.insert(outputLines, "local T = torso\n")
+
+	for partName, part in pairs(partsToCheck) do
+		if part then
+			table.insert(outputLines, string.format("-- Emitters for %s", partName))
+			for _, child in ipairs(part:GetChildren()) do
+				if child:IsA("ParticleEmitter") then
+					table.insert(outputLines, "do")
+					table.insert(outputLines, "\tlocal emitter = Instance.new(\"ParticleEmitter\")")
+					table.insert(outputLines, "\temitter.Name = " .. string.format("%q", child.Name))
+
+					for _, prop in ipairs(propertiesToVerify) do
+						local success, value = pcall(function()
+							return child[prop]
+						end)
+						if success then
+							table.insert(outputLines, string.format("\temitter.%s = %s", prop, serializeValue(value)))
+						end
+					end
+
+					table.insert(outputLines, string.format("\temitter.Parent = %s", partName))
+					table.insert(outputLines, "end\n")
+				end
+			end
+		end
+	end
+
+	table.insert(outputLines, "print(\"Successfully applied particles to Haori!\")")
+
+	local finalScript = table.concat(outputLines, "\n")
+
+	if setclipboard then
+		setclipboard(finalScript)
+		print("Success! The standalone builder script has been copied to your clipboard.")
+	else
+		warn("setclipboard is not supported.")
+	end
+end)
+
 local DoGourdsButton = createButton("Do Gourds", SectionTwoFrame)
 local DoingGourds = false
 DoGourdsButton.MouseButton1Click:Connect(function()
@@ -3111,7 +3211,7 @@ task.spawn(function()
 		if gui.Parent == nil then
 			break
 		end
-		if NpcMode == "Gemini" then  
+		if NpcMode == "Gemini" and EnemyToFocusOn ~= nil and FightingForYou == true then  
 			local ourstates = Players.LocalPlayer:FindFirstChild("states")  
 			if ourstates then  
 				local isStunned = ourstates:FindFirstChild("stun")   
@@ -3142,7 +3242,7 @@ task.spawn(function()
 		if gui.Parent == nil then
 			break
 		end
-		if NpcMode == "Perfect" then
+		if NpcMode == "Perfect" and EnemyToFocusOn ~= nil and FightingForYou == true then  
 			local ourstates = Players.LocalPlayer:FindFirstChild("states")
 			if ourstates then
 				local isStunned = ourstates:FindFirstChild("stun") 
@@ -3171,7 +3271,7 @@ task.spawn(function()
 	while true do
 		task.wait()
 		-- Replace 'FightingForYou == true' with 'NpcMode ~= "Off"'
-		if gui.Parent ~= nil and NpcMode ~= "Off" and EnemyToFocusOn ~= nil then
+		if gui.Parent ~= nil and NpcMode ~= "Off" and EnemyToFocusOn ~= nil and FightingForYou == true then  
 			local CHeckIFPlayer = Players:FindFirstChild(EnemyToFocusOn.Name)
 			if CHeckIFPlayer then
 				local EnemyCharacter = EnemyToFocusOn.Character
@@ -3210,7 +3310,7 @@ task.spawn(function()
 	while true do
 		task.wait()
 		-- Disable specials completely during Passive mode or when M1-only is toggled
-		if gui.Parent ~= nil and NpcMode ~= "Off" and NpcMode ~= "Passive" and EnemyToFocusOn ~= nil then
+		if gui.Parent ~= nil and NpcMode ~= "Off" and NpcMode ~= "Passive" and EnemyToFocusOn ~= nil and FightingForYou == true then  
 			if OnlyUseM1sBtt == false then
 				local CHeckIFPlayer = Players:FindFirstChild(EnemyToFocusOn.Name)
 				if CHeckIFPlayer then

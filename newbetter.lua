@@ -1908,6 +1908,10 @@ local AnimsTableSet = {
 		dur = 0.7,
 		bb = 1,
 	},
+	["StringPerformance"] = {
+		id = "rbxassetid://13989603130",
+		dur = 0.3,
+	},
 	["UnknowingFire"] = {
 		id = "rbxassetid://13988324543",
 		dur = 0.3,
@@ -3822,6 +3826,7 @@ local animationTriggers = {
 	--Daki1
 	["rbxassetid://15780361276"] = nil,
 	[AnimsTableSet.UnknowingFire.id] = AutoPB,
+	[AnimsTableSet.StringPerformance.id] = AutoPB,
 	[AnimsTableSet.UNdolation.id] = AutoBlock,
 	[AnimsTableSet.Rengoku.id] = AutoBlock,
 	[AnimsTableSet.FlameTiger.id] = AutoBlock,

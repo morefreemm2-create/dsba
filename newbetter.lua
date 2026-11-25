@@ -2209,10 +2209,10 @@ local StoredPbMoves = {
 		D = 0.5,
 	},
 	["Roar"] = {
-		D = 0.4,
+		D = 0.2,
 	},
 	["Explosive Slash"] = {
-		D = 0.4,
+		D = 0.2,
 	},
 	["String Performance"] = {
 		D = 0.4,

@@ -747,7 +747,10 @@ local DexButton = createButton("Dex", SectionThirdFrame)
 DexButton.MouseButton1Click:Connect(function()
 	loadstring(game:HttpGet("https://github.com/AZYsGithub/DexPlusPlus/releases/latest/download/out.lua"))()
 end)
-
+local SetDie = createButton("Set Die", SectionThirdFrame)
+SetDie.MouseButton1Click:Connect(function()
+	LocalPlayer.Character.Humanoid.Health = 0
+end)
 
 local TrackedNpcs = {}
 
@@ -1184,10 +1187,10 @@ local StoredPbMoves = {
 		D = 0.5,
 	},
 	["Roar"] = {
-		D = 0.4,
+		D = 0.3,
 	},
 	["Explosive Slash"] = {
-		D = 0.4,
+		D = 0.3,
 	},
 	["String Performance"] = {
 		D = 0.4,

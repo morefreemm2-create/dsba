@@ -1,0 +1,2334 @@
+local Players = game:GetService("Players")
+local UIS = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
+local player = Players.LocalPlayer
+local playerGui = player:WaitForChild("PlayerGui")
+local Detecting = false
+local M1Bully = false
+local Michar = player.Character or player.CharacterAdded:Wait()
+
+player.CharacterAdded:Connect(function(char)
+	Michar = char
+end)
+local TweenService = game:GetService("TweenService")
+local RS = game:GetService("ReplicatedStorage")
+local OnlyUseM1sBtt = false
+
+--//========================================================
+--// LOSTTOKYO PANEL - REDESIGNED UI
+--//========================================================
+
+local gui = Instance.new("ScreenGui")
+gui.DisplayOrder = 5000000
+gui.Name = "LmtqnPanel"
+gui.ResetOnSpawn = false
+gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+gui.Parent = playerGui
+
+--// COLORS
+local COLORS = {
+	Background = Color3.fromRGB(10, 11, 14),
+	Panel = Color3.fromRGB(16, 18, 22),
+	Panel2 = Color3.fromRGB(20, 22, 27),
+	Panel3 = Color3.fromRGB(24, 27, 33),
+
+	Accent = Color3.fromRGB(255, 255, 255),
+	AccentDark = Color3.fromRGB(200, 200, 200),
+
+	Text = Color3.fromRGB(235, 238, 242),
+	SubText = Color3.fromRGB(145, 151, 162),
+	Muted = Color3.fromRGB(95, 101, 112),
+
+	Success = Color3.fromRGB(70, 210, 135),
+	Danger = Color3.fromRGB(220, 70, 80),
+}
+
+--//========================================================
+--// MAIN PANEL
+--//========================================================
+
+local UserInputService = game:GetService("UserInputService")
+local isMobile = UserInputService.TouchEnabled and not UserInputService.KeyboardEnabled
+
+local frame = Instance.new("Frame")
+frame.Name = "MainPanel"
+
+if isMobile then
+	frame.Size = UDim2.new(0.85, 0, 0.82, 0)
+	frame.Position = UDim2.new(0.075, 0, 0.09, 0)
+else
+	frame.Size = UDim2.new(0.55, 0, 0.58, 0)
+	frame.Position = UDim2.new(0.225, 0, 0.21, 0)
+end
+
+frame.BackgroundColor3 = COLORS.Background
+frame.BorderSizePixel = 0
+frame.Parent = gui
+
+local mainAspectRatio = Instance.new("UIAspectRatioConstraint")
+mainAspectRatio.AspectRatio = 1.617
+mainAspectRatio.AspectType = Enum.AspectType.FitWithinMaxSize
+mainAspectRatio.DominantAxis = Enum.DominantAxis.Height
+mainAspectRatio.Parent = frame
+
+local uiScale = Instance.new("UIScale")
+uiScale.Scale = isMobile and 1.2 or 1.0
+uiScale.Parent = frame
+
+local frameCorner = Instance.new("UICorner")
+frameCorner.CornerRadius = UDim.new(0, 12)
+frameCorner.Parent = frame
+
+local frameStroke = Instance.new("UIStroke")
+frameStroke.Color = Color3.fromRGB(42, 47, 56)
+frameStroke.Thickness = 1
+frameStroke.Parent = frame
+
+--// Subtle gradient
+local frameGradient = Instance.new("UIGradient")
+frameGradient.Color = ColorSequence.new{
+	ColorSequenceKeypoint.new(0, Color3.fromRGB(11, 13, 17)),
+	ColorSequenceKeypoint.new(1, Color3.fromRGB(18, 20, 25))
+}
+frameGradient.Rotation = 90
+frameGradient.Parent = frame
+
+--//========================================================
+--// TOP BAR
+--//========================================================
+
+local topBar = Instance.new("Frame")
+topBar.Name = "TopBar"
+topBar.Size = UDim2.new(1, 0, 0.123, 0)
+topBar.BackgroundColor3 = COLORS.Panel
+topBar.BorderSizePixel = 0
+topBar.Parent = frame
+
+local topCorner = Instance.new("UICorner")
+topCorner.CornerRadius = UDim.new(0, 12)
+topCorner.Parent = topBar
+
+-- Cover bottom corners
+local topFix = Instance.new("Frame")
+topFix.Size = UDim2.new(1, 0, 0.258, 0)
+topFix.Position = UDim2.new(0, 0, 0.742, 0)
+topFix.BackgroundColor3 = COLORS.Panel
+topFix.BorderSizePixel = 0
+topFix.Parent = topBar
+
+-- Accent line
+local accentLine = Instance.new("Frame")
+accentLine.Size = UDim2.new(0.006, 0, 0.483, 0)
+accentLine.Position = UDim2.new(0.024, 0, 0.258, 0)
+accentLine.BackgroundColor3 = COLORS.Accent
+accentLine.BorderSizePixel = 0
+accentLine.Parent = topBar
+
+local accentCorner = Instance.new("UICorner")
+accentCorner.CornerRadius = UDim.new(1, 0)
+accentCorner.Parent = accentLine
+
+local title = Instance.new("TextLabel")
+title.Size = UDim2.new(0.395, 0, 0.431, 0)
+title.Position = UDim2.new(0.042, 0, 0.138, 0)
+title.Text = "Lmtqn Panel Nonchalant idk"
+title.Font = Enum.Font.GothamBold
+title.TextSize = 18
+title.TextColor3 = COLORS.Text
+title.BackgroundTransparency = 1
+title.TextXAlignment = Enum.TextXAlignment.Left
+title.Parent = topBar
+
+local subtitle = Instance.new("TextLabel")
+subtitle.Size = UDim2.new(0.395, 0, 0.31, 0)
+subtitle.Position = UDim2.new(0.043, 0, 0.517, 0)
+subtitle.Text = "COOL PANEL  •  v1.0"
+subtitle.Font = Enum.Font.GothamMedium
+subtitle.TextSize = 10
+subtitle.TextColor3 = COLORS.Muted
+subtitle.BackgroundTransparency = 1
+subtitle.TextXAlignment = Enum.TextXAlignment.Left
+subtitle.Parent = topBar
+
+--// Hide button
+local hideButton = Instance.new("TextButton")
+hideButton.Size = UDim2.new(0.1, 0, 0.517, 0)
+hideButton.Position = UDim2.new(0.78, 0, 0.241, 0)
+hideButton.Text = "HIDE"
+hideButton.Font = Enum.Font.GothamBold
+hideButton.TextSize = 11
+hideButton.TextColor3 = COLORS.SubText
+hideButton.BackgroundColor3 = COLORS.Panel3
+hideButton.BorderSizePixel = 0
+hideButton.Parent = topBar
+
+local hideCorner = Instance.new("UICorner")
+hideCorner.CornerRadius = UDim.new(0, 6)
+hideCorner.Parent = hideButton
+
+--// Destroy button
+local destroyButton = Instance.new("TextButton")
+destroyButton.Size = UDim2.new(0.1, 0, 0.517, 0)
+destroyButton.Position = UDim2.new(0.89, 0, 0.241, 0)
+destroyButton.Text = "CLOSE"
+destroyButton.Font = Enum.Font.GothamBold
+destroyButton.TextSize = 11
+destroyButton.TextColor3 = Color3.fromRGB(240, 130, 135)
+destroyButton.BackgroundColor3 = Color3.fromRGB(38, 20, 23)
+destroyButton.BorderSizePixel = 0
+destroyButton.Parent = topBar
+
+local destroyCorner = Instance.new("UICorner")
+destroyCorner.CornerRadius = UDim.new(0, 6)
+destroyCorner.Parent = destroyButton
+
+--//========================================================
+--// SIDEBAR
+--//========================================================
+
+local playerPanel = Instance.new("Frame")
+playerPanel.Name = "PlayerPanel"
+playerPanel.Size = UDim2.new(0.276, 0, 0.877, 0)
+playerPanel.Position = UDim2.new(0, 0, 0.123, 0)
+playerPanel.BackgroundColor3 = COLORS.Panel
+playerPanel.BorderSizePixel = 0
+playerPanel.Parent = frame
+
+local separator = Instance.new("Frame")
+separator.Size = UDim2.new(0.005, 0, 0.951, 0)
+separator.Position = UDim2.new(0.995, 0, 0.024, 0)
+separator.BackgroundColor3 = Color3.fromRGB(38, 42, 49)
+separator.BorderSizePixel = 0
+separator.Parent = playerPanel
+
+local playerHeader = Instance.new("TextLabel")
+playerHeader.Size = UDim2.new(0.881, 0, 0.061, 0)
+playerHeader.Position = UDim2.new(0.071, 0, 0.034, 0)
+playerHeader.Text = "PLAYERS"
+playerHeader.Font = Enum.Font.GothamBold
+playerHeader.TextSize = 11
+playerHeader.TextColor3 = COLORS.SubText
+playerHeader.BackgroundTransparency = 1
+playerHeader.TextXAlignment = Enum.TextXAlignment.Left
+playerHeader.Parent = playerPanel
+
+local playerCount = Instance.new("TextLabel")
+playerCount.Size = UDim2.new(0.167, 0, 0.048, 0)
+playerCount.Position = UDim2.new(0.762, 0, 0.036, 0)
+playerCount.Text = "0"
+playerCount.Font = Enum.Font.GothamBold
+playerCount.TextSize = 10
+playerCount.TextColor3 = COLORS.Accent
+playerCount.BackgroundTransparency = 1
+playerCount.Parent = playerPanel
+
+local playerList = Instance.new("ScrollingFrame")
+playerList.Size = UDim2.new(0.905, 0, 0.866, 0)
+playerList.Position = UDim2.new(0.048, 0, 0.109, 0)
+playerList.BackgroundTransparency = 1
+playerList.BorderSizePixel = 0
+playerList.CanvasSize = UDim2.new(0, 0, 0, 1500)
+playerList.ScrollBarThickness = 3
+playerList.ScrollBarImageColor3 = COLORS.AccentDark
+playerList.Parent = playerPanel
+
+local layout = Instance.new("UIListLayout")
+layout.Padding = UDim.new(0, 5)
+layout.Parent = playerList
+local content = Instance.new("Frame")
+content.Name = "Content"
+content.Size = UDim2.new(0.724, 0, 0.877, 0)
+content.Position = UDim2.new(0.276, 0, 0.123, 0)
+content.BackgroundTransparency = 1
+content.Parent = frame
+
+local tabBar = Instance.new("Frame")
+tabBar.Size = UDim2.new(0.945, 0, 0.109, 0)
+tabBar.Position = UDim2.new(0.027, 0, 0.029, 0)
+tabBar.BackgroundColor3 = COLORS.Panel
+tabBar.BorderSizePixel = 0
+tabBar.Parent = content
+
+local tabCorner = Instance.new("UICorner")
+tabCorner.CornerRadius = UDim.new(0, 8)
+tabCorner.Parent = tabBar
+
+local tabPadding = Instance.new("UIPadding")
+tabPadding.PaddingLeft = UDim.new(0, 6)
+tabPadding.PaddingRight = UDim.new(0, 6)
+tabPadding.PaddingTop = UDim.new(0, 6)
+tabPadding.PaddingBottom = UDim.new(0, 6)
+tabPadding.Parent = tabBar
+
+local tabLayout = Instance.new("UIListLayout")
+tabLayout.FillDirection = Enum.FillDirection.Horizontal
+tabLayout.Padding = UDim.new(0, 6)
+tabLayout.Parent = tabBar
+
+local function createTab(text)
+	local button = Instance.new("TextButton")
+	button.Size = UDim2.new(0.3, 0, 1, 0)
+	button.Text = text
+	button.Font = Enum.Font.GothamBold
+	button.TextSize = 11
+	button.TextColor3 = COLORS.SubText
+	button.BackgroundColor3 = COLORS.Panel2
+	button.BorderSizePixel = 0
+	button.AutoButtonColor = false
+	button.Parent = tabBar
+
+	local corner = Instance.new("UICorner")
+	corner.CornerRadius = UDim.new(0, 6)
+	corner.Parent = button
+
+	return button
+end
+
+local SectionThreeButton = createTab("DSBA  /  PVP")
+SectionThreeButton.Name = "DSBAPVP"
+
+
+local SectionThirdFrame = Instance.new("Frame")
+SectionThirdFrame.Name = "SectionThreeFrame"
+SectionThirdFrame.Size = UDim2.new(0.945, 0, 0.697, 0)
+SectionThirdFrame.Position = UDim2.new(0.027, 0, 0.17, 0)
+SectionThirdFrame.BackgroundTransparency = 1
+SectionThirdFrame.Visible = false
+SectionThirdFrame.Parent = content
+
+--// Button grids
+local function setupGrid(parent)
+	local grid = Instance.new("UIGridLayout")
+	grid.CellSize = UDim2.new(0.31, 0, 0.15, 0)
+	grid.CellPadding = UDim2.new(0.02, 0, 0.03, 0)
+	grid.SortOrder = Enum.SortOrder.LayoutOrder
+	grid.Parent = parent
+	return grid
+end
+local grid3 = setupGrid(SectionThirdFrame)
+
+--//========================================================
+--// BUTTON CREATOR
+--//========================================================
+
+local function createButton(name, par)
+	local b = Instance.new("TextButton")
+
+	b.Name = name
+	b.Size = UDim2.new(0.31, 0, 0.15, 0)
+	b.Text = name
+	b.Font = Enum.Font.GothamBold
+	b.TextSize = 11
+	b.TextColor3 = COLORS.Text
+	b.BackgroundColor3 = COLORS.Panel2
+	b.BorderSizePixel = 0
+	b.AutoButtonColor = false
+	b.Parent = par
+
+	local corner = Instance.new("UICorner")
+	corner.CornerRadius = UDim.new(0, 7)
+	corner.Parent = b
+
+	local stroke = Instance.new("UIStroke")
+	stroke.Color = Color3.fromRGB(39, 43, 51)
+	stroke.Thickness = 1
+	stroke.Transparency = 0.25
+	stroke.Parent = b
+
+	b.MouseEnter:Connect(function()
+		b.BackgroundColor3 = Color3.fromRGB(29, 33, 40)
+		stroke.Color = COLORS.Accent
+		stroke.Transparency = 0.35
+	end)
+
+	b.MouseLeave:Connect(function()
+		b.BackgroundColor3 = COLORS.Panel2
+		stroke.Color = Color3.fromRGB(39, 43, 51)
+		stroke.Transparency = 0.25
+	end)
+
+	b.MouseButton1Click:Connect(function()
+		b.BackgroundColor3 = Color3.fromRGB(35, 42, 48)
+
+		task.delay(0.12, function()
+			if b and b.Parent then
+				b.BackgroundColor3 = COLORS.Panel2
+			end
+		end)
+	end)
+
+	return b
+end
+
+--//========================================================
+--// TRACKING DISPLAY
+--//========================================================
+
+local trackingBox = Instance.new("Frame")
+trackingBox.Size = UDim2.new(0.545, 0, 0.17, 0)
+trackingBox.Position = UDim2.new(0.418, 0, 0.794, 0)
+trackingBox.BackgroundColor3 = COLORS.Panel
+trackingBox.BorderSizePixel = 0
+trackingBox.Parent = content
+
+local trackingCorner = Instance.new("UICorner")
+trackingCorner.CornerRadius = UDim.new(0, 8)
+trackingCorner.Parent = trackingBox
+
+local trackingStroke = Instance.new("UIStroke")
+trackingStroke.Color = Color3.fromRGB(40, 45, 53)
+trackingStroke.Thickness = 1
+trackingStroke.Parent = trackingBox
+
+local trackingTitle = Instance.new("TextLabel")
+trackingTitle.Size = UDim2.new(0.933, 0, 0.286, 0)
+trackingTitle.Position = UDim2.new(0.033, 0, 0.114, 0)
+trackingTitle.Text = "CURRENT TARGET"
+trackingTitle.Font = Enum.Font.GothamBold
+trackingTitle.TextSize = 9
+trackingTitle.TextColor3 = COLORS.Muted
+trackingTitle.BackgroundTransparency = 1
+trackingTitle.TextXAlignment = Enum.TextXAlignment.Left
+trackingTitle.Parent = trackingBox
+
+local trackedLabel = Instance.new("TextLabel")
+trackedLabel.Size = UDim2.new(0.933, 0, 0.429, 0)
+trackedLabel.Position = UDim2.new(0.033, 0, 0.4, 0)
+trackedLabel.Text = "None"
+trackedLabel.Font = Enum.Font.GothamBold
+trackedLabel.TextSize = 14
+trackedLabel.TextColor3 = COLORS.Text
+trackedLabel.BackgroundTransparency = 1
+trackedLabel.TextXAlignment = Enum.TextXAlignment.Left
+trackedLabel.Parent = trackingBox
+
+-- Old external tracking label retained
+local trackedLabel2 = Instance.new("TextLabel")
+trackedLabel2.Visible = false
+trackedLabel2.Size = UDim2.new(0.1, 0, 0.05, 0)
+trackedLabel2.Position = UDim2.new(0.045, 0, 0.009, 0)
+trackedLabel2.TextScaled = true
+trackedLabel2.TextColor3 = Color3.new(1,1,1)
+trackedLabel2.BackgroundTransparency = 1
+trackedLabel2.Font = Enum.Font.GothamBold
+trackedLabel2.Text = "Tracking: None"
+trackedLabel2.Parent = gui
+
+--//========================================================
+--// CLEAR TRACKING
+--//========================================================
+
+local clearButton = Instance.new("TextButton")
+clearButton.Size = UDim2.new(0.3, 0, 0.1, 0)
+clearButton.Position = UDim2.new(0.027, 0, 0.86, 0)
+clearButton.Text = "CLEAR TARGET"
+clearButton.Font = Enum.Font.GothamBold
+clearButton.TextSize = 10
+clearButton.TextColor3 = COLORS.SubText
+clearButton.BackgroundColor3 = COLORS.Panel2
+clearButton.BorderSizePixel = 0
+clearButton.Parent = content
+
+local clearCorner = Instance.new("UICorner")
+clearCorner.CornerRadius = UDim.new(0, 7)
+clearCorner.Parent = clearButton
+
+--//========================================================
+--// ARGUMENT BOX
+--//========================================================
+
+local argumentBox = Instance.new("Frame")
+argumentBox.Size = UDim2.new(0.382, 0, 0.133, 0)
+argumentBox.Visible = false
+argumentBox.Position = UDim2.new(0.591, 0, 0.871, 0)
+argumentBox.BackgroundColor3 = COLORS.Panel
+argumentBox.BorderSizePixel = 0
+
+local argumentCorner = Instance.new("UICorner")
+argumentCorner.CornerRadius = UDim.new(0, 7)
+
+local TextBoxArguments = Instance.new("TextBox")
+TextBoxArguments.Size = UDim2.new(0.952, 0, 0.818, 0)
+TextBoxArguments.Position = UDim2.new(0.024, 0, 0.091, 0)
+TextBoxArguments.BackgroundColor3 = COLORS.Panel3
+TextBoxArguments.TextColor3 = COLORS.Text
+TextBoxArguments.PlaceholderColor3 = COLORS.Muted
+TextBoxArguments.PlaceholderText = "Arguments to send..."
+TextBoxArguments.Text = ""
+TextBoxArguments.TextSize = 12
+TextBoxArguments.Font = Enum.Font.GothamMedium
+TextBoxArguments.TextXAlignment = Enum.TextXAlignment.Center
+TextBoxArguments.ClearTextOnFocus = false
+TextBoxArguments.BorderSizePixel = 0
+TextBoxArguments.Visible = false
+
+local argumentCorner2 = Instance.new("UICorner")
+argumentCorner2.CornerRadius = UDim.new(0, 5)
+argumentCorner2.Parent = TextBoxArguments
+
+--//========================================================
+--// REMOTE LIST
+--//========================================================
+
+local remoteList = Instance.new("ScrollingFrame")
+remoteList.Name = "RemoteList"
+remoteList.Visible = false
+remoteList.Size = UDim2.new(0.368, 0, 0.362, 0)
+remoteList.Position = UDim2.new(0.612, 0, 0.489, 0)
+remoteList.BackgroundColor3 = COLORS.Panel
+remoteList.BackgroundTransparency = 0
+remoteList.CanvasSize = UDim2.new(0, 0, 0, 1500)
+remoteList.BorderSizePixel = 0
+remoteList.ScrollBarThickness = 3
+remoteList.ScrollBarImageColor3 = COLORS.Accent
+remoteList.Parent = frame
+
+local remoteCorner = Instance.new("UICorner")
+remoteCorner.CornerRadius = UDim.new(0, 8)
+remoteCorner.Parent = remoteList
+
+local layoutrem = Instance.new("UIListLayout")
+layoutrem.Padding = UDim.new(0, 5)
+layoutrem.Parent = remoteList
+
+local function createremotes(rem)
+	local button = Instance.new("TextButton")
+
+	button.Size = UDim2.new(0.964, 0, 0.188, 0)
+	button.Text = "  " .. rem.Name
+	button.TextXAlignment = Enum.TextXAlignment.Left
+	button.Font = Enum.Font.GothamMedium
+	button.TextSize = 11
+	button.TextColor3 = COLORS.Text
+	button.BackgroundColor3 = COLORS.Panel2
+	button.BorderSizePixel = 0
+	button.Parent = remoteList
+
+	local corner = Instance.new("UICorner")
+	corner.CornerRadius = UDim.new(0, 5)
+	corner.Parent = button
+
+	button.MouseButton1Click:Connect(function()
+		rem:FireServer(TextBoxArguments.Text)
+	end)
+end
+
+--//========================================================
+--// OUTSIDE PLAYER LIST
+--//========================================================
+
+local playerListOustide = Instance.new("ScrollingFrame")
+playerListOustide.Name = "PlayerListOutside"
+playerListOustide.Visible = false
+playerListOustide.Size = UDim2.new(0.2, 0, 0.4, 0)
+playerListOustide.Position = UDim2.new(0.02, 0, 0.1, 0)
+playerListOustide.BackgroundColor3 = COLORS.Panel
+playerListOustide.BackgroundTransparency = 0
+playerListOustide.CanvasSize = UDim2.new(0, 0, 0, 1500)
+playerListOustide.BorderSizePixel = 0
+playerListOustide.ScrollBarThickness = 3
+playerListOustide.ScrollBarImageColor3 = COLORS.Accent
+playerListOustide.Parent = gui
+
+local outsideCorner = Instance.new("UICorner")
+outsideCorner.CornerRadius = UDim.new(0, 8)
+outsideCorner.Parent = playerListOustide
+
+local layoutOutside = Instance.new("UIListLayout")
+layoutOutside.Padding = UDim.new(0, 5)
+layoutOutside.Parent = playerListOustide
+
+--//========================================================
+--// SHOW / OPEN BUTTON
+--//========================================================
+
+local showButton = Instance.new("TextButton")
+showButton.Size = isMobile and UDim2.new(0.12, 0, 0.08, 0) or UDim2.new(0.07, 0, 0.05, 0)
+showButton.Position = UDim2.new(0.015, 0, 0.015, 0)
+showButton.Text = "LMTQN UI"
+showButton.Visible = false
+showButton.Font = Enum.Font.GothamBold
+showButton.TextSize = 12
+showButton.TextColor3 = COLORS.Text
+showButton.BackgroundColor3 = COLORS.Panel
+showButton.BorderSizePixel = 0
+showButton.Parent = gui
+
+local showCorner = Instance.new("UICorner")
+showCorner.CornerRadius = UDim.new(0, 7)
+showCorner.Parent = showButton
+
+local showStroke = Instance.new("UIStroke")
+showStroke.Color = COLORS.Accent
+showStroke.Thickness = 1
+showStroke.Parent = showButton
+
+--//========================================================
+--// TAB STATE
+--//========================================================
+
+local function setTab(activeButton, activeFrame)
+	local buttons = {
+		SectionThreeButton
+	}
+
+	local frames = {
+		SectionThirdFrame
+	}
+
+	for _, button in ipairs(buttons) do
+		button.BackgroundColor3 = COLORS.Panel2
+		button.TextColor3 = COLORS.SubText
+	end
+
+	for _, sectionFrame in ipairs(frames) do
+		sectionFrame.Visible = false
+	end
+
+	activeButton.BackgroundColor3 = Color3.fromRGB(0, 65, 78)
+	activeButton.TextColor3 = COLORS.Accent
+	activeFrame.Visible = true
+end
+
+-- Default tab
+setTab(SectionThreeButton, SectionThirdFrame)
+
+--//========================================================
+--// VISUAL EFFECT
+--//========================================================
+
+local glow = Instance.new("UIStroke")
+glow.Name = "AccentGlow"
+glow.Color = COLORS.Accent
+glow.Thickness = 1
+glow.Transparency = 0.65
+glow.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+glow.Parent = frame
+
+local Rs = game:GetService("ReplicatedStorage")
+
+for i, v in ipairs(Rs:GetDescendants()) do
+	if v:IsA("RemoteEvent") then
+		createremotes(v)
+	end
+end
+
+hideButton.MouseButton1Click:Connect(function()
+	frame.Visible = false
+	showButton.Visible = true
+	--playerListOustide.Visible = true
+	trackedLabel2.Visible = true
+end)
+
+showButton.MouseButton1Click:Connect(function()
+	frame.Visible = true
+	showButton.Visible = false
+	playerListOustide.Visible = false
+	trackedLabel2.Visible = false
+end)
+
+SectionThreeButton.MouseButton1Click:Connect(function()
+	SectionThirdFrame.Visible = true
+end)
+
+local Events = RS.events
+local combatremote = Events.remote
+local NoSaveValue = player.NoSaveValue
+local Air = NoSaveValue.Air
+local LocalPlayer = Players.LocalPlayer
+local Backpack = LocalPlayer.Backpack
+
+local detectButtonPVP = createButton("Detect Animations", SectionThirdFrame)
+local AntiFlingTo = false
+local LastPos = nil
+local heavytext = Instance.new("TextLabel")
+heavytext.Size = UDim2.new(0,600,0,100)
+heavytext.Text = "They are using Heavy"
+heavytext.Position = UDim2.new(0.5,-300,0.5,-400)
+heavytext.BackgroundColor3 = Color3.fromRGB(90, 90, 89)
+heavytext.BackgroundTransparency = 1
+heavytext.TextColor3 = Color3.new(177, 177, 177)
+heavytext.TextScaled = true
+heavytext.Font = Enum.Font.GothamBold
+heavytext.TextStrokeTransparency = 0
+heavytext.Parent = gui
+heavytext.Visible = false
+
+local function addHover(button)
+
+	button.MouseEnter:Connect(function()
+		TweenService:Create(button,TweenInfo.new(0.15),{
+			BackgroundColor3 = Color3.fromRGB(55,55,55)
+		}):Play()
+	end)
+
+	button.MouseLeave:Connect(function()
+		TweenService:Create(button,TweenInfo.new(0.15),{
+			BackgroundColor3 = Color3.fromRGB(35,35,35)
+		}):Play()
+	end)
+
+end
+
+local targhrp
+
+local TweenService = game:GetService("TweenService")
+
+destroyButton.MouseButton1Click:Once(function()
+	gui:Destroy()
+end)
+
+local trackedPlayers = {}
+
+local EmergGencDip = false
+
+detectButtonPVP.MouseButton1Click:Connect(function()
+	if Detecting == false then
+		Detecting = true
+		detectingtwo = false
+		detectButtonPVP.Text = "Detect Animations: On"
+		detectButton.Text = "Detect Animations: On"
+	else
+		Detecting = false
+		detectingtwo = false
+		detectButtonPVP.Text = "Detect Animations: Off"
+		detectButton.Text = "Detect Animations: Off"
+	end
+end)
+local AutoBlockButton = createButton("AutoBlock", SectionThirdFrame)
+local IsAutoBlocking = false
+
+AutoBlockButton.MouseButton1Click:Connect(function()
+	if IsAutoBlocking == false then
+		IsAutoBlocking = true
+		AutoBlockButton.Text = "Auto Block: On"
+	else
+		IsAutoBlocking = false
+		AutoBlockButton.Text = "Auto Block: Off"
+	end
+end)
+local AutoPBButton = createButton("AutoPB", SectionThirdFrame)
+local IsAutoPB = false
+
+AutoPBButton.MouseButton1Click:Connect(function()
+	if IsAutoPB == false then
+		IsAutoPB = true
+		AutoPBButton.Text = "Auto PB: On"
+	else
+		IsAutoPB = false
+		AutoPBButton.Text = "Auto PB: Off"
+	end
+end)
+local DexButton = createButton("Dex", SectionThirdFrame)
+DexButton.MouseButton1Click:Connect(function()
+	loadstring(game:HttpGet("https://github.com/AZYsGithub/DexPlusPlus/releases/latest/download/out.lua"))()
+end)
+
+
+local TrackedNpcs = {}
+
+
+local function AutoM1()
+	if Players.LocalPlayer.Character:FindFirstChild("Katana") then
+		Players.LocalPlayer.Character.Katana:Activate()
+	else
+		combatremote:FireServer("NormalAttack")
+	end
+end
+local function AutoM2()
+	if Players.LocalPlayer.Character:FindFirstChild("Katana") then
+		combatremote:FireServer("StrongAttack")
+	else
+		combatremote:FireServer("StrongAttack")
+	end
+end
+
+local function IsStunned()
+	local ourstates = Players.LocalPlayer:FindFirstChild("states")
+	if not ourstates then return false end
+	return ourstates:FindFirstChild("stun") 
+		or ourstates:FindFirstChild("selfstun") 
+		or ourstates:FindFirstChild("RD")
+end
+
+local AnimsTableSet = {
+
+	["m2swordlower"] = {
+		id = "rbxassetid://13989097696",
+		dur = 0.45,
+		M2 = true,
+	},
+
+	["m2swordhigh"] = {
+		id = "rbxassetid://13989069332",
+		dur = 0.45,
+		M2 = true,
+	},
+
+	["m2beastswordhigh"] = {
+		id = "rbxassetid://13989267219",
+		dur = 0.45,
+		M2 = true,
+	},
+
+	["m2beastswordlow"] = {
+		id = "rbxassetid://13989277783",
+		dur = 0.45,
+		M2 = true,
+	},
+
+	["m2slap"] = {
+		id = "rbxassetid://13989286742",
+		dur = 0.45,
+		M2 = true,
+	},
+
+	["m2high"] = {
+		id = "rbxassetid://13989307542",
+		dur = 0.45,
+		M2 = true,
+	},
+
+	["moondragonringtail"] = {
+		id = "rbxassetid://13989120297",
+		dur = 0.8,
+	},
+	["bodyspike"] = {
+		id = "rbxassetid://13988514756",
+		dur = 0.5,
+	},
+	["spikeslash"] = {
+		id = "rbxassetid://13988542072",
+		dur = 0.58,
+		bb = 1,
+	},
+	["beastswordm1s"] = {
+		dur = 0.15,
+		bb = 1,
+		id1 = "rbxassetid://13989233126",
+		id2 = "rbxassetid://13989241225",
+		id3 = "rbxassetid://13989245673",
+		id4 = "rbxassetid://13989263378",
+		id5 = "rbxassetid://13989236874",
+	},
+	["normswordm1s"] = {
+		dur = 0.15,
+		bb = 1,
+		id1 = "rbxassetid://13989049115",
+		id2 = "rbxassetid://13989052970",
+		id3 = "rbxassetid://13989056506",
+		id4 = "rbxassetid://13989059881",
+		id5 = "rbxassetid://13989062804",
+	},
+	["normfistm1s"] = {
+		dur = 0.15,
+		bb = 1,
+		id1 = "rbxassetid://13988178570",
+		id2 = "rbxassetid://13988184267",
+		id3 = "rbxassetid://13988288330",
+		id4 = "rbxassetid://13988293512",
+		id5 = "rbxassetid://13988298623",
+		id6 = "rbxassetid://13988303070",
+	},
+	["watersurfaceslash"] = {
+		id = "rbxassetid://13988063065",
+		dur = 0.11,
+	},
+	["WaterfallJar"] = {
+		id = "rbxassetid://13988068068",
+		dur = 0.5,
+		bb = 1,
+	},
+	["Waterdashlong"] = {
+		id = "rbxassetid://13988052725",
+		dur = 0.9,
+		bb = 1,
+	},
+	["UNdolation"] = {
+		id = "rbxassetid://13988329201",
+		dur = 0.3,
+		bb = 1,
+	},
+	["FlameTiger"] = {
+		id = "rbxassetid://13988421264",
+		dur = 0.6,
+		bb = 2,
+	},
+	["Rengoku"] = {
+		id = "rbxassetid://13988433903",
+		dur = 0.7,
+		bb = 1,
+	},
+	["StringPerformance"] = {
+		id = "rbxassetid://13989603130",
+		dur = 0.3,
+	},
+	["UnknowingFire"] = {
+		id = "rbxassetid://13988324543",
+		dur = 0.3,
+	},
+	["ConstantResounding"] = {
+		id = "rbxassetid://13989501276",
+		dur = 0.5,
+		bb = 2,
+	},
+	["Roar"] = {
+		id = "rbxassetid://13989553001",
+		dur = 0.4,
+	},
+	["Roar2"] = {
+		id = "rbxassetid://13988553001",
+		dur = 0.4,
+	},
+	["LovePang"] = {
+		id = "rbxassetid://13989021037",
+		dur = 0.2,
+	},
+	["CatLeggedWinds"] = {
+		id = "rbxassetid://13989030437",
+		dur = 0.3,
+		bb = 4,
+		d = 1,
+	},
+	["CatLoveShower"] = {
+		id = "rbxassetid://13989025505",
+		dur = 0.3,
+		bb = 5,
+	},
+	["ShiversOfFirstLove"] = {
+		id = "rbxassetid://13988574089",
+		dur = 0.3,
+		bb = 1,
+	},
+	["MoonbowHalfMoonTheHighOne"] = {
+		id = "rbxassetid://13989030437",
+		dur = 0.3,
+		bb = 4,
+		d = 2,
+	},
+	["MoonHeavenJunk"] = {
+		id = "rbxassetid://13989127627",
+		dur = 1,
+		bb = 3,
+		d = 0.8,
+		multi = true,
+	},
+	["LunarShine"] = {
+		id = "rbxassetid://13989124131",
+		dur = 0.4,
+		bb = 6,
+	},
+	["RockSkin"] = {
+		id = "rbxassetid://13989116431",
+		dur = 0.15,
+		bb = 3,
+		d = 0.8,
+		multi = true,
+	},
+	["UpperSmash"] = {
+		id = "rbxassetid://13987473679",
+		dur = 0.3,
+		bb = 5,
+	},
+	["CleanStorm"] = {
+		id = "rbxassetid://13988538432",
+		dur = 0.11,
+	},
+	["SunThrow"] = {
+		id = "rbxassetid://13988481801",
+		dur = 0.6,
+		bb = 1,
+		d = 0.7
+	},
+	["SunDash"] = {
+		id = "rbxassetid://13988470113",
+		dur = 0.2,
+	},
+	["Peonies"] = {
+		id = "rbxassetid://13988189351",
+		dur = 0.11,
+	},
+	["WhrilingPeach"] = {
+		id = "rbxassetid://13989045422",
+		dur = 0.5,
+	},
+	["HonoreableShadowPlum"] = {
+		id = "rbxassetid://13989039330",
+		dur = 0.3,
+		bb = 3,
+		d = 0.65,
+		multi = true,
+	},
+	["WidningSerpentSlash"] = {
+		id = "rbxassetid://13989107776",
+		dur = 0.11,
+	},
+	["VenomFangs"] = {
+		id = "rbxassetid://13989112602",
+		dur = 0.11,
+		bb = 10,
+	},
+	["MadCleave"] = {
+		id = "rbxassetid://13988227789",
+		dur = 0.11,
+		bb = 1,
+	},
+	["CircularFangs"] = {
+		id = "rbxassetid://13988232291",
+		dur = 0.11,
+		bb = 3,
+		d = 1,
+		multi = true,
+	},
+	["PierceExtract"] = {
+		id = "rbxassetid://13988223461",
+		dur = 0.2,
+	},
+	["RipDevour"] = {
+		id = "rbxassetid://13988218049",
+		dur = 0.4,
+	},
+	["ZigZag"] = {
+		id = "rbxassetid://13988194148",
+		dur = 0.6,
+		bb = 1,
+	},
+	["Frolic"] = {
+		id = "rbxassetid://14268572848",
+		dur = 0.8,
+		bb = 1,
+	},
+	["MereFluttering"] = {
+		id = "rbxassetid://13988160813",
+		dur = 1,
+		bb = 1,
+	},
+	["Haze"] = {
+		id = "rbxassetid://13989387103",
+		dur = 0.11,
+		bb = 1,
+	},
+	["RagingSunSpin"] = {
+		id = "rbxassetid://13988475178",
+		dur = 0.11,
+	},
+	["SolarHeatHaze"] = {
+		id = "rbxassetid://13988485977",
+		dur = 0.4,
+		bb = 1,
+	},
+	["LightningBall"] = {
+		id = "rbxassetid://13988073088",
+		dur = 0.11,
+		bb = 1,
+	},
+	["ThunderClap"] = {
+		id = "rbxassetid://13989131565",
+		dur = 0.11,
+	},
+	["FleshSeeds"] = {
+		id = "rbxassetid://13989608756",
+		dur = 0.11,
+	},
+	["DemonBlade"] = {
+		id = "rbxassetid://13987429910",
+		dur = 0.8,
+	},
+	["LeapKick"] = {
+		id = "rbxassetid://13988119350",
+		dur = 0.85,
+	},
+	["DemonPunch"] = {
+		id = "rbxassetid://13988198516",
+		dur = 0.1,
+		bb = 1,
+		d = 0.1
+	},
+	["VoidStyle"] = {
+		id = "rbxassetid://13989135322",
+		dur = 0.1,
+		bb = 1,
+	},
+	["DestructionStyle"] = {
+		id = "rbxassetid://13989139079",
+		dur = 0.5,
+	},
+	["BlueSilverAfterGlow"] = {
+		id = "rbxassetid://13989147454",
+		dur = 0.2,
+		bb = 3,
+		d = 0.8,
+		multi = true,
+	},
+	["HantenguSpears"] = {
+		id = "rbxassetid://13989346936",
+		dur = 0.1,
+		bb = 3,
+		d = 0.5,
+		multi = true,
+	},
+	["StrongKickNez"] = {
+		id = "rbxassetid://13988454333",
+		dur = 0.1,
+		bb = 1,
+	},
+	["WaterPot"] = {
+		id = "rbxassetid://13989161281",
+		dur = 0.1,
+		bb = 1,
+	},
+	["TenThousand"] = {
+		id = "rbxassetid://13989192230",
+		dur = 0.1,
+		bb = 3,
+		d = 0.5,
+		multi = true,
+	},
+	["ThousandNeedle"] = {
+		id = "rbxassetid://13987223038",
+		dur = 0.1,
+		bb = 3,
+		d = 1.2,
+		multi = true,
+	},
+	["CuttingThread"] = {
+		id = "rbxassetid://13989397913",
+		dur = 0.1,
+		bb = 1,
+	},
+	["RampantArc"] = {
+		id = "rbxassetid://13987204906",
+		dur = 0.1,
+	},
+	["FlingingArrow"] = {
+		id = "rbxassetid://13989197964",
+		dur = 0,
+		bb = 1,
+	},
+	["FreezingClouds"] = {
+		id = "rbxassetid://13989161281",
+		dur = 0.1,
+	},
+	["BarrenHanging"] = {
+		id = "rbxassetid://13989156491",
+		dur = 0.1,
+		bb = 3,
+		d = 0.4,
+		multi = true,
+	},
+	["blocks"] = {
+		swordblock = "rbxassetid://13988308375",
+		fistblock = "rbxassetid://13987820892",
+	},
+
+}
+
+local StoredPbMoves = {
+	["Clean Storm Wind Tree"] = {
+		D = 1,
+	},
+	["Dust Whirlwind Cutter"] = {
+		D = 1,
+	},
+	["Moon Dragon Ringtail"] = {
+		--D = 0,
+		D = 0.2,
+	},
+	["Coil Choke"] = {
+		D = 0.5,
+	},
+	["Winding Serpent Slash"] = {
+		--D = 0.1,
+		D = 0.4,
+	},
+	["Unknowing Fire"] = {
+		--D = 0.1,
+		D = 0.4,
+	},
+	["Water Surface Slash"] = {
+		--D = 0.1,
+		D = 0.4,
+	},
+	["Rapid Conquest"] = {
+		--D = 0.1,
+		D = 0.4,
+	},
+	["Bite And InfectOG"] = {
+		D = 0.4,
+	},
+	["Rat's ClawOG"] = {
+		D = 0.5,
+	},
+	["Roar"] = {
+		D = 0.4,
+	},
+	["Explosive Slash"] = {
+		D = 0.4,
+	},
+	["String Performance"] = {
+		D = 0.4,
+	},
+	["Rip and Devour"] = {
+		D = 0.2,
+	},
+	["Pierce and Extract"] = {
+		D = 0.4,
+	},
+	["Whirling Peach"] = {
+		D = 0.4,
+	},
+	["Peonies of Futility"] = {
+		D = 0.4
+	},
+	["Flaming Thunder God"] = {
+		D = 0.4
+	},
+	["Love Pang"] = {
+		D = 0.4
+	},
+}
+
+local function DashAway()
+	local LocalPlayer = game.Players.LocalPlayer
+
+	if not (LocalPlayer.Injury.BrokenLegs.Value <= 1) or (LocalPlayer.states:FindFirstChild("DashCD") or (LocalPlayer.states:FindFirstChild("stun") or (LocalPlayer.states:FindFirstChild("selfstun") or (LocalPlayer.states:FindFirstChild("RD") or (LocalPlayer.Character:FindFirstChild("ForceField") or (LocalPlayer.states:FindFirstChild("Killable") or (LocalPlayer.states:FindFirstChild("Bexeing") or LocalPlayer.states:FindFirstChild("exeing")))))))) then
+		return false
+	end
+	local DashCD = Instance.new("Folder")
+
+	DashCD.Name = "DashCD"
+	DashCD.Parent = Players.LocalPlayer.states
+	game.Debris:AddItem(DashCD, 1)
+	local Character = Players.LocalPlayer.Character
+	local HumanoidRootPart = Character.HumanoidRootPart
+
+	-- Random dash direction: Left, Right, or Back
+	local directions = {
+		-HumanoidRootPart.CFrame.RightVector, -- Left
+		HumanoidRootPart.CFrame.RightVector,  -- Right
+		-HumanoidRootPart.CFrame.LookVector,  -- Back
+	}
+
+	local dashDirection = directions[math.random(1, #directions)]
+
+	Character.Humanoid.AutoRotate = true
+
+	if (game.Players.LocalPlayer.Character.Humanoid.MaxHealth - 100) / 2 <= 10 then
+		local v4 = game.ReplicatedStorage.DashWithNoDelay:InvokeServer("Dash", "flip")
+		local v5 = tick()
+
+		repeat
+			wait(0.0001)
+		until tick() - v5 >= 0.1 or (v4 == "finished" or v4 == "failed")
+
+		if v4 == "failed" then
+			return
+		end
+
+		if tick() - v5 >= 0.1 then
+			return
+		end
+
+		local Character3 = game.Players.LocalPlayer.Character
+		local HumanoidRootPart2 = Character3.HumanoidRootPart
+		local s = Instance.new("BodyVelocity")
+
+		s.Name = "s"
+		s.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
+		game.Debris:AddItem(s, 0.3)
+		s.Velocity = dashDirection * 80
+		s.Parent = Character3.HumanoidRootPart
+	else
+		game.ReplicatedStorage.DashWithNoDelay:InvokeServer("Dash")
+
+		local Character3 = game.Players.LocalPlayer.Character
+		local HumanoidRootPart2 = Character3.HumanoidRootPart
+		local s = Instance.new("BodyVelocity")
+
+		s.Name = "s"
+		s.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
+		game.Debris:AddItem(s, 0.12)
+		s.Velocity = dashDirection * 140
+		s.Parent = Character3.HumanoidRootPart
+	end
+end
+
+local function DashAwayForward()
+	local LocalPlayer = game.Players.LocalPlayer
+
+	if not (LocalPlayer.Injury.BrokenLegs.Value <= 1) or (LocalPlayer.states:FindFirstChild("DashCD") or (LocalPlayer.states:FindFirstChild("stun") or (LocalPlayer.states:FindFirstChild("selfstun") or (LocalPlayer.states:FindFirstChild("RD") or (LocalPlayer.Character:FindFirstChild("ForceField") or (LocalPlayer.states:FindFirstChild("Killable") or (LocalPlayer.states:FindFirstChild("Bexeing") or LocalPlayer.states:FindFirstChild("exeing")))))))) then
+		return false
+	end
+	local DashCD = Instance.new("Folder")
+
+	DashCD.Name = "DashCD"
+	DashCD.Parent = Players.LocalPlayer.states
+	game.Debris:AddItem(DashCD, 1)
+	local Character = Players.LocalPlayer.Character
+	local HumanoidRootPart = Character.HumanoidRootPart
+
+	-- Random dash direction: Left, Right, or Back
+	local directions = {
+		HumanoidRootPart.CFrame.LookVector,  -- Back
+	}
+
+	local dashDirection = directions[math.random(1, #directions)]
+
+	Character.Humanoid.AutoRotate = true
+
+	if (game.Players.LocalPlayer.Character.Humanoid.MaxHealth - 100) / 2 <= 10 then
+		local v4 = game.ReplicatedStorage.DashWithNoDelay:InvokeServer("Dash", "flip")
+		local v5 = tick()
+
+		repeat
+			wait(0.0001)
+		until tick() - v5 >= 0.1 or (v4 == "finished" or v4 == "failed")
+
+		if v4 == "failed" then
+			return
+		end
+
+		if tick() - v5 >= 0.1 then
+			return
+		end
+
+		local Character3 = game.Players.LocalPlayer.Character
+		local HumanoidRootPart2 = Character3.HumanoidRootPart
+		local s = Instance.new("BodyVelocity")
+
+		s.Name = "s"
+		s.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
+		game.Debris:AddItem(s, 0.3)
+		s.Velocity = dashDirection * 80
+		s.Parent = Character3.HumanoidRootPart
+	else
+		game.ReplicatedStorage.DashWithNoDelay:InvokeServer("Dash")
+
+		local Character3 = game.Players.LocalPlayer.Character
+		local HumanoidRootPart2 = Character3.HumanoidRootPart
+		local s = Instance.new("BodyVelocity")
+
+		s.Name = "s"
+		s.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
+		game.Debris:AddItem(s, 0.12)
+		s.Velocity = dashDirection * 140
+		s.Parent = Character3.HumanoidRootPart
+	end
+end
+
+
+local function RiskChecker(targetPlayer, track, amount)
+	local ourstates = Players[Players.LocalPlayer.Name].states
+	--local block = ourstates:FindFirstChild("block")
+	--if block then
+	--if block.Value <= amount then
+	--return "RiskyBlock"
+	--end
+	--end
+	if 3 <= amount then
+		return "RiskyBlock"
+	end
+	return "no risk"
+end
+
+local TARGPLR = nil
+local EnemyToFocusOn = nil
+local NpcEnemyToFocusOn = nil
+
+
+local curranimplaying
+
+local CanDoStuffExe = false
+
+local function AutoBlock(targetPlayer, track)
+	task.spawn(function()
+		local CHeckIFPlayer = Players:FindFirstChild(targetPlayer.Name)
+		local theirstates
+		local theircds
+		if CHeckIFPlayer then
+			theirstates = Players[targetPlayer.Name].states
+			theircds = Players[targetPlayer.Name].cds
+		else
+			theirstates = nil
+			theircds = nil
+		end
+		local ourstates = Players[Players.LocalPlayer.Name].states
+		local ourcds = Players[Players.LocalPlayer.Name].cds
+		if IsAutoBlocking == false then return end
+		local Res = RiskChecker(targetPlayer, track, AnimsTableSet.normswordm1s.bb)
+		if Res == "RiskyBlock" and ourstates:FindFirstChild("block") then
+			combatremote:FireServer("blockend")
+			local res = DashAway()
+			if res == false then
+				AutoM1()
+			end
+			return
+		end
+		local OURCD = ourcds:FindFirstChild("blockstart")
+		if OURCD and not ourstates:FindFirstChild("block") then
+			local random = math.random(1,2)
+			if random == 1 then
+				local res = DashAway()
+				if res == false then
+					AutoM1()
+				end
+			else
+				AutoM1()
+			end
+			return
+		end
+		local Character
+		if CHeckIFPlayer then
+			Character = targetPlayer.Character
+		else
+			Character = targetPlayer
+		end
+		local anim = track.Animation
+		if not anim then return end
+		local id = anim.AnimationId
+		for key, value in pairs(AnimsTableSet.normswordm1s) do
+			if key ~= "dur" and value == id then
+				task.delay(AnimsTableSet.normswordm1s.dur - 0.1, function()
+					if not theirstates or not theirstates:FindFirstChild("block") then
+						local Res = RiskChecker(targetPlayer, track, AnimsTableSet.normswordm1s.bb)
+						if Res == "RiskyBlock" then
+							DashAway()
+						else
+							if ourcds:FindFirstChild("blockstart") and not ourstates:FindFirstChild("block") then
+								AutoM1()
+							elseif ourcds:FindFirstChild("NormalAttack") and ourcds:FindFirstChild("blockstart") then
+								DashAway()
+							else
+								local Conti = true
+								local c1
+								if theirstates then
+									c1 = theirstates.ChildAdded:Connect(function(ch)
+										if ch.Name == "PerfectBlock" then
+											Conti = false
+											--heavytext.Text = "YOU GOTTA MOVE!"
+											--heavytext.Visible = true
+											AutoM2()
+											--	DashAway()
+											task.wait(2)
+											--heavytext.Visible = false
+										end
+									end)
+								end
+								if Conti == true then
+									combatremote:FireServer("blockstart")
+									task.wait(0.3)
+									combatremote:FireServer("blockend")
+									if theirstates and theirstates:FindFirstChild("block") then
+										AutoM2()
+									else
+										task.wait(0.3)
+										if Conti == true then
+											--heavytext.Text = "m1ing rlly good"
+											AutoM1()
+										end
+									end
+								end
+								task.wait(1.5)
+								if c1 then
+									c1:Disconnect()
+								end
+							end
+						end
+					end
+				end)
+				break
+			end
+		end
+		for key, value in pairs(AnimsTableSet.beastswordm1s) do
+			if key ~= "dur" and value == id then
+				task.delay(AnimsTableSet.beastswordm1s.dur - 0.1, function()
+					if not theirstates or not theirstates:FindFirstChild("block") then
+						local Res = RiskChecker(targetPlayer, track, AnimsTableSet.beastswordm1s.bb)
+						if Res == "RiskyBlock" then
+							local random = math.random(1,2)
+							if random == 1 then
+								DashAway()
+							else
+								AutoM1()
+							end
+						else
+							if ourcds:FindFirstChild("blockstart") and not ourstates:FindFirstChild("block") then
+								AutoM1()
+							elseif ourcds:FindFirstChild("NormalAttack") and ourcds:FindFirstChild("blockstart") then
+								DashAway()
+							else
+								local Conti = true
+								local c1
+								if theirstates then
+									c1 = theirstates.ChildAdded:Connect(function(ch)
+										if ch.Name == "PerfectBlock" then
+											Conti = false
+											--heavytext.Text = "YOU GOTTA MOVE!"
+											--heavytext.Visible = true
+											AutoM2()
+											--	DashAway()
+											task.wait(2)
+											--heavytext.Visible = false
+										end
+									end)
+								end
+								if Conti == true then
+									combatremote:FireServer("blockstart")
+									task.wait(0.3)
+									combatremote:FireServer("blockend")
+									if theirstates and theirstates:FindFirstChild("block") then
+										AutoM2()
+									else
+										task.wait(0.3)
+										if Conti == true then
+											--heavytext.Text = "m1ing rlly good"
+											AutoM1()
+										end
+									end
+								end
+								task.wait(1.5)
+								if c1 then
+									c1:Disconnect()
+								end
+							end
+						end
+					end
+				end)
+				break
+			end
+		end
+		for key, value in pairs(AnimsTableSet.normfistm1s) do
+			if key ~= "dur" and value == id then
+				task.delay(AnimsTableSet.normfistm1s.dur - 0.1, function()
+					if not theirstates or not theirstates:FindFirstChild("block") then
+						local Res = RiskChecker(targetPlayer, track, AnimsTableSet.normfistm1s.bb)
+						if Res == "RiskyBlock" then
+							local random = math.random(1,2)
+							if random == 1 then
+								DashAway()
+							else
+								AutoM1()
+							end
+						else
+							if ourcds:FindFirstChild("blockstart") and not ourstates:FindFirstChild("block") then
+								AutoM1()
+							elseif ourcds:FindFirstChild("NormalAttack") and ourcds:FindFirstChild("blockstart") then
+								DashAway()
+							else
+								local Conti = true
+								local c1
+								if theirstates then
+									c1 = theirstates.ChildAdded:Connect(function(ch)
+										if ch.Name == "PerfectBlock" then
+											Conti = false
+											--heavytext.Text = "YOU GOTTA MOVE!"
+											--heavytext.Visible = true
+											AutoM2()
+											--	DashAway()
+											task.wait(2)
+											--heavytext.Visible = false
+										end
+									end)
+								end
+								if Conti == true then
+									combatremote:FireServer("blockstart")
+									task.wait(0.3)
+									combatremote:FireServer("blockend")
+									if theirstates and theirstates:FindFirstChild("block") then
+										AutoM2()
+									else
+										task.wait(0.3)
+										if Conti == true then
+											--heavytext.Text = "m1ing rlly good"
+											AutoM1()
+										end
+									end
+								end
+								task.wait(1.5)
+								if c1 then
+									c1:Disconnect()
+								end
+							end
+						end
+					end
+				end)
+				break
+			end
+		end
+		if id == AnimsTableSet.spikeslash.id then
+			if not theirstates or not theirstates:FindFirstChild("block") then
+				local Res = RiskChecker(targetPlayer, track, AnimsTableSet.spikeslash.bb)
+				if Res == "RiskyBlock" then
+					local random = math.random(1,2)
+					if random == 1 then
+						DashAway()
+					else
+						AutoM1()
+					end
+				else
+					if ourcds:FindFirstChild("blockstart") and not ourstates:FindFirstChild("block") then
+						AutoM1()
+					elseif ourcds:FindFirstChild("NormalAttack") and ourcds:FindFirstChild("blockstart") then
+						DashAway()
+					else
+						combatremote:FireServer("blockstart")
+						task.wait(0.4)
+						combatremote:FireServer("blockend")
+						if theirstates and theirstates:FindFirstChild("block") then
+							AutoM2()
+						else
+							AutoM1()
+						end
+					end
+				end
+			end
+		elseif id == AnimsTableSet.m2swordlower.id then
+			task.delay(AnimsTableSet.m2swordlower.dur - 0.1, function()
+				if not theirstates or not theirstates:FindFirstChild("block") then
+					combatremote:FireServer("blockstart")
+					task.wait(0.1)
+					combatremote:FireServer("blockend")
+					task.wait(0.1)
+					combatremote:FireServer("NormalAttack")
+				end
+			end)
+		else
+			for key, value in pairs(AnimsTableSet) do
+				if key and value.id and value.id == id then
+					task.delay(value.dur - 0.1, function()
+						if not theirstates or not theirstates:FindFirstChild("block") then
+							local Res = RiskChecker(targetPlayer, track, value.bb)
+							if Res == "RiskyBlock" and not value.multi then
+								local random = math.random(1,2)
+								if random == 1 then
+									local res = DashAway()
+									if res == false then
+										AutoM1()
+									end
+								else
+									AutoM1()
+								end
+							elseif Res == "RiskyBlock" and value.multi then
+								combatremote:FireServer("blockstart")
+								if value.d then
+									task.wait(value.d / 1.5)
+								end
+								combatremote:FireServer("blockend")
+								if theirstates and theirstates:FindFirstChild("block") then
+									local res = DashAway()
+									if res == false then
+										AutoM1()
+									end
+								else
+									AutoM1()
+								end
+								--DashAway()
+							else
+								if ourcds:FindFirstChild("blockstart") and not ourstates:FindFirstChild("block") then
+									AutoM1()
+								elseif ourcds:FindFirstChild("NormalAttack") and ourcds:FindFirstChild("blockstart") then
+									DashAway()
+								else
+									combatremote:FireServer("blockstart")
+									if value.d then
+										task.wait(value.d)
+									else
+										task.wait(0.4)
+									end
+									combatremote:FireServer("blockend")
+									if theirstates and theirstates:FindFirstChild("block") then
+										AutoM2()
+									else
+										AutoM1()
+									end
+								end
+							end
+						end
+					end)
+					break
+				end
+			end
+		end
+	end)
+end
+
+local function AutoPB(targetPlayer, track)
+	task.spawn(function()
+		local CHeckIFPlayer = Players:FindFirstChild(targetPlayer.Name)
+		local theirstates
+		local theircds
+		local Character
+		if CHeckIFPlayer then
+			theirstates = Players[targetPlayer.Name].states
+			theircds = Players[targetPlayer.Name].cds
+			Character = targetPlayer.Character
+		else
+			theirstates = nil
+			theircds = nil
+			Character = targetPlayer
+		end
+		local ourstates = Players[Players.LocalPlayer.Name].states
+		--local theircds = Players[targetPlayer.Name].cds
+		local ourcds = Players[Players.LocalPlayer.Name].cds
+		if IsAutoPB == false then return end
+		local anim = track.Animation
+		if not anim then return end
+		if ourstates:FindFirstChild("block") then
+			combatremote:FireServer("blockend")
+			local res = DashAway()
+			if res == false then
+				AutoM1()
+			end
+			return
+		end
+		local OURCD = ourcds:FindFirstChild("blockstart")
+		if OURCD and not ourstates:FindFirstChild("block") then
+			local random = math.random(1,2)
+			if random == 1 then
+				local res = DashAway()
+				if res == false then
+					AutoM1()
+				end
+			else
+				AutoM1()
+			end
+			return
+		end
+		local id = anim.AnimationId
+		if id == AnimsTableSet.m2swordhigh.id then
+			task.delay(AnimsTableSet.m2swordhigh.dur - 0.1, function()
+				if not theirstates or not theirstates:FindFirstChild("block") then
+					combatremote:FireServer("blockstart")
+					task.wait(0.5)
+					combatremote:FireServer("blockend")
+				end
+			end)
+		elseif id == AnimsTableSet.m2swordlower.id then
+			task.delay(AnimsTableSet.m2swordlower.dur - 0.1, function()
+				if not theirstates or not theirstates:FindFirstChild("block") then
+					combatremote:FireServer("blockstart")
+					task.wait(0.5)
+					combatremote:FireServer("blockend")
+				end
+			end)
+		elseif id == AnimsTableSet.m2high.id then
+			task.delay(AnimsTableSet.m2high.dur - 0.1, function()
+				if not theirstates or not theirstates:FindFirstChild("block") then
+					combatremote:FireServer("blockstart")
+					task.wait(0.5)
+					combatremote:FireServer("blockend")
+				end
+			end)
+		elseif id == AnimsTableSet.m2slap.id then
+			task.delay(AnimsTableSet.m2slap.dur - 0.1, function()
+				if not theirstates or not theirstates:FindFirstChild("block") then
+					combatremote:FireServer("blockstart")
+					task.wait(0.5)
+					combatremote:FireServer("blockend")
+				end
+			end)
+		elseif id == AnimsTableSet.moondragonringtail.id then
+			task.delay(AnimsTableSet.moondragonringtail.dur - 0.1, function()
+				if not theirstates or not theirstates:FindFirstChild("block") then
+					combatremote:FireServer("blockstart")
+					task.wait(0.5)
+					combatremote:FireServer("blockend")
+				end
+			end)
+		elseif id == AnimsTableSet.bodyspike.id then
+			task.delay(AnimsTableSet.bodyspike.dur - 0.1, function()
+				if not theirstates or not theirstates:FindFirstChild("block") then
+					combatremote:FireServer("blockstart")
+					task.wait(0.5)
+					combatremote:FireServer("blockend")
+				end
+			end)
+		else
+			for key, value in pairs(AnimsTableSet) do
+				if key and value.id and value.id == id then
+					task.delay(value.dur - 0.1, function()
+						if ourcds:FindFirstChild("blockstart") and not ourstates:FindFirstChild("block") then
+							AutoM1()
+						elseif ourcds:FindFirstChild("NormalAttack") and ourcds:FindFirstChild("blockstart") then
+							DashAway()
+						else
+							combatremote:FireServer("blockstart")
+							task.wait(0.3)
+							combatremote:FireServer("blockend")
+							if theirstates and theirstates:FindFirstChild("block") then
+								AutoM2()
+							else
+								AutoM1()
+							end
+						end
+					end)
+					break
+				end
+			end
+		end
+	end)
+
+end
+
+local CDThing = false
+
+local animationTriggers = {
+	["rbxassetid://128005402860390"] = function(targetPlayer)
+		print("Jump animation detected from", targetPlayer.Name)
+
+		local char = targetPlayer.Character
+		if not char then return end
+
+		local highlight = Instance.new("Highlight")
+		highlight.FillColor = Color3.fromRGB(255, 0, 0)
+		highlight.Parent = char
+
+		task.wait(2)
+		highlight:Destroy()
+	end,
+
+	[AnimsTableSet.beastswordm1s.id1] = AutoBlock,
+	[AnimsTableSet.beastswordm1s.id2] = AutoBlock,
+	[AnimsTableSet.beastswordm1s.id3] = AutoBlock,
+	[AnimsTableSet.beastswordm1s.id4] = AutoBlock,
+	[AnimsTableSet.beastswordm1s.id5] = AutoBlock,
+	[AnimsTableSet.normswordm1s.id1] = AutoBlock,
+	[AnimsTableSet.normswordm1s.id2] = AutoBlock,
+	[AnimsTableSet.normswordm1s.id3] = AutoBlock,
+	[AnimsTableSet.normswordm1s.id4] = AutoBlock,
+	[AnimsTableSet.normswordm1s.id5] = AutoBlock,
+	[AnimsTableSet.normfistm1s.id1] = AutoBlock,
+	[AnimsTableSet.normfistm1s.id2] = AutoBlock,
+	[AnimsTableSet.normfistm1s.id3] = AutoBlock,
+	[AnimsTableSet.normfistm1s.id4] = AutoBlock,
+	[AnimsTableSet.normfistm1s.id5] = AutoBlock,
+	[AnimsTableSet.normfistm1s.id6] = AutoBlock,
+	--[AnimsTableSet.blocks.fistblock] = ProtectGBS,
+	--[AnimsTableSet.blocks.swordblock] = ProtectGBS,
+
+	[AnimsTableSet.DemonPunch.id] = AutoBlock,
+	[AnimsTableSet.LeapKick.id] = AutoPB,
+	[AnimsTableSet.DemonBlade.id] = AutoPB,
+
+	--rivosfsm1
+	["rbxassetid://81538235954358"] = nil,
+
+	["rbxassetid://92509099075919"] = nil,--rivofireblast
+	[AnimsTableSet.LovePang.id] = AutoPB,
+	[AnimsTableSet.CatLeggedWinds.id] = AutoBlock,
+	[AnimsTableSet.CatLoveShower.id] = AutoBlock,
+	[AnimsTableSet.ShiversOfFirstLove.id] = AutoBlock,
+	[AnimsTableSet.Waterdashlong.id] = AutoBlock,
+	[AnimsTableSet.WaterfallJar.id] = AutoBlock,
+	--GroundSpike
+	["rbxassetid://13988506187"] = nil,
+	[AnimsTableSet.bodyspike.id] = AutoPB,
+	--SpikeSlash
+	[AnimsTableSet.spikeslash.id] = AutoBlock,
+	--FlyingBloodSickles
+	["rbxassetid://13987191385"] = nil,
+	[AnimsTableSet.RampantArc.id] = AutoPB,
+	--RotatingSlashesOSns
+	["rbxassetid://13987199303"] = nil,
+	[AnimsTableSet.CuttingThread.id] = AutoBlock,
+	--DumbTamayoKnockMove
+	["rbxassetid://13989614620"] = nil,
+	[AnimsTableSet.FleshSeeds.id] = AutoPB,
+	[AnimsTableSet.StrongKickNez.id] = AutoBlock,
+	--BloodMine
+	["rbxassetid://13988114619"] = nil,
+	[AnimsTableSet.FlingingArrow.id] = AutoBlock,
+	[AnimsTableSet.BarrenHanging.id] = AutoBlock,
+	[AnimsTableSet.FreezingClouds.id] = AutoPB,
+	[AnimsTableSet.HantenguSpears.id] = AutoBlock,
+	--SonicScream
+	["rbxassetid://13989333281"] = nil,
+	[AnimsTableSet.ThousandNeedle.id] = AutoBlock,
+	[AnimsTableSet.TenThousand.id] = AutoBlock,
+	[AnimsTableSet.WaterPot.id] = AutoBlock,
+	[AnimsTableSet.BlueSilverAfterGlow.id] = AutoBlock,
+	[AnimsTableSet.DestructionStyle.id] = AutoPB,
+	[AnimsTableSet.VoidStyle.id] = AutoBlock,
+	--BallThrow
+	["rbxassetid://13988238363"] = nil,
+	--BallKick
+	["rbxassetid://13987391354"] = nil,
+	--BallBarrage
+	["rbxassetid://13988243685"] = nil,
+	--Daki1
+	["rbxassetid://13987852579"] = nil,
+	--Daki1
+	["rbxassetid://13987905193"] = nil,
+	--Daki1
+	["rbxassetid://13987898088"] = nil,
+	--Daki1
+	["rbxassetid://15780361276"] = nil,
+	[AnimsTableSet.UnknowingFire.id] = AutoPB,
+	[AnimsTableSet.StringPerformance.id] = AutoPB,
+	[AnimsTableSet.UNdolation.id] = AutoBlock,
+	[AnimsTableSet.Rengoku.id] = AutoBlock,
+	[AnimsTableSet.FlameTiger.id] = AutoBlock,
+	[AnimsTableSet.ThunderClap.id] = AutoPB,
+	[AnimsTableSet.LightningBall.id] = AutoBlock,
+	[AnimsTableSet.LunarShine.id] = AutoBlock,
+	--[AnimsTableSet.MoonbowHalfMoonTheHighOne.id] = AutoBlock,
+	[AnimsTableSet.MoonHeavenJunk.id] = AutoBlock,
+	[AnimsTableSet.moondragonringtail.id] = AutoPB,
+	[AnimsTableSet.watersurfaceslash.id] = AutoPB,
+	[AnimsTableSet.WidningSerpentSlash.id] = AutoPB,
+	[AnimsTableSet.VenomFangs.id] = AutoBlock,
+	[AnimsTableSet.ZigZag.id] = AutoBlock,
+	[AnimsTableSet.Frolic.id] = AutoBlock,
+	[AnimsTableSet.MereFluttering.id] = AutoBlock,
+	[AnimsTableSet.RagingSunSpin.id] = AutoPB,
+	[AnimsTableSet.SunThrow.id] = AutoBlock,
+	[AnimsTableSet.SunDash.id] = AutoPB,
+	[AnimsTableSet.SolarHeatHaze.id] = AutoBlock,
+	[AnimsTableSet.Roar.id] = AutoPB,
+	[AnimsTableSet.Roar2.id] = AutoPB,
+	[AnimsTableSet.ConstantResounding.id] = AutoBlock,
+	[AnimsTableSet.RockSkin.id] = AutoBlock,
+	[AnimsTableSet.UpperSmash.id] = AutoBlock,
+	[AnimsTableSet.HonoreableShadowPlum.id] = AutoBlock,
+	[AnimsTableSet.Peonies.id] = AutoPB,
+	[AnimsTableSet.MadCleave.id] = AutoBlock,
+	[AnimsTableSet.CircularFangs.id] = AutoBlock,
+	[AnimsTableSet.PierceExtract.id] = AutoPB,
+	[AnimsTableSet.RipDevour.id] = AutoPB,
+	--Gale Wind
+	["rbxassetid://13988533435"] = nil,
+	[AnimsTableSet.CleanStorm.id] = AutoPB,
+	[AnimsTableSet.WhrilingPeach.id] = AutoPB,
+	--Moonlit
+	["rbxassetid://13988268938"] = nil,
+	[AnimsTableSet.Haze.id] = AutoBlock,
+
+	[AnimsTableSet.m2swordhigh.id] = AutoPB,
+	[AnimsTableSet.m2swordlower.id] = AutoPB,
+	[AnimsTableSet.m2high.id] = AutoPB,
+	[AnimsTableSet.m2slap.id] = AutoPB,
+	[AnimsTableSet.m2beastswordhigh.id] = AutoPB,
+	[AnimsTableSet.m2beastswordlow.id] = AutoPB,
+
+	["rbxassetid://507777826"] = function(targetPlayer)
+		print("Running animation detected from", targetPlayer.Name)
+	end
+}
+
+
+-- Update tracked players display
+local function updateTrackedDisplay()
+
+	local names = {}
+
+	for plr,_ in pairs(trackedPlayers) do
+		print(plr)
+		table.insert(names, plr.Name)
+	end
+
+	if #names == 0 then
+		trackedLabel.Text = "Tracking: None"
+		trackedLabel2.Text = "Tracking: None"
+	else
+		trackedLabel.Text = "Tracking: "..table.concat(names,", ")
+		trackedLabel2.Text = "Tracking: "..table.concat(names,", ")
+	end
+
+end
+
+-- Start tracking a player
+local function watchPlayerAnimations(targetPlayer)
+	if trackedPlayers[targetPlayer] then
+		return
+	end
+
+	local data = {}
+
+	local function hookCharacter(character)
+		-- Disconnect previous animation connection (if they respawn)
+		if data.targetAnimConnection then
+			data.targetAnimConnection:Disconnect()
+			data.targetAnimConnection = nil
+		end
+
+		local humanoid = character:WaitForChild("Humanoid")
+
+		data.targetAnimConnection = humanoid.AnimationPlayed:Connect(function(track)
+			if gui.Parent == nil then return end
+			if not targetPlayer or not targetPlayer.Parent then return end
+			if not (Detecting or detectingtwo) then return end
+
+			local anim = track.Animation
+			if not anim then return end
+
+			local id = anim.AnimationId
+
+			if id == "rbxassetid://15215952540" then return end
+			if id == "rbxassetid://15215921487" then return end
+			if id == "rbxassetid://13989102174" then return end
+			if id == "rbxassetid://13989317090" then return end
+			if id == "rbxassetid://13987893395" then return end
+			if id == "rbxassetid://13989696751" then return end
+			if id == "rbxassetid://13989690978" then return end
+			if id == "rbxassetid://13989415110" then return end
+
+			if not animationTriggers[id] then
+				print("Animation from", targetPlayer.Name, ":", id)
+			end
+
+			if animationTriggers[id] then
+				animationTriggers[id](targetPlayer, track)
+			end
+		end)
+
+		targhrp = character:WaitForChild("HumanoidRootPart")
+	end
+
+	if targetPlayer.Character then
+		hookCharacter(targetPlayer.Character)
+	end
+
+	data.charConnection = targetPlayer.CharacterAdded:Connect(hookCharacter)
+
+	trackedPlayers[targetPlayer] = data
+
+	updateTrackedDisplay()
+end
+
+
+-- Stop tracking one player
+local function stopTrackingPlayer(plr)
+	local data = trackedPlayers[plr]
+	if not data then
+		return
+	end
+
+	if data.targetAnimConnection then
+		data.targetAnimConnection:Disconnect()
+		data.targetAnimConnection = nil
+	end
+
+	if data.charConnection then
+		data.charConnection:Disconnect()
+		data.charConnection = nil
+	end
+	if data.NpctargetAnimConnection then
+		data.NpctargetAnimConnection:Disconnect()
+		data.NpctargetAnimConnection = nil
+	end
+	trackedPlayers[plr] = nil
+
+	--print("Stopped tracking:", plr.Name)
+
+	updateTrackedDisplay()
+end
+
+local function watchNpcnimations(targetNpc)
+	if trackedPlayers[targetNpc] then
+		return
+	end
+
+	local data = {}
+
+	local function hookCharacter(character)
+		-- Disconnect previous animation connection (if they respawn)
+		if data.NpctargetAnimConnection then
+			data.NpctargetAnimConnection:Disconnect()
+			data.NpctargetAnimConnection = nil
+		end
+
+		local humanoid = character:WaitForChild("Humanoid")
+
+		data.NpctargetAnimConnection = humanoid.AnimationPlayed:Connect(function(track)
+			if gui.Parent == nil then return end
+			if not targetNpc or not targetNpc.Parent then
+				trackedPlayers[targetNpc] = nil
+				return
+			end
+			if not (Detecting or detectingtwo) then return end
+
+			local anim = track.Animation
+			if not anim then return end
+
+			local id = anim.AnimationId
+
+			if id == "rbxassetid://15215952540" then return end
+			if id == "rbxassetid://15215921487" then return end
+			if id == "rbxassetid://13989102174" then return end
+			if id == "rbxassetid://13989317090" then return end
+			if id == "rbxassetid://13987893395" then return end
+			if id == "rbxassetid://13989696751" then return end
+			if id == "rbxassetid://13989690978" then return end
+			if id == "rbxassetid://13989415110" then return end
+
+			if not animationTriggers[id] then
+				print("Animation from", targetNpc.Name, ":", id)
+			end
+
+			if animationTriggers[id] then
+				animationTriggers[id](targetNpc, track)
+			end
+		end)
+
+		targhrp = character:WaitForChild("HumanoidRootPart")
+	end
+
+	hookCharacter(targetNpc)
+
+	trackedPlayers[targetNpc] = data
+
+	updateTrackedDisplay()
+end
+-- Clear all tracked players
+local function clearTrackedPlayers()
+	for plr, data in pairs(trackedPlayers) do
+		if data.targetAnimConnection then
+			data.targetAnimConnection:Disconnect()
+			data.targetAnimConnection = nil
+		end
+
+		if data.charConnection then
+			data.charConnection:Disconnect()
+			data.charConnection = nil
+		end
+
+		if data.NpctargetAnimConnection then
+			data.NpctargetAnimConnection:Disconnect()
+			data.NpctargetAnimConnection = nil
+		end
+	end
+	TARGPLR = nil
+	EnemyToFocusOn = nil
+
+	table.clear(trackedPlayers)
+
+	--print("Cleared all tracked players")
+
+	updateTrackedDisplay()
+end
+
+local guis = game.Players.LocalPlayer.PlayerGui.guis
+local healthbar = guis.BottomFrame.Health.f
+local Level = guis.BottomFrame.Exp.Level
+Level.LevelText.Text = "LMTQN"
+healthbar.ImageTransparency = 1
+healthbar.BackgroundColor3 = Color3.fromRGB(70, 149, 206)
+--RunService.Heartbeat:Connect(function()
+task.spawn(function()
+	healthbar:getPropertyChangedSignal("BackgroundTransparency"):Connect(function()
+		if gui.Parent ~= nil then
+			healthbar.BackgroundColor3 = Color3.fromRGB(70, 149, 206)
+		end
+	end)
+end)
+--end)
+-- Player buttons
+local function createPlayerButton(plr)
+	local display = plr.DisplayName
+	local button = Instance.new("TextButton")
+	button.Size = UDim2.new(1,-10,0,30)
+	button.Text = plr.Name .. " / ".. display
+	button.Parent = playerList
+	button.Name = plr.Name
+	button.MouseButton1Click:Connect(function()
+		if trackedPlayers[plr] then
+			stopTrackingPlayer(plr)
+			EnemyToFocusOn = nil
+		else
+			local CheckIFPlayer = Players:FindFirstChild(plr.Name)
+			if CheckIFPlayer then
+				TARGPLR = plr.Character
+				EnemyToFocusOn = plr
+				--print("Monitoring animations for", plr.Name)
+				watchPlayerAnimations(plr)
+			else
+				TARGPLR = plr
+				EnemyToFocusOn = plr
+				--print("Monitoring animations for", plr.Name)
+				watchNpcnimations(plr)
+			end
+		end
+
+	end)
+	local button2 = Instance.new("TextButton")
+	button2.Size = UDim2.new(1,-10,0,30)
+	button2.Text = plr.Name .. " / ".. display
+	button2.Parent = playerListOustide
+	button2.Name = plr.Name
+	button2.MouseButton1Click:Connect(function()
+		if trackedPlayers[plr] then
+			stopTrackingPlayer(plr)
+			EnemyToFocusOn = nil
+		else
+			local CheckIFPlayer = Players:FindFirstChild(plr.Name)
+			if CheckIFPlayer then
+				TARGPLR = plr.Character
+				EnemyToFocusOn = plr
+				--print("Monitoring animations for", plr.Name)
+				watchPlayerAnimations(plr)
+			else
+				TARGPLR = plr
+				EnemyToFocusOn = plr
+				--print("Monitoring animations for", plr.Name)
+				watchNpcnimations(plr)
+			end
+		end
+
+	end)
+end
+
+local localAnimConnection
+
+for i, v in ipairs(Players[Players.LocalPlayer.Name].cds:GetChildren()) do
+	if v.Name == "HeavyAlert" then
+		v:Destroy()
+	end
+end
+
+local function hookLocalPlayer()
+	local character = Players.LocalPlayer.Character or Players.LocalPlayer.CharacterAdded:Wait()
+	local humanoid = character:WaitForChild("Humanoid")
+
+	if localAnimConnection then
+		localAnimConnection:Disconnect()
+	end
+
+	localAnimConnection = humanoid.AnimationPlayed:Connect(function(track)
+		if gui.Parent == nil then
+			return
+		end
+		local anim = track.Animation
+		if anim then
+			curranimplaying = anim.AnimationId
+			for key, value in pairs(AnimsTableSet) do
+				if key and value.id and value.id == anim.AnimationId then
+					if value.M2 then
+						local HeavyAlertValue = Instance.new("StringValue")
+						HeavyAlertValue.Name = "HeavyAlert"
+						HeavyAlertValue.Parent = Players[Players.LocalPlayer.Name].cds
+						game.Debris:AddItem(HeavyAlertValue, track.Length + 0.2)
+						--heavytext.Text = "Playing ".. key .. " Heavy"
+						--heavytext.Visible = true
+						--task.wait(5)
+						--heavytext.Visible = false
+					end
+				end
+			end
+		end
+	end)
+end
+
+hookLocalPlayer()
+Players.LocalPlayer.CharacterAdded:Connect(function(chara)
+	hookLocalPlayer(chara)
+end)
+-- Populate player list
+for _,plr in pairs(Players:GetPlayers()) do
+	createPlayerButton(plr)
+end
+local npcfolder = workspace.npc
+local CombatNpcs = npcfolder.npcs
+local TargetAbleNpcs = {
+	"Flame Apprentice",
+
+}
+
+local WasClimbing = false
+local TopTriggered = false
+
+local function IsCharacterPart(instance)
+	if not instance then
+		return false
+	end
+
+	local model = instance:FindFirstAncestorOfClass("Model")
+
+	if model and model:FindFirstChildOfClass("Humanoid") then
+		return true
+	end
+
+	return false
+end
+
+
+Players.PlayerAdded:Connect(createPlayerButton)
+Players.PlayerRemoving:Connect(function(plr)
+
+	if trackedPlayers[plr] then
+		stopTrackingPlayer(plr)
+	end
+	local targbutton = playerList:FindFirstChild(plr.Name)
+	if targbutton then
+		targbutton:Destroy()
+	end
+	local targbutton2 = playerListOustide:FindFirstChild(plr.Name)
+	if targbutton2 then
+		targbutton2:Destroy()
+	end
+end)
+
+-- Clear tracking button
+
+clearButton.MouseButton1Click:Connect(function()
+	clearTrackedPlayers()
+end)
+
+local UserInputService = game:GetService("UserInputService")
+local workspace = game:GetService("Workspace")
+
+local dragging = false
+local dragStart = Vector3.new()
+local startPos = UDim2.new()
+
+local function update(input)
+	local camera = workspace.CurrentCamera
+	if not camera then return end
+
+	local viewportSize = camera.ViewportSize
+	if viewportSize.X == 0 or viewportSize.Y == 0 then return end
+
+	-- Calculate drag offset relative to screen resolution (pure Scale)
+	local delta = input.Position - dragStart
+	local scaleDeltaX = delta.X / viewportSize.X
+	local scaleDeltaY = delta.Y / viewportSize.Y
+
+	frame.Position = UDim2.new(
+		startPos.X.Scale + scaleDeltaX, 0,
+		startPos.Y.Scale + scaleDeltaY, 0
+	)
+end
+
+-- Works for both Left Mouse Click and Finger Touch
+local function isDragInput(input)
+	return input.UserInputType == Enum.UserInputType.MouseButton1 
+		or input.UserInputType == Enum.UserInputType.Touch
+end
+
+-- Works for both Mouse Dragging and Finger Swiping
+local function isMoveInput(input)
+	return input.UserInputType == Enum.UserInputType.MouseMovement 
+		or input.UserInputType == Enum.UserInputType.Touch
+end
+
+frame.InputBegan:Connect(function(input)
+	if isDragInput(input) then
+		dragging = true
+		dragStart = input.Position
+		startPos = frame.Position
+
+		-- Detect release (mouse lift or finger lifting off screen)
+		local connection
+		connection = input.Changed:Connect(function()
+			if input.UserInputState == Enum.UserInputState.End then
+				dragging = false
+				connection:Disconnect()
+			end
+		end)
+	end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+	if dragging and isMoveInput(input) then
+		update(input)
+	end
+end)

@@ -1,0 +1,272 @@
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+local playerGui = player:WaitForChild("PlayerGui")
+
+-- Clean up old UI if re-executed
+if playerGui:FindFirstChild("InstanceSerializerUI") then
+	playerGui.InstanceSerializerUI:Destroy()
+end
+
+-- ==========================================
+-- SERIALIZATION ENGINE
+-- ==========================================
+
+local function serializeValue(val)
+	local t = typeof(val)
+	if t == "number" or t == "boolean" then
+		return tostring(val)
+	elseif t == "string" then
+		return string.format("%q", val)
+	elseif t == "EnumItem" then
+		return tostring(val)
+	elseif t == "Vector2" then
+		return string.format("Vector2.new(%f, %f)", val.X, val.Y)
+	elseif t == "Vector3" then
+		return string.format("Vector3.new(%f, %f, %f)", val.X, val.Y, val.Z)
+	elseif t == "CFrame" then
+		return string.format("CFrame.new(%s)", tostring(val))
+	elseif t == "Color3" then
+		return string.format("Color3.new(%f, %f, %f)", val.R, val.G, val.B)
+	elseif t == "UDim" then
+		return string.format("UDim.new(%f, %f)", val.Scale, val.Offset)
+	elseif t == "UDim2" then
+		return string.format("UDim2.new(%f, %f, %f, %f)", val.X.Scale, val.X.Offset, val.Y.Scale, val.Y.Offset)
+	elseif t == "NumberRange" then
+		return string.format("NumberRange.new(%f, %f)", val.Min, val.Max)
+	elseif t == "NumberSequence" then
+		local kps = {}
+		for _, kp in ipairs(val.Keypoints) do
+			table.insert(kps, string.format("NumberSequenceKeypoint.new(%f, %f, %f)", kp.Time, kp.Value, kp.Envelope))
+		end
+		return string.format("NumberSequence.new({%s})", table.concat(kps, ", "))
+	elseif t == "ColorSequence" then
+		local kps = {}
+		for _, kp in ipairs(val.Keypoints) do
+			table.insert(kps, string.format("ColorSequenceKeypoint.new(%f, Color3.new(%f, %f, %f))", kp.Time, kp.Value.R, kp.Value.G, kp.Value.B))
+		end
+		return string.format("ColorSequence.new({%s})", table.concat(kps, ", "))
+	else
+		return nil -- Unsupported property type
+	end
+end
+
+-- Comprehensive properties list including Parts, Effects, Animations, and GUIs
+local commonProperties = {
+	-- General & Parts
+	"Name", "Anchored", "CanCollide", "Transparency", "Color", "Material", "Size", "CFrame",
+	"Position", "Orientation", "Texture", "TextureID", "Scale", "AnimationId",
+	-- Particle Emitters & Beams & Lights
+	"Acceleration", "Brightness", "Drag", "EmissionDirection", "Enabled",
+	"FlipbookFramerate", "FlipbookLayout", "FlipbookMode", "FlipbookStartRandom",
+	"Lifetime", "LightEmission", "LightInfluence", "LockedToPart", "Rate",
+	"Rotation", "RotSpeed", "Shape", "ShapeInOut", "ShapeStyle", "Speed",
+	"SpreadAngle", "TimeScale", "ZOffset", "Range", "Shadows", "Face",
+	"Width0", "Width1", "Segments", "CurveSize0", "CurveSize1", "TextureSpeed", "TextureLength",
+	-- GUI Properties
+	"BackgroundColor3", "BackgroundTransparency", "BorderColor3", "BorderSizePixel",
+	"FontFace", "Text", "TextColor3", "TextSize", "TextTransparency", "TextWrapped",
+	"TextXAlignment", "TextYAlignment", "PlaceholderText", "PlaceholderColor3", "Draggable", "Visible", "ZIndex", "Image", "ImageColor3", "ImageTransparency",
+	"ScaleType", "CornerRadius"
+}
+
+local function resolvePath(pathString)
+	local segments = string.split(pathString, ".")
+	local current = game
+	for i, seg in ipairs(segments) do
+		if i == 1 and seg:lower() == "game" then
+			continue
+		elseif i == 1 and seg:lower() == "workspace" then
+			current = workspace
+		else
+			current = current:FindFirstChild(seg)
+			if not current then return nil end
+		end
+	end
+	return current
+end
+
+local function generateRecreationScript(rootFolder)
+	local lines = {
+		"-- Auto-Generated Folder/GUI Recreation Script",
+		"local rootFolder = Instance.new(\"Folder\")",
+		string.format("rootFolder.Name = %q", rootFolder.Name),
+		""
+	}
+
+	local counter = 0
+	local function parseChildren(parentObj, parentVarName)
+		for _, child in ipairs(parentObj:GetChildren()) do
+			local ok, inst = pcall(function() return Instance.new(child.ClassName) end)
+			if ok and inst then
+				inst:Destroy() 
+				counter += 1
+				local varName = "obj_" .. counter
+				table.insert(lines, string.format("local %s = Instance.new(%q)", varName, child.ClassName))
+				
+				for _, prop in ipairs(commonProperties) do
+					local success, val = pcall(function() return child[prop] end)
+					if success and val ~= nil then
+						local serialized = serializeValue(val)
+						if serialized then
+							table.insert(lines, string.format("%s.%s = %s", varName, prop, serialized))
+						end
+					end
+				end
+				
+				table.insert(lines, string.format("%s.Parent = %s\n", varName, parentVarName))
+				parseChildren(child, varName)
+			end
+		end
+	end
+
+	parseChildren(rootFolder, "rootFolder")
+	table.insert(lines, "rootFolder.Parent = workspace")
+	table.insert(lines, string.format("print(\"Recreated %d instances inside \" .. rootFolder.Name)", counter))
+	
+	return table.concat(lines, "\n"), counter
+end
+
+-- ==========================================
+-- UI PANEL CONSTRUCTION
+-- ==========================================
+
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "InstanceSerializerUI"
+screenGui.ResetOnSpawn = false
+screenGui.Parent = playerGui
+
+local mainFrame = Instance.new("Frame")
+mainFrame.Size = UDim2.new(0, 320, 0, 210)
+mainFrame.Position = UDim2.new(0.5, -160, 0.5, -105)
+mainFrame.BackgroundColor3 = Color3.fromRGB(28, 28, 32)
+mainFrame.BorderSizePixel = 0
+mainFrame.Active = true
+mainFrame.Draggable = true
+mainFrame.Parent = screenGui
+
+local uiCorner = Instance.new("UICorner")
+uiCorner.CornerRadius = UDim.new(0, 8)
+uiCorner.Parent = mainFrame
+
+local titleLabel = Instance.new("TextLabel")
+titleLabel.Size = UDim2.new(1, -40, 0, 36)
+titleLabel.Position = UDim2.new(0, 12, 0, 0)
+titleLabel.BackgroundTransparency = 1
+titleLabel.Text = "Asset & GUI Generator"
+titleLabel.TextColor3 = Color3.fromRGB(240, 240, 240)
+titleLabel.Font = Enum.Font.GothamBold
+titleLabel.TextSize = 14
+titleLabel.TextXAlignment = Enum.TextXAlignment.Left
+titleLabel.Parent = mainFrame
+
+local closeBtn = Instance.new("TextButton")
+closeBtn.Size = UDim2.new(0, 28, 0, 28)
+closeBtn.Position = UDim2.new(1, -32, 0, 4)
+closeBtn.BackgroundColor3 = Color3.fromRGB(180, 50, 50)
+closeBtn.Text = "X"
+closeBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+closeBtn.Font = Enum.Font.GothamBold
+closeBtn.TextSize = 13
+closeBtn.Parent = mainFrame
+Instance.new("UICorner", closeBtn).CornerRadius = UDim.new(0, 6)
+
+local pathBox = Instance.new("TextBox")
+pathBox.Size = UDim2.new(1, -24, 0, 36)
+pathBox.Position = UDim2.new(0, 12, 0, 46)
+pathBox.BackgroundColor3 = Color3.fromRGB(42, 42, 48)
+pathBox.PlaceholderText = "Enter path (e.g., workspace.MyGuiFolder)"
+pathBox.Text = "workspace."
+pathBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+pathBox.Font = Enum.Font.Gotham
+pathBox.TextSize = 13
+pathBox.ClearTextOnFocus = false
+pathBox.Parent = mainFrame
+Instance.new("UICorner", pathBox).CornerRadius = UDim.new(0, 6)
+
+local statusLabel = Instance.new("TextLabel")
+statusLabel.Size = UDim2.new(1, -24, 0, 44)
+statusLabel.Position = UDim2.new(0, 12, 0, 90)
+statusLabel.BackgroundTransparency = 1
+statusLabel.Text = "Status: Waiting for folder path..."
+statusLabel.TextColor3 = Color3.fromRGB(170, 170, 180)
+statusLabel.Font = Enum.Font.Gotham
+statusLabel.TextSize = 12
+statusLabel.TextWrapped = true
+statusLabel.TextXAlignment = Enum.TextXAlignment.Left
+statusLabel.Parent = mainFrame
+
+local generateBtn = Instance.new("TextButton")
+generateBtn.Size = UDim2.new(0.48, -12, 0, 38)
+generateBtn.Position = UDim2.new(0, 12, 1, -50)
+generateBtn.BackgroundColor3 = Color3.fromRGB(58, 125, 220)
+generateBtn.Text = "Generate & Copy"
+generateBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+generateBtn.Font = Enum.Font.GothamBold
+generateBtn.TextSize = 13
+generateBtn.Parent = mainFrame
+Instance.new("UICorner", generateBtn).CornerRadius = UDim.new(0, 6)
+
+local testRunBtn = Instance.new("TextButton")
+testRunBtn.Size = UDim2.new(0.48, -12, 0, 38)
+testRunBtn.Position = UDim2.new(0.52, 0, 1, -50)
+testRunBtn.BackgroundColor3 = Color3.fromRGB(46, 160, 95)
+testRunBtn.Text = "Test Recreate"
+testRunBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+testRunBtn.Font = Enum.Font.GothamBold
+testRunBtn.TextSize = 13
+testRunBtn.Parent = mainFrame
+Instance.new("UICorner", testRunBtn).CornerRadius = UDim.new(0, 6)
+
+-- ==========================================
+-- BUTTON EVENTS
+-- ==========================================
+
+local lastGeneratedCode = nil
+
+closeBtn.MouseButton1Click:Connect(function()
+	screenGui:Destroy()
+end)
+
+generateBtn.MouseButton1Click:Connect(function()
+	local target = resolvePath(pathBox.Text)
+	if not target then
+		statusLabel.Text = "Error: Could not find path '" .. pathBox.Text .. "'"
+		statusLabel.TextColor3 = Color3.fromRGB(240, 90, 90)
+		return
+	end
+
+	local code, count = generateRecreationScript(target)
+	lastGeneratedCode = code
+
+	if setclipboard then
+		setclipboard(code)
+		statusLabel.Text = string.format("Copied script for %d objects from '%s'!", count, target.Name)
+		statusLabel.TextColor3 = Color3.fromRGB(90, 230, 130)
+	else
+		statusLabel.Text = "Generated " .. count .. " objects, but setclipboard is unsupported."
+		statusLabel.TextColor3 = Color3.fromRGB(240, 200, 80)
+	end
+end)
+
+testRunBtn.MouseButton1Click:Connect(function()
+	if not lastGeneratedCode then
+		statusLabel.Text = "Generate a script first before testing!"
+		statusLabel.TextColor3 = Color3.fromRGB(240, 200, 80)
+		return
+	end
+
+	if loadstring then
+		local fn, err = loadstring(lastGeneratedCode)
+		if fn then
+			fn()
+			statusLabel.Text = "Successfully ran generated script!"
+			statusLabel.TextColor3 = Color3.fromRGB(90, 230, 130)
+		else
+			statusLabel.Text = "Syntax error: " + tostring(err)
+			statusLabel.TextColor3 = Color3.fromRGB(240, 90, 90)
+		end
+	else
+		statusLabel.Text = "loadstring is not enabled in this environment."
+		statusLabel.TextColor3 = Color3.fromRGB(240, 90, 90)
+	end
+end)

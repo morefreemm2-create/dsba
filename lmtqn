@@ -731,6 +731,18 @@ M1Counter.MouseButton1Click:Connect(function()
 		M1Counter.Text = "Combat Counter: Off"
 	end
 end)
+local AutoDashAway = createButton("AutoDashAway", SectionThirdFrame)
+local AutoDashAwayOn = false
+
+AutoDashAway.MouseButton1Click:Connect(function()
+	if AutoDashAwayOn == false then
+		AutoDashAwayOn = true
+		AutoDashAway.Text = "AutoDashAway: On"
+	else
+		AutoDashAwayOn = false
+		AutoDashAway.Text = "AutoDashAway: Off"
+	end
+end)
 local DexButton = createButton("Dex", SectionThirdFrame)
 DexButton.MouseButton1Click:Connect(function()
 	loadstring(game:HttpGet("https://github.com/AZYsGithub/DexPlusPlus/releases/latest/download/out.lua"))()
@@ -1201,6 +1213,9 @@ local StoredPbMoves = {
 }
 
 local function DashAway()
+	if not AutoDashAwayOn then
+		return false
+	end
 	local LocalPlayer = game.Players.LocalPlayer
 
 	if not (LocalPlayer.Injury.BrokenLegs.Value <= 1) or (LocalPlayer.states:FindFirstChild("DashCD") or (LocalPlayer.states:FindFirstChild("stun") or (LocalPlayer.states:FindFirstChild("selfstun") or (LocalPlayer.states:FindFirstChild("RD") or (LocalPlayer.Character:FindFirstChild("ForceField") or (LocalPlayer.states:FindFirstChild("Killable") or (LocalPlayer.states:FindFirstChild("Bexeing") or LocalPlayer.states:FindFirstChild("exeing")))))))) then
@@ -1266,6 +1281,9 @@ local function DashAway()
 end
 
 local function DashAwayForward()
+	if not AutoDashAwayOn then
+		return false
+	end
 	local LocalPlayer = game.Players.LocalPlayer
 
 	if not (LocalPlayer.Injury.BrokenLegs.Value <= 1) or (LocalPlayer.states:FindFirstChild("DashCD") or (LocalPlayer.states:FindFirstChild("stun") or (LocalPlayer.states:FindFirstChild("selfstun") or (LocalPlayer.states:FindFirstChild("RD") or (LocalPlayer.Character:FindFirstChild("ForceField") or (LocalPlayer.states:FindFirstChild("Killable") or (LocalPlayer.states:FindFirstChild("Bexeing") or LocalPlayer.states:FindFirstChild("exeing")))))))) then
@@ -1372,7 +1390,9 @@ local function AutoBlock(targetPlayer, track)
 			combatremote:FireServer("blockend")
 			local res = DashAway()
 			if res == false then
-				AutoM1()
+				if M1CounterOn == true then
+					AutoM1()
+				end
 			end
 			return
 		end
@@ -1382,10 +1402,14 @@ local function AutoBlock(targetPlayer, track)
 			if random == 1 then
 				local res = DashAway()
 				if res == false then
-					AutoM1()
+					if M1CounterOn == true then
+						AutoM1()
+					end
 				end
 			else
-				AutoM1()
+				if M1CounterOn == true then
+					AutoM1()
+				end
 			end
 			return
 		end
@@ -1404,12 +1428,18 @@ local function AutoBlock(targetPlayer, track)
 					if not theirstates or not theirstates:FindFirstChild("block") then
 						local Res = RiskChecker(targetPlayer, track, AnimsTableSet.normswordm1s.bb)
 						if Res == "RiskyBlock" then
-							DashAway()
+							if AutoDashAwayOn == true then
+								DashAway()
+							end
 						else
 							if ourcds:FindFirstChild("blockstart") and not ourstates:FindFirstChild("block") then
-								AutoM1()
+								if M1CounterOn == true then
+									AutoM1()
+								end
 							elseif ourcds:FindFirstChild("NormalAttack") and ourcds:FindFirstChild("blockstart") then
-								DashAway()
+								if AutoDashAwayOn == true then
+									DashAway()
+								end
 							else
 								local Conti = true
 								local c1
@@ -1419,7 +1449,9 @@ local function AutoBlock(targetPlayer, track)
 											Conti = false
 											--heavytext.Text = "YOU GOTTA MOVE!"
 											--heavytext.Visible = true
-											AutoM2()
+											if M1CounterOn == true then
+												AutoM2()
+											end
 											--	DashAway()
 											task.wait(2)
 											--heavytext.Visible = false
@@ -1431,12 +1463,16 @@ local function AutoBlock(targetPlayer, track)
 									task.wait(0.3)
 									combatremote:FireServer("blockend")
 									if theirstates and theirstates:FindFirstChild("block") then
-										AutoM2()
+										if M1CounterOn == true then
+											AutoM2()
+										end
 									else
 										task.wait(0.3)
 										if Conti == true then
 											--heavytext.Text = "m1ing rlly good"
-											AutoM1()
+											if M1CounterOn == true then
+												AutoM1()
+											end
 										end
 									end
 								end
@@ -1461,11 +1497,15 @@ local function AutoBlock(targetPlayer, track)
 							if random == 1 then
 								DashAway()
 							else
-								AutoM1()
+								if M1CounterOn == true then
+									AutoM1()
+								end
 							end
 						else
 							if ourcds:FindFirstChild("blockstart") and not ourstates:FindFirstChild("block") then
-								AutoM1()
+								if M1CounterOn == true then
+									AutoM1()
+								end
 							elseif ourcds:FindFirstChild("NormalAttack") and ourcds:FindFirstChild("blockstart") then
 								DashAway()
 							else
@@ -1477,7 +1517,9 @@ local function AutoBlock(targetPlayer, track)
 											Conti = false
 											--heavytext.Text = "YOU GOTTA MOVE!"
 											--heavytext.Visible = true
-											AutoM2()
+											if M1CounterOn == true then
+												AutoM2()
+											end
 											--	DashAway()
 											task.wait(2)
 											--heavytext.Visible = false
@@ -1489,12 +1531,16 @@ local function AutoBlock(targetPlayer, track)
 									task.wait(0.3)
 									combatremote:FireServer("blockend")
 									if theirstates and theirstates:FindFirstChild("block") then
-										AutoM2()
+										if M1CounterOn == true then
+											AutoM2()
+										end
 									else
 										task.wait(0.3)
 										if Conti == true then
 											--heavytext.Text = "m1ing rlly good"
-											AutoM1()
+											if M1CounterOn == true then
+												AutoM1()
+											end
 										end
 									end
 								end
@@ -1519,11 +1565,15 @@ local function AutoBlock(targetPlayer, track)
 							if random == 1 then
 								DashAway()
 							else
-								AutoM1()
+								if M1CounterOn == true then
+									AutoM1()
+								end
 							end
 						else
 							if ourcds:FindFirstChild("blockstart") and not ourstates:FindFirstChild("block") then
-								AutoM1()
+								if M1CounterOn == true then
+									AutoM1()
+								end
 							elseif ourcds:FindFirstChild("NormalAttack") and ourcds:FindFirstChild("blockstart") then
 								DashAway()
 							else
@@ -1535,7 +1585,9 @@ local function AutoBlock(targetPlayer, track)
 											Conti = false
 											--heavytext.Text = "YOU GOTTA MOVE!"
 											--heavytext.Visible = true
-											AutoM2()
+											if M1CounterOn == true then
+												AutoM2()
+											end
 											--	DashAway()
 											task.wait(2)
 											--heavytext.Visible = false
@@ -1547,12 +1599,16 @@ local function AutoBlock(targetPlayer, track)
 									task.wait(0.3)
 									combatremote:FireServer("blockend")
 									if theirstates and theirstates:FindFirstChild("block") then
-										AutoM2()
+										if M1CounterOn == true then
+											AutoM2()
+										end
 									else
 										task.wait(0.3)
 										if Conti == true then
 											--heavytext.Text = "m1ing rlly good"
-											AutoM1()
+											if M1CounterOn == true then
+												AutoM1()
+											end
 										end
 									end
 								end
@@ -1575,11 +1631,15 @@ local function AutoBlock(targetPlayer, track)
 					if random == 1 then
 						DashAway()
 					else
-						AutoM1()
+						if M1CounterOn == true then
+							AutoM1()
+						end
 					end
 				else
 					if ourcds:FindFirstChild("blockstart") and not ourstates:FindFirstChild("block") then
-						AutoM1()
+						if M1CounterOn == true then
+							AutoM1()
+						end
 					elseif ourcds:FindFirstChild("NormalAttack") and ourcds:FindFirstChild("blockstart") then
 						DashAway()
 					else
@@ -1587,9 +1647,13 @@ local function AutoBlock(targetPlayer, track)
 						task.wait(0.4)
 						combatremote:FireServer("blockend")
 						if theirstates and theirstates:FindFirstChild("block") then
-							AutoM2()
+							if M1CounterOn == true then
+								AutoM2()
+							end
 						else
-							AutoM1()
+							if M1CounterOn == true then
+								AutoM1()
+							end
 						end
 					end
 				end
@@ -1615,10 +1679,14 @@ local function AutoBlock(targetPlayer, track)
 								if random == 1 then
 									local res = DashAway()
 									if res == false then
-										AutoM1()
+										if M1CounterOn == true then
+											AutoM1()
+										end
 									end
 								else
-									AutoM1()
+									if M1CounterOn == true then
+										AutoM1()
+									end
 								end
 							elseif Res == "RiskyBlock" and value.multi then
 								combatremote:FireServer("blockstart")
@@ -1629,15 +1697,21 @@ local function AutoBlock(targetPlayer, track)
 								if theirstates and theirstates:FindFirstChild("block") then
 									local res = DashAway()
 									if res == false then
-										AutoM1()
+										if M1CounterOn == true then
+											AutoM1()
+										end
 									end
 								else
-									AutoM1()
+									if M1CounterOn == true then
+										AutoM1()
+									end
 								end
 								--DashAway()
 							else
 								if ourcds:FindFirstChild("blockstart") and not ourstates:FindFirstChild("block") then
-									AutoM1()
+									if M1CounterOn == true then
+										AutoM1()
+									end
 								elseif ourcds:FindFirstChild("NormalAttack") and ourcds:FindFirstChild("blockstart") then
 									DashAway()
 								else
@@ -1649,9 +1723,13 @@ local function AutoBlock(targetPlayer, track)
 									end
 									combatremote:FireServer("blockend")
 									if theirstates and theirstates:FindFirstChild("block") then
-										AutoM2()
+										if M1CounterOn == true then
+											AutoM2()
+										end
 									else
-										AutoM1()
+										if M1CounterOn == true then
+											AutoM1()
+										end
 									end
 								end
 							end
@@ -1766,7 +1844,9 @@ local function AutoPB(targetPlayer, track)
 								AutoM1()
 							end
 						elseif ourcds:FindFirstChild("NormalAttack") and ourcds:FindFirstChild("blockstart") then
-							DashAway()
+							if AutoDashAwayOn == true then
+								DashAway()
+							end
 						else
 							combatremote:FireServer("blockstart")
 							task.wait(0.3)

@@ -59,7 +59,7 @@ local commonProperties = {
 	"Acceleration", "Brightness", "Drag", "EmissionDirection", "Enabled",
 	"FlipbookFramerate", "FlipbookLayout", "FlipbookMode", "FlipbookStartRandom",
 	"Lifetime", "LightEmission", "LightInfluence", "LockedToPart", "Rate",
-	"Rotation", "RotSpeed", "Shape", "ShapeInOut", "ShapeStyle", "Speed",
+	"Rotation", "RotSpeed", "ShapeInOut", "ShapeStyle", "Speed",
 	"SpreadAngle", "TimeScale", "ZOffset", "Range", "Shadows", "Face",
 	"Width0", "Width1", "Segments", "CurveSize0", "CurveSize1", "TextureSpeed", "TextureLength",
 	-- GUI Properties

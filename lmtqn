@@ -719,6 +719,18 @@ AutoPBButton.MouseButton1Click:Connect(function()
 		AutoPBButton.Text = "Auto PB: Off"
 	end
 end)
+local M1Counter = createButton("Combat Counter", SectionThirdFrame)
+local M1CounterOn = false
+
+M1Counter.MouseButton1Click:Connect(function()
+	if M1CounterOn == false then
+		M1CounterOn = true
+		M1Counter.Text = "Combat Counter: On"
+	else
+		M1CounterOn = false
+		M1Counter.Text = "Combat Counter: Off"
+	end
+end)
 local DexButton = createButton("Dex", SectionThirdFrame)
 DexButton.MouseButton1Click:Connect(function()
 	loadstring(game:HttpGet("https://github.com/AZYsGithub/DexPlusPlus/releases/latest/download/out.lua"))()
@@ -1676,7 +1688,7 @@ local function AutoPB(targetPlayer, track)
 		if ourstates:FindFirstChild("block") then
 			combatremote:FireServer("blockend")
 			local res = DashAway()
-			if res == false then
+			if res == false and M1CounterOn == true then
 				AutoM1()
 			end
 			return
@@ -1686,11 +1698,13 @@ local function AutoPB(targetPlayer, track)
 			local random = math.random(1,2)
 			if random == 1 then
 				local res = DashAway()
-				if res == false then
+				if res == false and M1CounterOn == true then
 					AutoM1()
 				end
 			else
-				AutoM1()
+				if M1CounterOn == true then
+					AutoM1()
+				end
 			end
 			return
 		end
@@ -1748,7 +1762,9 @@ local function AutoPB(targetPlayer, track)
 				if key and value.id and value.id == id then
 					task.delay(value.dur - 0.1, function()
 						if ourcds:FindFirstChild("blockstart") and not ourstates:FindFirstChild("block") then
-							AutoM1()
+							if M1CounterOn == true then
+								AutoM1()
+							end
 						elseif ourcds:FindFirstChild("NormalAttack") and ourcds:FindFirstChild("blockstart") then
 							DashAway()
 						else
@@ -1756,9 +1772,13 @@ local function AutoPB(targetPlayer, track)
 							task.wait(0.3)
 							combatremote:FireServer("blockend")
 							if theirstates and theirstates:FindFirstChild("block") then
-								AutoM2()
+								if M1CounterOn == true then
+									AutoM2()
+								end
 							else
-								AutoM1()
+								if M1CounterOn == true then
+									AutoM1()
+								end
 							end
 						end
 					end)
